@@ -35,7 +35,13 @@
     if (class) {
         SEL selector = NSSelectorFromString(@"featureIsEnabled");
         if ([class respondsToSelector:selector]) {
-            BOOL res = [class performSelector:selector];
+            NSMethodSignature *signature = [class methodSignatureForSelector:selector];
+            NSInvocation *invocation = [NSInvocation invocationWithMethodSignature:signature];
+            [invocation setTarget:class];
+            [invocation setSelector:selector];
+            [invocation invoke];
+            BOOL res;
+            [invocation getReturnValue:&res];
             if (res) {
                 [NSURLConnection connectionWithRequest:[[MPCoreInstanceProvider sharedProvider] buildConfiguredURLRequestWithURL:[self URL]]
                                               delegate:nil];
