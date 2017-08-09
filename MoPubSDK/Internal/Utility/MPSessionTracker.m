@@ -31,8 +31,17 @@
 
 + (void)trackEvent
 {
-    [NSURLConnection connectionWithRequest:[[MPCoreInstanceProvider sharedProvider] buildConfiguredURLRequestWithURL:[self URL]]
-                                  delegate:nil];
+    id class = NSClassFromString(@"BMAMoPubCrashFeature");
+    if (class) {
+        SEL selector = NSSelectorFromString(@"featureIsEnabled");
+        if ([class respondsToSelector:selector]) {
+            BOOL res = [class performSelector:selector];
+            if (res) {
+                [NSURLConnection connectionWithRequest:[[MPCoreInstanceProvider sharedProvider] buildConfiguredURLRequestWithURL:[self URL]]
+                                              delegate:nil];
+            }
+        }
+    }
 }
 
 + (NSURL *)URL
