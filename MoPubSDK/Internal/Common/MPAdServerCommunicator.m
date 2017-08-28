@@ -68,8 +68,11 @@ const NSTimeInterval kRequestTimeoutInterval = 10.0;
     self.adRequestLatencyEvent = [[MPLogEvent alloc] initWithEventCategory:MPLogEventCategoryRequests eventName:MPLogEventNameAdRequest];
     self.adRequestLatencyEvent.requestURI = URL.absoluteString;
 
-    self.connection = [NSURLConnection connectionWithRequest:[self adRequestForURL:URL]
-                                                    delegate:self];
+    self.connection = [[NSURLConnection alloc] initWithRequest:[self adRequestForURL:URL] delegate:self startImmediately:NO];
+    [self.connection scheduleInRunLoop:[NSRunLoop currentRunLoop]
+                               forMode:NSRunLoopCommonModes];
+    [self.connection start];
+    
     self.loading = YES;
 }
 
