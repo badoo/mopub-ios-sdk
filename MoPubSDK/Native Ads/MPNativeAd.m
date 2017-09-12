@@ -20,6 +20,8 @@
 #import "MPNativeAdDelegate.h"
 #import "MPNativeView.h"
 
+#import "MoPub.h"
+
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 
 @interface MPNativeAd () <MPNativeAdAdapterDelegate, MPNativeViewDelegate>
@@ -30,6 +32,8 @@
 
 @property (nonatomic, strong) NSMutableSet *clickTrackerURLs;
 @property (nonatomic, strong) NSMutableSet *impressionTrackerURLs;
+
+@property (nonatomic, weak) NSURLSessionTask *dataTask;
 
 @property (nonatomic, readonly, strong) id<MPNativeAdAdapter> adAdapter;
 @property (nonatomic, assign) BOOL hasTrackedImpression;
@@ -49,7 +53,7 @@
 - (instancetype)initWithAdAdapter:(id<MPNativeAdAdapter>)adAdapter
 {
     static int sequenceNumber = 0;
-
+    
     self = [super init];
     if (self) {
         _adAdapter = adAdapter;
@@ -63,7 +67,7 @@
         _associatedView = [[MPNativeView alloc] init];
         _associatedView.clipsToBounds = YES;
         _associatedView.delegate = self;
-
+        
         // Add a tap recognizer on top of the view if the ad network isn't handling clicks on its own.
         if (!([_adAdapter respondsToSelector:@selector(enableThirdPartyClickTracking)] && [_adAdapter enableThirdPartyClickTracking])) {
             UITapGestureRecognizer *recognizer = [[UITapGestureRecognizer alloc] initWithTarget:self action:@selector(adViewTapped)];
@@ -80,18 +84,18 @@
     // We always return the same MPNativeView (self.associatedView) so we need to remove its subviews
     // before attaching the new ad view to it.
     [[self.associatedView subviews] makeObjectsPerformSelector:@selector(removeFromSuperview)];
-
+    
     UIView *adView = [self.renderer retrieveViewWithAdapter:self.adAdapter error:error];
-
+    
     if (adView) {
         if (!self.hasAttachedToView) {
             [self willAttachToView:self.associatedView];
             self.hasAttachedToView = YES;
         }
-
+        
         adView.frame = self.associatedView.bounds;
         [self.associatedView addSubview:adView];
-
+        
         return self.associatedView;
     } else {
         return nil;
@@ -109,7 +113,7 @@
         MPLogDebug(@"Impression already tracked.");
         return;
     }
-
+    
     MPLogDebug(@"Tracking an impression for %@.", self.adIdentifier);
     self.hasTrackedImpression = YES;
     [self trackMetricsForURLs:self.impressionTrackerURLs];
@@ -121,15 +125,15 @@
         MPLogDebug(@"Click already tracked.");
         return;
     }
-
+    
     MPLogDebug(@"Tracking a click for %@.", self.adIdentifier);
     self.hasTrackedClick = YES;
     [self trackMetricsForURLs:self.clickTrackerURLs];
-
+    
     if ([self.adAdapter respondsToSelector:@selector(trackClick)] && ![self isThirdPartyHandlingClicks]) {
         [self.adAdapter trackClick];
     }
-
+    
 }
 
 - (void)trackMetricsForURLs:(NSSet *)URLs
@@ -143,10 +147,16 @@
 {
     NSMutableURLRequest *request = [[MPCoreInstanceProvider sharedProvider] buildConfiguredURLRequestWithURL:URL];
     request.cachePolicy = NSURLRequestReloadIgnoringCacheData;
-
-    NSURLConnection * connection = [[NSURLConnection alloc] initWithRequest:request delegate:nil startImmediately:NO];
-    [connection scheduleInRunLoop:[NSRunLoop currentRunLoop] forMode:NSRunLoopCommonModes];
-    [connection start];
+    
+    if ([MoPub shouldUseURLSession]) {
+        NSURLSession *session = [NSURLSession sharedSession];
+        self.dataTask = [session dataTaskWithRequest:request];
+        [self.dataTask resume];
+    } else {
+        NSURLConnection * connection = [[NSURLConnection alloc] initWithRequest:request delegate:nil startImmediately:NO];
+        [connection scheduleInRunLoop:[NSRunLoop currentRunLoop] forMode:NSRunLoopCommonModes];
+        [connection start];
+    }
 }
 
 #pragma mark - Internal
@@ -166,7 +176,7 @@
 - (void)displayAdContent
 {
     [self trackClick];
-
+    
     if ([self.adAdapter respondsToSelector:@selector(displayContentForURL:rootViewController:)]) {
         [self.adAdapter displayContentForURL:self.adAdapter.defaultActionURL rootViewController:[self.delegate viewControllerForPresentingModalView]];
     } else {
@@ -181,7 +191,7 @@
 - (void)adViewTapped
 {
     [self displayAdContent];
-
+    
     if ([self.renderer respondsToSelector:@selector(nativeAdTapped)]) {
         [self.renderer nativeAdTapped];
     }
@@ -236,3 +246,4 @@
 }
 
 @end
+

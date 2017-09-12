@@ -6,18 +6,20 @@
 //
 
 #import "MPRetryingHTTPOperation.h"
-
 #import "MPLogging.h"
+
+#import "MoPub.h"
 
 NSString * const MPRetryingHTTPOperationErrorDomain = @"com.mopub.MPRetryingHTTPOperation";
 static const NSUInteger kMaximumFailedRetryAttempts = 5;
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 
-@interface MPRetryingHTTPOperation () <NSURLConnectionDataDelegate>
+@interface MPRetryingHTTPOperation () <NSURLConnectionDataDelegate, NSURLSessionDataDelegate, NSURLSessionTaskDelegate>
 
 @property (copy, readwrite) NSURLRequest *request;
 @property (strong) NSURLConnection *connection;
+@property (strong) NSURLSessionTask *dataTask;
 @property (copy, readwrite) NSHTTPURLResponse *lastResponse;
 @property (strong, readwrite) NSMutableData *lastReceivedData;
 @property (assign) NSUInteger failedRetryAttempts;
@@ -39,7 +41,13 @@ static const NSUInteger kMaximumFailedRetryAttempts = 5;
     self = [super init];
     if (self) {
         _request = [request copy];
-        _connection = [[NSURLConnection alloc] initWithRequest:request delegate:self startImmediately:NO];
+        if ([MoPub shouldUseURLSession]) {
+            NSURLSessionConfiguration *configuration = [NSURLSessionConfiguration defaultSessionConfiguration];
+            NSURLSession *session = [NSURLSession sessionWithConfiguration:configuration delegate:self delegateQueue:nil];
+            self.dataTask = [session dataTaskWithRequest:request];
+        } else {
+            _connection = [[NSURLConnection alloc] initWithRequest:request delegate:self startImmediately:NO];
+        }
     }
     return self;
 }
@@ -51,16 +59,21 @@ static const NSUInteger kMaximumFailedRetryAttempts = 5;
     [super operationDidStart];
     
     MPLogDebug(@"Starting request: %@.", self.request);
-    [self.connection scheduleInRunLoop:[NSRunLoop currentRunLoop] forMode:NSDefaultRunLoopMode];
-    [self.connection start];
+    if ([MoPub shouldUseURLSession]) {
+        [self.dataTask resume];
+    } else {
+        [self.connection scheduleInRunLoop:[NSRunLoop currentRunLoop] forMode:NSDefaultRunLoopMode];
+        [self.connection start];
+    }
 }
 
 - (void)operationWillFinish
 {
     [super operationWillFinish];
-    
     [self.connection cancel];
     self.connection = nil;
+    [self.dataTask cancel];
+    self.dataTask = nil;
 }
 
 #pragma mark - Internal
@@ -88,25 +101,26 @@ static const NSUInteger kMaximumFailedRetryAttempts = 5;
     
     [self.lastReceivedData setLength:0];
     
-    self.connection = [[NSURLConnection alloc] initWithRequest:self.request delegate:self startImmediately:NO];
-    [self.connection scheduleInRunLoop:[NSRunLoop currentRunLoop] forMode:NSDefaultRunLoopMode];
-    [self.connection start];
+    if ([MoPub shouldUseURLSession]) {
+        NSURLSessionConfiguration *configuration = [NSURLSessionConfiguration defaultSessionConfiguration];
+        NSURLSession *session = [NSURLSession sessionWithConfiguration:configuration delegate:self delegateQueue:nil];
+        self.dataTask = [session dataTaskWithRequest:self.request];
+        [self.dataTask resume];
+    } else {
+        self.connection = [[NSURLConnection alloc] initWithRequest:self.request delegate:self startImmediately:NO];
+        [self.connection scheduleInRunLoop:[NSRunLoop currentRunLoop] forMode:NSDefaultRunLoopMode];
+        [self.connection start];
+    }
 }
 
-#pragma mark - <NSURLConnectionDataDelegate>
-
-- (void)connection:(NSURLConnection *)connection didReceiveResponse:(NSURLResponse *)response
-{
-    NSAssert([self isActualRunLoopThread], @"NSURLConnection callbacks should occur on the run loop thread.");
+#pragma mark - Networking
+- (void)networkConnectionDidReceiveResponse:(NSURLResponse * _Nonnull)response {
     NSAssert([response isKindOfClass:[NSHTTPURLResponse class]], @"Response must be of type NSHTTPURLResponse.");
     
     self.lastResponse = (NSHTTPURLResponse *)response;
 }
 
-- (void)connection:(NSURLConnection *)connection didReceiveData:(NSData *)data
-{
-    NSAssert([self isActualRunLoopThread], @"NSURLConnection callbacks should occur on the run loop thread.");
-    
+- (void)networkConnectionDidReceiveData:(NSData * _Nonnull)data {
     if (!self.lastReceivedData) {
         self.lastReceivedData = [NSMutableData data];
     }
@@ -114,10 +128,7 @@ static const NSUInteger kMaximumFailedRetryAttempts = 5;
     [self.lastReceivedData appendData:data];
 }
 
-- (void)connectionDidFinishLoading:(NSURLConnection *)connection
-{
-    NSAssert([self isActualRunLoopThread], @"NSURLConnection callbacks should occur on the run loop thread.");
-    
+- (void)networkConnectionDidFinishLoading {
     if (self.lastResponse.statusCode == 200) {
         MPLogDebug(@"Successful request: %@.", self.request);
         [self finishWithError:nil];
@@ -137,11 +148,61 @@ static const NSUInteger kMaximumFailedRetryAttempts = 5;
     }
 }
 
+- (void)networkConnectionDidFailWithError:(NSError * _Nonnull)error {
+    [self finishWithError:error];
+}
+
+#pragma mark - NSURLSession delegates
+- (void)URLSession:(NSURLSession *)session dataTask:(NSURLSessionDataTask *)dataTask didReceiveResponse:(NSURLResponse *)response completionHandler:(void (^)(NSURLSessionResponseDisposition))completionHandler {
+    dispatch_async(dispatch_get_main_queue(), ^{
+        [self networkConnectionDidReceiveResponse:response];
+    });
+}
+
+- (void)URLSession:(NSURLSession *)session dataTask:(NSURLSessionDataTask *)dataTask didReceiveData:(NSData *)data {
+    dispatch_async(dispatch_get_main_queue(), ^{
+        [self networkConnectionDidReceiveData:data];
+    });
+}
+
+- (void)URLSession:(NSURLSession *)session task:(NSURLSessionTask *)task didCompleteWithError:(NSError *)error {
+    dispatch_async(dispatch_get_main_queue(), ^{
+        if (error) {
+            [self networkConnectionDidFailWithError:error];
+        } else {
+            [self networkConnectionDidFinishLoading];
+        }
+    });
+}
+
+#pragma mark - <NSURLConnectionDataDelegate>
+- (void)connection:(NSURLConnection *)connection didReceiveResponse:(NSURLResponse *)response
+{
+    NSAssert([self isActualRunLoopThread], @"NSURLConnection callbacks should occur on the run loop thread.");
+    
+    [self networkConnectionDidReceiveResponse:response];
+}
+
+- (void)connection:(NSURLConnection *)connection didReceiveData:(NSData *)data
+{
+    NSAssert([self isActualRunLoopThread], @"NSURLConnection callbacks should occur on the run loop thread.");
+    
+    [self networkConnectionDidReceiveData:data];
+}
+
+- (void)connectionDidFinishLoading:(NSURLConnection *)connection
+{
+    NSAssert([self isActualRunLoopThread], @"NSURLConnection callbacks should occur on the run loop thread.");
+    
+    [self networkConnectionDidFinishLoading];
+}
+
 - (void)connection:(NSURLConnection *)connection didFailWithError:(NSError *)error
 {
     NSAssert([self isActualRunLoopThread], @"NSURLConnection callbacks should occur on the run loop thread.");
     
-    [self finishWithError:error];
+    [self networkConnectionDidFailWithError:error];
 }
 
 @end
+

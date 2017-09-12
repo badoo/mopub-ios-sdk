@@ -131,4 +131,6 @@
  */
 - (void)setClickthroughDisplayAgentType:(MOPUBDisplayAgentType)displayAgentType;
 
++ (BOOL)shouldUseURLSession;
+
 @end
