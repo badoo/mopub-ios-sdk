@@ -92,4 +92,24 @@
     return nil;
 }
 
++ (BOOL)shouldUseURLSession {
+    static dispatch_once_t onceToken;
+    static BOOL isURLSessionPreferred = NO;
+    dispatch_once(&onceToken, ^{
+        id class = NSClassFromString(@"BMAMoPubCrashFeature");
+        if (class) {
+            SEL selector = NSSelectorFromString(@"featureURLSessionIsEnabled");
+            if ([class respondsToSelector:selector]) {
+                NSMethodSignature *signature = [class methodSignatureForSelector:selector];
+                NSInvocation *invocation = [NSInvocation invocationWithMethodSignature:signature];
+                [invocation setTarget:class];
+                [invocation setSelector:selector];
+                [invocation invoke];
+                [invocation getReturnValue:&isURLSessionPreferred];
+            }
+        }
+    });
+    return isURLSessionPreferred;
+}
+
 @end

@@ -13,6 +13,8 @@
 #import "MPLogEvent.h"
 #import "MPLogEventRecorder.h"
 
+#import "MoPub.h"
+
 const NSTimeInterval kRequestTimeoutInterval = 10.0;
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -59,26 +61,6 @@ const NSTimeInterval kRequestTimeoutInterval = 10.0;
     [self.dataTask cancel];
 }
 
-- (BOOL)shouldUseURLSession {
-    static dispatch_once_t onceToken;
-    static BOOL isURLSessionPreferred = NO;
-    dispatch_once(&onceToken, ^{
-        id class = NSClassFromString(@"BMAMoPubCrashFeature");
-        if (class) {
-            SEL selector = NSSelectorFromString(@"featureURLSessionIsEnabled");
-            if ([class respondsToSelector:selector]) {
-                NSMethodSignature *signature = [class methodSignatureForSelector:selector];
-                NSInvocation *invocation = [NSInvocation invocationWithMethodSignature:signature];
-                [invocation setTarget:class];
-                [invocation setSelector:selector];
-                [invocation invoke];
-                [invocation getReturnValue:&isURLSessionPreferred];
-            }
-        }
-    });
-    return isURLSessionPreferred;
-}
-
 #pragma mark - Public
 
 - (void)loadURL:(NSURL *)URL
@@ -90,7 +72,7 @@ const NSTimeInterval kRequestTimeoutInterval = 10.0;
     self.adRequestLatencyEvent = [[MPLogEvent alloc] initWithEventCategory:MPLogEventCategoryRequests eventName:MPLogEventNameAdRequest];
     self.adRequestLatencyEvent.requestURI = URL.absoluteString;
     
-    if ([self shouldUseURLSession]) {
+    if ([MoPub shouldUseURLSession]) {
         NSURLRequest *request = [self adRequestForURL:URL];
         NSURLSessionConfiguration *configuration = [NSURLSessionConfiguration defaultSessionConfiguration];
         NSURLSession *session = [NSURLSession sessionWithConfiguration:configuration delegate:self delegateQueue:nil];

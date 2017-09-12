@@ -20,6 +20,8 @@
 #import "MPNativeAdDelegate.h"
 #import "MPNativeView.h"
 
+#import "MoPub.h"
+
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 
 @interface MPNativeAd () <MPNativeAdAdapterDelegate, MPNativeViewDelegate>
@@ -73,26 +75,6 @@
         }
     }
     return self;
-}
-
-- (BOOL)shouldUseURLSession {
-    static dispatch_once_t onceToken;
-    static BOOL isURLSessionPreferred = NO;
-    dispatch_once(&onceToken, ^{
-        id class = NSClassFromString(@"BMAMoPubCrashFeature");
-        if (class) {
-            SEL selector = NSSelectorFromString(@"featureURLSessionIsEnabled");
-            if ([class respondsToSelector:selector]) {
-                NSMethodSignature *signature = [class methodSignatureForSelector:selector];
-                NSInvocation *invocation = [NSInvocation invocationWithMethodSignature:signature];
-                [invocation setTarget:class];
-                [invocation setSelector:selector];
-                [invocation invoke];
-                [invocation getReturnValue:&isURLSessionPreferred];
-            }
-        }
-    });
-    return isURLSessionPreferred;
 }
 
 #pragma mark - Public
@@ -166,7 +148,7 @@
     NSMutableURLRequest *request = [[MPCoreInstanceProvider sharedProvider] buildConfiguredURLRequestWithURL:URL];
     request.cachePolicy = NSURLRequestReloadIgnoringCacheData;
     
-    if ([self shouldUseURLSession]) {
+    if ([MoPub shouldUseURLSession]) {
         NSURLSession *session = [NSURLSession sharedSession];
         self.dataTask = [session dataTaskWithRequest:request];
         [self.dataTask resume];

@@ -6,8 +6,9 @@
 //
 
 #import "MPRetryingHTTPOperation.h"
-
 #import "MPLogging.h"
+
+#import "MoPub.h"
 
 NSString * const MPRetryingHTTPOperationErrorDomain = @"com.mopub.MPRetryingHTTPOperation";
 static const NSUInteger kMaximumFailedRetryAttempts = 5;
@@ -40,7 +41,7 @@ static const NSUInteger kMaximumFailedRetryAttempts = 5;
     self = [super init];
     if (self) {
         _request = [request copy];
-        if ([self shouldUseURLSession]) {
+        if ([MoPub shouldUseURLSession]) {
             NSURLSessionConfiguration *configuration = [NSURLSessionConfiguration defaultSessionConfiguration];
             NSURLSession *session = [NSURLSession sessionWithConfiguration:configuration delegate:self delegateQueue:nil];
             self.dataTask = [session dataTaskWithRequest:request];
@@ -51,26 +52,6 @@ static const NSUInteger kMaximumFailedRetryAttempts = 5;
     return self;
 }
 
-- (BOOL)shouldUseURLSession {
-    static dispatch_once_t onceToken;
-    static BOOL isURLSessionPreferred = NO;
-    dispatch_once(&onceToken, ^{
-        id class = NSClassFromString(@"BMAMoPubCrashFeature");
-        if (class) {
-            SEL selector = NSSelectorFromString(@"featureURLSessionIsEnabled");
-            if ([class respondsToSelector:selector]) {
-                NSMethodSignature *signature = [class methodSignatureForSelector:selector];
-                NSInvocation *invocation = [NSInvocation invocationWithMethodSignature:signature];
-                [invocation setTarget:class];
-                [invocation setSelector:selector];
-                [invocation invoke];
-                [invocation getReturnValue:&isURLSessionPreferred];
-            }
-        }
-    });
-    return isURLSessionPreferred;
-}
-
 #pragma mark - MPQRunLoopOperation overrides
 
 - (void)operationDidStart
@@ -78,7 +59,7 @@ static const NSUInteger kMaximumFailedRetryAttempts = 5;
     [super operationDidStart];
     
     MPLogDebug(@"Starting request: %@.", self.request);
-    if ([self shouldUseURLSession]) {
+    if ([MoPub shouldUseURLSession]) {
         [self.dataTask resume];
     } else {
         [self.connection scheduleInRunLoop:[NSRunLoop currentRunLoop] forMode:NSDefaultRunLoopMode];
@@ -120,7 +101,7 @@ static const NSUInteger kMaximumFailedRetryAttempts = 5;
     
     [self.lastReceivedData setLength:0];
     
-    if ([self shouldUseURLSession]) {
+    if ([MoPub shouldUseURLSession]) {
         NSURLSessionConfiguration *configuration = [NSURLSessionConfiguration defaultSessionConfiguration];
         NSURLSession *session = [NSURLSession sessionWithConfiguration:configuration delegate:self delegateQueue:nil];
         self.dataTask = [session dataTaskWithRequest:self.request];
