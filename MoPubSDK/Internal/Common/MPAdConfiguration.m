@@ -13,6 +13,8 @@
 #import "NSJSONSerialization+MPAdditions.h"
 #import "MPRewardedVideoReward.h"
 #import "MOPUBExperimentProvider.h"
+#import "MPViewabilityTracker.h"
+#import "NSString+MPAdditions.h"
 
 #if MP_HAS_NATIVE_PACKAGE
 #import "MPVASTTrackingEvent.h"
@@ -43,10 +45,10 @@ NSString * const kIsVastVideoPlayerKey = @"X-VastVideoPlayer";
 NSString * const kInterstitialAdTypeHeaderKey = @"X-Fulladtype";
 NSString * const kOrientationTypeHeaderKey = @"X-Orientation";
 
+NSString * const kNativeImpressionMinVisiblePercentHeaderKey = @"X-Impression-Min-Visible-Percent";
+NSString * const kNativeImpressionVisibleMsHeaderKey = @"X-Impression-Visible-Ms";
 NSString * const kNativeVideoPlayVisiblePercentHeaderKey = @"X-Play-Visible-Percent";
 NSString * const kNativeVideoPauseVisiblePercentHeaderKey = @"X-Pause-Visible-Percent";
-NSString * const kNativeVideoImpressionMinVisiblePercentHeaderKey = @"X-Impression-Min-Visible-Percent";
-NSString * const kNativeVideoImpressionVisibleMsHeaderKey = @"X-Impression-Visible-Ms";
 NSString * const kNativeVideoMaxBufferingTimeMsHeaderKey = @"X-Max-Buffer-Ms";
 NSString * const kNativeVideoTrackersHeaderKey = @"X-Video-Trackers";
 
@@ -77,6 +79,9 @@ NSString * const kNativeVideoTrackerTextDictionaryKey = @"text";
 // clickthrough experiment
 NSString * const kClickthroughExperimentBrowserAgent = @"X-Browser-Agent";
 static const NSInteger kMaximumVariantForClickthroughExperiment = 2;
+
+// viewability
+NSString * const kViewabilityDisableHeaderKey = @"X-Disable-Viewability";
 
 
 @interface MPAdConfiguration ()
@@ -156,9 +161,9 @@ static const NSInteger kMaximumVariantForClickthroughExperiment = 2;
 
         self.nativeVideoPauseVisiblePercent = [self percentFromHeaders:headers forKey:kNativeVideoPauseVisiblePercentHeaderKey];
 
-        self.nativeVideoImpressionMinVisiblePercent = [self percentFromHeaders:headers forKey:kNativeVideoImpressionMinVisiblePercentHeaderKey];
+        self.nativeImpressionMinVisiblePercent = [self percentFromHeaders:headers forKey:kNativeImpressionMinVisiblePercentHeaderKey];
 
-        self.nativeVideoImpressionVisible = [self timeIntervalFromMsHeaders:headers forKey:kNativeVideoImpressionVisibleMsHeaderKey];
+        self.nativeImpressionMinVisibleTimeInterval = [self timeIntervalFromMsHeaders:headers forKey:kNativeImpressionVisibleMsHeaderKey];
 
         self.nativeVideoMaxBufferingTime = [self timeIntervalFromMsHeaders:headers forKey:kNativeVideoMaxBufferingTimeMsHeaderKey];
 #if MP_HAS_NATIVE_PACKAGE
@@ -209,6 +214,16 @@ static const NSInteger kMaximumVariantForClickthroughExperiment = 2;
         // clickthrough experiment
         self.clickthroughExperimentBrowserAgent = [self clickthroughExperimentVariantFromHeaders:headers forKey:kClickthroughExperimentBrowserAgent];
         [MOPUBExperimentProvider setDisplayAgentFromAdServer:self.clickthroughExperimentBrowserAgent];
+
+        // viewability
+        NSString * disabledViewabilityValue = [headers objectForKey:kViewabilityDisableHeaderKey];
+        NSNumber * disabledViewabilityVendors = disabledViewabilityValue != nil ? [disabledViewabilityValue safeIntegerValue] : nil;
+        if (disabledViewabilityVendors != nil &&
+            [disabledViewabilityVendors integerValue] >= MPViewabilityOptionNone &&
+            [disabledViewabilityVendors integerValue] <= MPViewabilityOptionAll) {
+            MPViewabilityOption vendorsToDisable = (MPViewabilityOption)([disabledViewabilityVendors integerValue]);
+            [MPViewabilityTracker disableViewability:vendorsToDisable];
+        }
     }
     return self;
 }

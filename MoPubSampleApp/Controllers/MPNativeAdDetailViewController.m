@@ -21,6 +21,7 @@
 
 #ifdef CUSTOM_EVENTS_ENABLED
 #import "FlurryNativeVideoAdRenderer.h"
+#import "MPGoogleAdMobNativeRenderer.h"
 #endif
 
 NSString *const kNativeAdDefaultActionViewKey = @"kNativeAdDefaultActionButtonKey";
@@ -46,11 +47,9 @@ NSString *const kNativeAdDefaultActionViewKey = @"kNativeAdDefaultActionButtonKe
     if (self) {
         self.info = info;
 
-#if __IPHONE_OS_VERSION_MAX_ALLOWED >= MP_IOS_7_0
         if ([self respondsToSelector:@selector(setEdgesForExtendedLayout:)]) {
             self.edgesForExtendedLayout = UIRectEdgeNone;
         }
-#endif
     }
     return self;
 }
@@ -102,7 +101,8 @@ NSString *const kNativeAdDefaultActionViewKey = @"kNativeAdDefaultActionButtonKe
 
     #ifdef CUSTOM_EVENTS_ENABLED
     MPNativeAdRendererConfiguration * flurryConfig = [FlurryNativeVideoAdRenderer rendererConfigurationWithRendererSettings:nativeVideoAdSettings];
-    [configurations addObject:flurryConfig];
+    MPNativeAdRendererConfiguration *admobConfig = [MPGoogleAdMobNativeRenderer rendererConfigurationWithRendererSettings:settings];
+    [configurations addObjectsFromArray:@[admobConfig, flurryConfig]];
     #endif
 
     MPNativeAdRequest *adRequest1 = [MPNativeAdRequest requestWithAdUnitIdentifier:self.info.ID rendererConfigurations:configurations];

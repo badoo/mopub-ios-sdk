@@ -10,13 +10,14 @@
 
 @interface MPRewardedVideoAdManager() <MPRewardedVideoAdapterDelegate>
 // Properties and methods from MPRewardedVideoAdManager redeclared here so we can access these private items.
-@property (nonatomic, strong) MPRewardedVideoAdapter *adapter;
 @property (nonatomic, strong) MPAdConfiguration *configuration;
 @property (nonatomic, assign) BOOL ready;
 @property (nonatomic, assign) BOOL playedAd;
 @end
 
 @implementation MPRewardedVideoAdManager (Testing)
+@dynamic communicator;
+@dynamic adapter;
 
 - (void)loadWithConfiguration:(MPAdConfiguration *)config {
     self.adapter = [[MPMockRewardedVideoAdapter alloc] initWithDelegate:self configuration:config];

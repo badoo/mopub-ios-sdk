@@ -8,9 +8,18 @@ Sign up for an account at [http://app.mopub.com/](http://app.mopub.com/).
 
 You can find integration documentation on our [wiki](https://github.com/mopub/mopub-ios-sdk/wiki/Getting-Started) and additional help documentation on our [developer help site](https://www.mopub.com/resources/docs).
 
-To file an issue with our team visit the [MoPub Forum](https://twittercommunity.com/c/fabric/mopub) or email [support@mopub.com](mailto:support@mopub.com).
+To file an issue with our team, email [support@mopub.com](mailto:support@mopub.com).
 
 **Please Note: We no longer accept GitHub Issues**
+
+## New Pull Requests?
+
+Thank you for submitting pull requests to the MoPub iOS GitHub repository. Our team regularly monitors and investigates all submissions for inclusion in our official SDK releases. Please note that MoPub does not directly merge these pull requests at this time. Please reach out to your account team or [support@mopub.com](mailto:support@mopub.com) if you have further questions.
+
+## Disclosure
+MoPub SDK 4.16 and above integrates technology from our partners Integral Ad Science, Inc. (“IAS”) and Moat, Inc. (“Moat”) in order to support viewability measurement and other proprietary reporting that [IAS](https://integralads.com/capabilities/viewability/) and [Moat](https://moat.com/analytics) provide to their advertiser and publisher clients. You have the option to remove or disable this technology by following the opt-out instructions [below](#disableViewability).  
+
+If you do not remove or disable IAS's and/or Moat’s technology in accordance with these instructions, you agree that IAS's [privacy policy](https://integralads.com/privacy-policy/) and [license](https://integralads.com/sdk-license-agreement) and Moat’s [privacy policy](https://moat.com/privacy),  [terms](https://moat.com/terms), and [license](https://moat.com/sdklicense.txt), respectively, apply to your integration of these partners' technologies into your application.
 
 ## Download
 
@@ -24,7 +33,7 @@ The MoPub SDK is distributed as source code that you can include in your applica
 
   Includes everything you need to serve HTML and MRAID advertisements.  Third party ad networks and Native MoPub advertisements are not included.
 
-The current version of the SDK is 4.15.0
+The current version of the SDK is 4.18.0
 
 ## Integrate
 
@@ -36,12 +45,38 @@ More detailed class documentation is available in the repo under the `ClassDocum
 
 Please view the [changelog](https://github.com/mopub/mopub-ios-sdk/blob/master/CHANGELOG.md) for details.
 
+- **Features**
+    - iPhone X compatibility improvements including moving the close button into safe area.
+
 - **Bug Fixes**
-    - Updated Facebook Audience Network banner and interstitial impression tracking
-    - Allow taps to pass through the gradient overlays for rewarded videos
+	- Fixed a bug with unspecified rewarded video currencies.
+	- Fixed C99 compilation bug.
+
+- **Ad Network Mediation Updates**
+	- AdColony 3.2.1
+	- AdMob 7.24.1
+	- AOL 6.6.0 (formerly Millennial)
+	- Chartboost 7.0
+	- Facebook Audience Network 4.26.0
+	- Tapjoy 11.11.0
+	- Unity Ads 2.1.1
+	- Vungle 5.3.0
 
 See the [Getting Started Guide](https://github.com/mopub/mopub-ios-sdk/wiki/Getting-Started#app-transport-security-settings) for instructions on setting up ATS in your app.  
 
+### <a name="disableViewability"></a>Disabling Viewability Measurement
+There are a few options for opting out of viewability measurement: 
+##### Opting Out in a Manual Integration
+Before dragging the MoPubSDK folder into your Xcode project, simply delete the “Moat” folder to opt out of Moat or the “Avid” folder to opt out of IAS in MoPubSDK/Viewability/. If you would like to opt out of both, delete both folders.
+##### Opting Out in a CocoaPods Integration
+Including `pod 'mopub-ios-sdk'` in your Podfile will include both IAS and Moat SDKs, as well as the MoPub SDK. In order to opt out:
+- `pod 'mopub-ios-sdk/Avid'` will include the IAS SDK, but not the Moat SDK, as well as the MoPub SDK.
+- `pod 'mopub-ios-sdk/Moat'` will include the Moat SDK, but not the IAS SDK, as well as the MoPub SDK.
+- `pod 'mopub-ios-sdk/Core'` will only include the MoPub SDK, with viewability measurement totally disabled.
+
+Make sure to run `pod update` once your Podfile is set up to your preferences.
+##### Software Disable
+If you would like to opt out of viewability measurement but do not want to modify the MoPub SDK, a function is provided for your convenience. As soon as possible after calling `[[MoPub sharedInstance] start]`, call `[[MoPub sharedInstance] disableViewability:(vendors)]`. In place of “(vendors)”, `MPViewabilityOptionIAS` will disable IAS but leave Moat enabled, `MPViewabilityOptionMoat` will disable Moat but leave IAS enabled, and `MPViewabilityOptionAll` will disable all viewability measurement.
 
 ### IMPORTANT 4.0 UPGRADE INSTRUCTIONS
 
@@ -50,7 +85,7 @@ See our [upgrade document](https://github.com/mopub/mopub-ios-sdk/wiki/Upgrading
 
 ## Requirements
 
-iOS 7.0 and up
+iOS 8.0 and up
 
 ## License
 
