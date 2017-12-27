@@ -31,6 +31,8 @@
 @property (nonatomic, strong) NSMutableSet *clickTrackerURLs;
 @property (nonatomic, strong) NSMutableSet *impressionTrackerURLs;
 
+@property (nonatomic, weak) NSURLSessionTask *dataTask;
+
 @property (nonatomic, readonly, strong) id<MPNativeAdAdapter> adAdapter;
 @property (nonatomic, assign) BOOL hasTrackedImpression;
 @property (nonatomic, assign) BOOL hasTrackedClick;
@@ -143,10 +145,10 @@
 {
     NSMutableURLRequest *request = [[MPCoreInstanceProvider sharedProvider] buildConfiguredURLRequestWithURL:URL];
     request.cachePolicy = NSURLRequestReloadIgnoringCacheData;
-
-    NSURLConnection * connection = [[NSURLConnection alloc] initWithRequest:request delegate:nil startImmediately:NO];
-    [connection scheduleInRunLoop:[NSRunLoop currentRunLoop] forMode:NSRunLoopCommonModes];
-    [connection start];
+    
+    NSURLSession *session = [NSURLSession sharedSession];
+    self.dataTask = [session dataTaskWithRequest:request];
+    [self.dataTask resume];
 }
 
 #pragma mark - Internal

@@ -21,7 +21,7 @@ const NSTimeInterval kRequestTimeoutInterval = 10.0;
 
 @property (nonatomic, assign, readwrite) BOOL loading;
 @property (nonatomic, copy) NSURL *URL;
-@property (nonatomic, strong) NSURLConnection *connection;
+@property (nonatomic, strong) NSURLSessionDataTask *dataTask;
 @property (nonatomic, strong) NSMutableData *responseData;
 @property (nonatomic, strong) NSDictionary *responseHeaders;
 @property (nonatomic, strong) MPLogEvent *adRequestLatencyEvent;
@@ -37,7 +37,7 @@ const NSTimeInterval kRequestTimeoutInterval = 10.0;
 
 @synthesize delegate = _delegate;
 @synthesize URL = _URL;
-@synthesize connection = _connection;
+@synthesize dataTask = _dataTask;
 @synthesize responseData = _responseData;
 @synthesize responseHeaders = _responseHeaders;
 @synthesize loading = _loading;
@@ -53,8 +53,7 @@ const NSTimeInterval kRequestTimeoutInterval = 10.0;
 
 - (void)dealloc
 {
-    [self.connection cancel];
-
+    [self.dataTask cancel];
 }
 
 #pragma mark - Public
@@ -68,8 +67,12 @@ const NSTimeInterval kRequestTimeoutInterval = 10.0;
     self.adRequestLatencyEvent = [[MPLogEvent alloc] initWithEventCategory:MPLogEventCategoryRequests eventName:MPLogEventNameAdRequest];
     self.adRequestLatencyEvent.requestURI = URL.absoluteString;
 
-    self.connection = [NSURLConnection connectionWithRequest:[self adRequestForURL:URL]
-                                                    delegate:self];
+    NSURLRequest *request = [self adRequestForURL:URL];
+    NSURLSessionConfiguration *configuration = [NSURLSessionConfiguration defaultSessionConfiguration];
+    NSURLSession *session = [NSURLSession sessionWithConfiguration:configuration delegate:self delegateQueue:nil];
+    self.dataTask = [session dataTaskWithRequest:request];
+    [self.dataTask resume];
+
     self.loading = YES;
 }
 
@@ -77,57 +80,47 @@ const NSTimeInterval kRequestTimeoutInterval = 10.0;
 {
     self.adRequestLatencyEvent = nil;
     self.loading = NO;
-    [self.connection cancel];
-    self.connection = nil;
+    [self.dataTask cancel];
+    self.dataTask = nil;
     self.responseData = nil;
     self.responseHeaders = nil;
 }
 
-#pragma mark - NSURLConnection delegate (NSURLConnectionDataDelegate in iOS 5.0+)
-
-- (void)connection:(NSURLConnection *)connection didReceiveResponse:(NSURLResponse *)response
-{
+#pragma mark - Networking
+- (BOOL)networkConnectionDidReceiveResponse:(NSURLResponse * _Nonnull)response {
     if ([response respondsToSelector:@selector(statusCode)]) {
         NSInteger statusCode = [(NSHTTPURLResponse *)response statusCode];
         if (statusCode >= 400) {
             // Do not record a logging event if we failed to make a connection.
             self.adRequestLatencyEvent = nil;
-
-            [connection cancel];
             self.loading = NO;
             [self.delegate communicatorDidFailWithError:[self errorForStatusCode:statusCode]];
-            return;
+            return NO;
         }
     }
 
     self.responseData = [NSMutableData data];
     self.responseHeaders = [(NSHTTPURLResponse *)response allHeaderFields];
+    return YES;
 }
 
-- (void)connection:(NSURLConnection *)connection didReceiveData:(NSData *)data
-{
+- (void)networkConnectionDidReceiveData:(NSData * _Nonnull)data {
     [self.responseData appendData:data];
 }
 
-- (void)connection:(NSURLConnection *)connection didFailWithError:(NSError *)error
-{
-    // Do not record a logging event if we failed to make a connection.
+- (void)networkConnectionDidFailWithError:(NSError * _Nonnull)error {
     self.adRequestLatencyEvent = nil;
 
     self.loading = NO;
     [self.delegate communicatorDidFailWithError:error];
 }
 
-- (void)connectionDidFinishLoading:(NSURLConnection *)connection
-{
+- (void)networkConnectionDidFinishLoading {
     [self.adRequestLatencyEvent recordEndTime];
     self.adRequestLatencyEvent.requestStatusCode = 200;
 
-    MPAdConfiguration *configuration = [[MPAdConfiguration alloc]
-                                         initWithHeaders:self.responseHeaders
-                                         data:self.responseData];
-    MPAdConfigurationLogEventProperties *logEventProperties =
-        [[MPAdConfigurationLogEventProperties alloc] initWithConfiguration:configuration];
+    MPAdConfiguration *configuration = [[MPAdConfiguration alloc] initWithHeaders:self.responseHeaders data:self.responseData];
+    MPAdConfigurationLogEventProperties *logEventProperties = [[MPAdConfigurationLogEventProperties alloc] initWithConfiguration:configuration];
 
     // Do not record ads that are warming up.
     if (configuration.adUnitWarmingUp) {
@@ -139,6 +132,32 @@ const NSTimeInterval kRequestTimeoutInterval = 10.0;
 
     self.loading = NO;
     [self.delegate communicatorDidReceiveAdConfiguration:configuration];
+}
+
+#pragma mark - NSURLSessionTaskDelegate, NSURLSessionDataDelegate
+- (void)URLSession:(NSURLSession *)session dataTask:(NSURLSessionDataTask *)dataTask didReceiveResponse:(NSURLResponse *)response completionHandler:(void (^)(NSURLSessionResponseDisposition))completionHandler {
+    dispatch_async(dispatch_get_main_queue(), ^{
+        if (![self networkConnectionDidReceiveResponse:response]) {
+            completionHandler(NSURLSessionResponseCancel);
+        }
+        completionHandler(NSURLSessionResponseAllow);
+    });
+}
+
+- (void)URLSession:(NSURLSession *)session dataTask:(NSURLSessionDataTask *)dataTask didReceiveData:(NSData *)data {
+    dispatch_async(dispatch_get_main_queue(), ^{
+        [self networkConnectionDidReceiveData:data];
+    });
+}
+
+- (void)URLSession:(NSURLSession *)session task:(NSURLSessionTask *)task didCompleteWithError:(NSError *)error {
+    dispatch_async(dispatch_get_main_queue(), ^{
+        if (error) {
+            [self networkConnectionDidFailWithError:error];
+        } else {
+            [self networkConnectionDidFinishLoading];
+        }
+    });
 }
 
 #pragma mark - Internal

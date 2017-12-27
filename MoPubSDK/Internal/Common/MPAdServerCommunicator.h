@@ -14,7 +14,7 @@
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 
-@interface MPAdServerCommunicator : NSObject <NSURLConnectionDataDelegate>
+@interface MPAdServerCommunicator : NSObject <NSURLSessionTaskDelegate, NSURLSessionDataDelegate>
 
 @property (nonatomic, weak) id<MPAdServerCommunicatorDelegate> delegate;
 @property (nonatomic, assign, readonly) BOOL loading;
