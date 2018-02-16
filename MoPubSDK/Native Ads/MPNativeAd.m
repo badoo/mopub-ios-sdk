@@ -89,7 +89,11 @@
     
     if (adView) {
         if (!self.hasAttachedToView) {
-            [self willAttachToView:self.associatedView withAdContentViews:adView.subviews];
+            if ([adView respondsToSelector:@selector(clickableViews)]) {
+                [self willAttachToView:self.associatedView withAdContentViews:[adView performSelector:@selector(clickableViews)]];
+            } else {
+                [self willAttachToView:self.associatedView withAdContentViews:adView.subviews];
+            }
             self.hasAttachedToView = YES;
         }
         
