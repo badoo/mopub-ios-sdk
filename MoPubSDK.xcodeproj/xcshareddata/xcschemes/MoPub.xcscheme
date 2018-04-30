@@ -15,8 +15,8 @@
             <BuildableReference
                BuildableIdentifier = "primary"
                BlueprintIdentifier = "0B2238132028677E005ABF12"
-               BuildableName = "MoPubSDK_iOS.framework"
-               BlueprintName = "MoPubSDK-iOS"
+               BuildableName = "MoPub.framework"
+               BlueprintName = "MoPub"
                ReferencedContainer = "container:MoPubSDK.xcodeproj">
             </BuildableReference>
          </BuildActionEntry>
@@ -46,8 +46,8 @@
          <BuildableReference
             BuildableIdentifier = "primary"
             BlueprintIdentifier = "0B2238132028677E005ABF12"
-            BuildableName = "MoPubSDK_iOS.framework"
-            BlueprintName = "MoPubSDK-iOS"
+            BuildableName = "MoPub.framework"
+            BlueprintName = "MoPub"
             ReferencedContainer = "container:MoPubSDK.xcodeproj">
          </BuildableReference>
       </MacroExpansion>
@@ -64,8 +64,8 @@
          <BuildableReference
             BuildableIdentifier = "primary"
             BlueprintIdentifier = "0B2238132028677E005ABF12"
-            BuildableName = "MoPubSDK_iOS.framework"
-            BlueprintName = "MoPubSDK-iOS"
+            BuildableName = "MoPub.framework"
+            BlueprintName = "MoPub"
             ReferencedContainer = "container:MoPubSDK.xcodeproj">
          </BuildableReference>
       </MacroExpansion>

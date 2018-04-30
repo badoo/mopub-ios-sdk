@@ -1049,7 +1049,7 @@
 /* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
-		0B2238142028677E005ABF12 /* MoPubSDK_iOS.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = MoPubSDK_iOS.framework; sourceTree = BUILT_PRODUCTS_DIR; };
+		0B2238142028677E005ABF12 /* MoPub.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = MoPub.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		0B2238162028677E005ABF12 /* MoPubSDK_Carthage.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = MoPubSDK_Carthage.h; sourceTree = "<group>"; };
 		0B2238172028677E005ABF12 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		2A501D2C1F68ABDE00806177 /* MPNativeAdConfigValues.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = MPNativeAdConfigValues.h; sourceTree = "<group>"; };
@@ -2366,7 +2366,7 @@
 				570A005B19D6206800065388 /* MoPub.bundle */,
 				2AAA8DF91D95C77B006962E8 /* MoPubSDKTests.xctest */,
 				BCA00B971EF47A91006FF762 /* libMoPubSDK-ExcludeNative.a */,
-				0B2238142028677E005ABF12 /* MoPubSDK_iOS.framework */,
+				0B2238142028677E005ABF12 /* MoPub.framework */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -2918,9 +2918,9 @@
 /* End PBXHeadersBuildPhase section */
 
 /* Begin PBXNativeTarget section */
-		0B2238132028677E005ABF12 /* MoPubSDK-iOS */ = {
+		0B2238132028677E005ABF12 /* MoPub */ = {
 			isa = PBXNativeTarget;
-			buildConfigurationList = 0B22381B2028677E005ABF12 /* Build configuration list for PBXNativeTarget "MoPubSDK-iOS" */;
+			buildConfigurationList = 0B22381B2028677E005ABF12 /* Build configuration list for PBXNativeTarget "MoPub" */;
 			buildPhases = (
 				0B223A0720288C5B005ABF12 /* ShellScript */,
 				0B22380F2028677E005ABF12 /* Sources */,
@@ -2932,9 +2932,9 @@
 			);
 			dependencies = (
 			);
-			name = "MoPubSDK-iOS";
+			name = MoPub;
 			productName = "MoPubSDK-Carthage";
-			productReference = 0B2238142028677E005ABF12 /* MoPubSDK_iOS.framework */;
+			productReference = 0B2238142028677E005ABF12 /* MoPub.framework */;
 			productType = "com.apple.product-type.framework";
 		};
 		2AAA8DF81D95C77B006962E8 /* MoPubSDKTests */ = {
@@ -3085,7 +3085,7 @@
 				AEF1F32716EF9AD700273462 /* MoPubSDK+Networks */,
 				570A005A19D6206800065388 /* MoPubResources */,
 				2AAA8DF81D95C77B006962E8 /* MoPubSDKTests */,
-				0B2238132028677E005ABF12 /* MoPubSDK-iOS */,
+				0B2238132028677E005ABF12 /* MoPub */,
 			);
 		};
 /* End PBXProject section */
@@ -4631,7 +4631,7 @@
 /* End XCBuildConfiguration section */
 
 /* Begin XCConfigurationList section */
-		0B22381B2028677E005ABF12 /* Build configuration list for PBXNativeTarget "MoPubSDK-iOS" */ = {
+		0B22381B2028677E005ABF12 /* Build configuration list for PBXNativeTarget "MoPub" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
 				0B2238192028677E005ABF12 /* Debug */,
