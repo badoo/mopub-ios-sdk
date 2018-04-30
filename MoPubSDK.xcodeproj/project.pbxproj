@@ -194,7 +194,7 @@
 		0B22395320286A60005ABF12 /* MRAID.bundle in Resources */ = {isa = PBXBuildFile; fileRef = 57214DE61A66FB4C0075BF95 /* MRAID.bundle */; };
 		0B22395420286A66005ABF12 /* MPAdBrowserController.xib in Resources */ = {isa = PBXBuildFile; fileRef = 57A1A37E1A780A55006A08DA /* MPAdBrowserController.xib */; };
 		0B22395520286A6B005ABF12 /* MPCountdownTimer.html in Resources */ = {isa = PBXBuildFile; fileRef = BCF0FA8A1DC9512900ADFE4F /* MPCountdownTimer.html */; };
-		0B223ADE20289661005ABF12 /* MoPubSDK_Carthage.h in Headers */ = {isa = PBXBuildFile; fileRef = 0B2238162028677E005ABF12 /* MoPubSDK_Carthage.h */; settings = {ATTRIBUTES = (Public, ); }; };
+		0B223ADE20289661005ABF12 /* MoPub.h in Headers */ = {isa = PBXBuildFile; fileRef = 0B2238162028677E005ABF12 /* MoPub.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		0B223ADF20289670005ABF12 /* MPNativeAdRenderingImageLoader.h in Headers */ = {isa = PBXBuildFile; fileRef = 5731A7AA1BBDFE8D00579ACE /* MPNativeAdRenderingImageLoader.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		0B223AE020289685005ABF12 /* MOPUBNativeVideoAdRendererSettings.h in Headers */ = {isa = PBXBuildFile; fileRef = B294E0651BACDB1E00909531 /* MOPUBNativeVideoAdRendererSettings.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		0B223AE120289685005ABF12 /* MOPUBNativeVideoAdRenderer.h in Headers */ = {isa = PBXBuildFile; fileRef = B2E3F53B1BAB8529000BB32D /* MOPUBNativeVideoAdRenderer.h */; settings = {ATTRIBUTES = (Public, ); }; };
@@ -1050,7 +1050,7 @@
 
 /* Begin PBXFileReference section */
 		0B2238142028677E005ABF12 /* MoPub.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = MoPub.framework; sourceTree = BUILT_PRODUCTS_DIR; };
-		0B2238162028677E005ABF12 /* MoPubSDK_Carthage.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = MoPubSDK_Carthage.h; sourceTree = "<group>"; };
+		0B2238162028677E005ABF12 /* MoPub.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = MoPub.h; sourceTree = "<group>"; };
 		0B2238172028677E005ABF12 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		2A501D2C1F68ABDE00806177 /* MPNativeAdConfigValues.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = MPNativeAdConfigValues.h; sourceTree = "<group>"; };
 		2A501D2D1F68ABDE00806177 /* MPNativeAdConfigValues.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = MPNativeAdConfigValues.m; sourceTree = "<group>"; };
@@ -1759,7 +1759,7 @@
 		0B2238152028677E005ABF12 /* MoPubSDK-Carthage */ = {
 			isa = PBXGroup;
 			children = (
-				0B2238162028677E005ABF12 /* MoPubSDK_Carthage.h */,
+				0B2238162028677E005ABF12 /* MoPub.h */,
 				0B2238172028677E005ABF12 /* Info.plist */,
 			);
 			path = "MoPubSDK-Carthage";
@@ -2897,7 +2897,7 @@
 				0B223ADF20289670005ABF12 /* MPNativeAdRenderingImageLoader.h in Headers */,
 				0B49ECDA20289EE5003BB50E /* MPLogLevel.h in Headers */,
 				0B70352A20289C94002C6BE8 /* MPInstanceProvider.h in Headers */,
-				0B223ADE20289661005ABF12 /* MoPubSDK_Carthage.h in Headers */,
+				0B223ADE20289661005ABF12 /* MoPub.h in Headers */,
 				0B49ED022028A5AC003BB50E /* MPMoPubNativeAdAdapter.h in Headers */,
 				0B49ED0B2028A650003BB50E /* MPAdConfiguration.h in Headers */,
 				0B49ED0A2028A639003BB50E /* MPAdServerCommunicator.h in Headers */,
