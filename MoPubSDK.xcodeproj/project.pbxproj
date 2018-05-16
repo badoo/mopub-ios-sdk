@@ -258,6 +258,7 @@
 		0BC7D95620289DBF00EC7F27 /* MPCoreInstanceProvider.h in Headers */ = {isa = PBXBuildFile; fileRef = 4A5968C018CFE71200D0D1AD /* MPCoreInstanceProvider.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		0BC7D95720289DD300EC7F27 /* MPGlobal.h in Headers */ = {isa = PBXBuildFile; fileRef = AEF9D51F171CA895005AAA5A /* MPGlobal.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		1903AF3020ACCBB2002B3CC8 /* MoPub.h in Headers */ = {isa = PBXBuildFile; fileRef = A71DB8111A2FE68300D3B229 /* MoPub.h */; settings = {ATTRIBUTES = (Public, ); }; };
+		1903AF3420ACD196002B3CC8 /* MPViewabilityTracker.h in Headers */ = {isa = PBXBuildFile; fileRef = 2A7F96DA1E66411700114565 /* MPViewabilityTracker.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		2A501D2E1F68ABDE00806177 /* MPNativeAdConfigValues.m in Sources */ = {isa = PBXBuildFile; fileRef = 2A501D2D1F68ABDE00806177 /* MPNativeAdConfigValues.m */; };
 		2A501D2F1F68ABDE00806177 /* MPNativeAdConfigValues.m in Sources */ = {isa = PBXBuildFile; fileRef = 2A501D2D1F68ABDE00806177 /* MPNativeAdConfigValues.m */; };
 		2A501D301F68ABDE00806177 /* MPNativeAdConfigValues.m in Sources */ = {isa = PBXBuildFile; fileRef = 2A501D2D1F68ABDE00806177 /* MPNativeAdConfigValues.m */; };
@@ -2896,6 +2897,7 @@
 				0B223AE120289685005ABF12 /* MOPUBNativeVideoAdRenderer.h in Headers */,
 				0B49ECF12028A2A9003BB50E /* MPNativeView.h in Headers */,
 				0BC7D95720289DD300EC7F27 /* MPGlobal.h in Headers */,
+				1903AF3420ACD196002B3CC8 /* MPViewabilityTracker.h in Headers */,
 				0B49ECE92028A118003BB50E /* MPNativeAdUtils.h in Headers */,
 				0B223ADF20289670005ABF12 /* MPNativeAdRenderingImageLoader.h in Headers */,
 				0B49ECDA20289EE5003BB50E /* MPLogLevel.h in Headers */,
