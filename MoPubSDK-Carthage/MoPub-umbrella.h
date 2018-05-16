@@ -17,6 +17,7 @@ FOUNDATION_EXPORT const unsigned char MoPubSDK_CarthageVersionString[];
 
 //#import <MoPubSDK_Carthage/MoPubSDK_Carthage.h>
 
+#import <MoPub/MoPub.h>
 #import <MoPub/MPAdConversionTracker.h>
 #import <MoPub/MPAdView.h>
 #import <MoPub/MPBannerCustomEvent.h>

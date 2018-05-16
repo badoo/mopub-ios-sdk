@@ -194,7 +194,7 @@
 		0B22395320286A60005ABF12 /* MRAID.bundle in Resources */ = {isa = PBXBuildFile; fileRef = 57214DE61A66FB4C0075BF95 /* MRAID.bundle */; };
 		0B22395420286A66005ABF12 /* MPAdBrowserController.xib in Resources */ = {isa = PBXBuildFile; fileRef = 57A1A37E1A780A55006A08DA /* MPAdBrowserController.xib */; };
 		0B22395520286A6B005ABF12 /* MPCountdownTimer.html in Resources */ = {isa = PBXBuildFile; fileRef = BCF0FA8A1DC9512900ADFE4F /* MPCountdownTimer.html */; };
-		0B223ADE20289661005ABF12 /* MoPub.h in Headers */ = {isa = PBXBuildFile; fileRef = 0B2238162028677E005ABF12 /* MoPub.h */; settings = {ATTRIBUTES = (Public, ); }; };
+		0B223ADE20289661005ABF12 /* MoPub-umbrella.h in Headers */ = {isa = PBXBuildFile; fileRef = 0B2238162028677E005ABF12 /* MoPub-umbrella.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		0B223ADF20289670005ABF12 /* MPNativeAdRenderingImageLoader.h in Headers */ = {isa = PBXBuildFile; fileRef = 5731A7AA1BBDFE8D00579ACE /* MPNativeAdRenderingImageLoader.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		0B223AE020289685005ABF12 /* MOPUBNativeVideoAdRendererSettings.h in Headers */ = {isa = PBXBuildFile; fileRef = B294E0651BACDB1E00909531 /* MOPUBNativeVideoAdRendererSettings.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		0B223AE120289685005ABF12 /* MOPUBNativeVideoAdRenderer.h in Headers */ = {isa = PBXBuildFile; fileRef = B2E3F53B1BAB8529000BB32D /* MOPUBNativeVideoAdRenderer.h */; settings = {ATTRIBUTES = (Public, ); }; };
@@ -257,6 +257,7 @@
 		0BC7D94E20289D1B00EC7F27 /* MPLogging.h in Headers */ = {isa = PBXBuildFile; fileRef = AEF9D523171CA895005AAA5A /* MPLogging.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		0BC7D95620289DBF00EC7F27 /* MPCoreInstanceProvider.h in Headers */ = {isa = PBXBuildFile; fileRef = 4A5968C018CFE71200D0D1AD /* MPCoreInstanceProvider.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		0BC7D95720289DD300EC7F27 /* MPGlobal.h in Headers */ = {isa = PBXBuildFile; fileRef = AEF9D51F171CA895005AAA5A /* MPGlobal.h */; settings = {ATTRIBUTES = (Public, ); }; };
+		1903AF3020ACCBB2002B3CC8 /* MoPub.h in Headers */ = {isa = PBXBuildFile; fileRef = A71DB8111A2FE68300D3B229 /* MoPub.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		2A501D2E1F68ABDE00806177 /* MPNativeAdConfigValues.m in Sources */ = {isa = PBXBuildFile; fileRef = 2A501D2D1F68ABDE00806177 /* MPNativeAdConfigValues.m */; };
 		2A501D2F1F68ABDE00806177 /* MPNativeAdConfigValues.m in Sources */ = {isa = PBXBuildFile; fileRef = 2A501D2D1F68ABDE00806177 /* MPNativeAdConfigValues.m */; };
 		2A501D301F68ABDE00806177 /* MPNativeAdConfigValues.m in Sources */ = {isa = PBXBuildFile; fileRef = 2A501D2D1F68ABDE00806177 /* MPNativeAdConfigValues.m */; };
@@ -1050,8 +1051,9 @@
 
 /* Begin PBXFileReference section */
 		0B2238142028677E005ABF12 /* MoPub.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = MoPub.framework; sourceTree = BUILT_PRODUCTS_DIR; };
-		0B2238162028677E005ABF12 /* MoPub.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = MoPub.h; sourceTree = "<group>"; };
+		0B2238162028677E005ABF12 /* MoPub-umbrella.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "MoPub-umbrella.h"; sourceTree = "<group>"; };
 		0B2238172028677E005ABF12 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
+		1903AF3120ACCC10002B3CC8 /* module.modulemap */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = "sourcecode.module-map"; path = module.modulemap; sourceTree = "<group>"; };
 		2A501D2C1F68ABDE00806177 /* MPNativeAdConfigValues.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = MPNativeAdConfigValues.h; sourceTree = "<group>"; };
 		2A501D2D1F68ABDE00806177 /* MPNativeAdConfigValues.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = MPNativeAdConfigValues.m; sourceTree = "<group>"; };
 		2A501D3D1F68AD5100806177 /* MPNativeAdConfigValues+Internal.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "MPNativeAdConfigValues+Internal.h"; sourceTree = "<group>"; };
@@ -1759,7 +1761,8 @@
 		0B2238152028677E005ABF12 /* MoPubSDK-Carthage */ = {
 			isa = PBXGroup;
 			children = (
-				0B2238162028677E005ABF12 /* MoPub.h */,
+				1903AF3120ACCC10002B3CC8 /* module.modulemap */,
+				0B2238162028677E005ABF12 /* MoPub-umbrella.h */,
 				0B2238172028677E005ABF12 /* Info.plist */,
 			);
 			path = "MoPubSDK-Carthage";
@@ -2897,7 +2900,7 @@
 				0B223ADF20289670005ABF12 /* MPNativeAdRenderingImageLoader.h in Headers */,
 				0B49ECDA20289EE5003BB50E /* MPLogLevel.h in Headers */,
 				0B70352A20289C94002C6BE8 /* MPInstanceProvider.h in Headers */,
-				0B223ADE20289661005ABF12 /* MoPub.h in Headers */,
+				0B223ADE20289661005ABF12 /* MoPub-umbrella.h in Headers */,
 				0B49ED022028A5AC003BB50E /* MPMoPubNativeAdAdapter.h in Headers */,
 				0B49ED0B2028A650003BB50E /* MPAdConfiguration.h in Headers */,
 				0B49ED0A2028A639003BB50E /* MPAdServerCommunicator.h in Headers */,
@@ -2912,6 +2915,7 @@
 				0B49ED132028A897003BB50E /* MPAdDestinationDisplayAgent.h in Headers */,
 				0B49ED1B2028A95D003BB50E /* MPNativeCache.h in Headers */,
 				0B49ED1A2028A945003BB50E /* MPNativeAdRendererImageHandler.h in Headers */,
+				1903AF3020ACCBB2002B3CC8 /* MoPub.h in Headers */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -4185,6 +4189,7 @@
 				INSTALL_PATH = "$(LOCAL_LIBRARY_DIR)/Frameworks";
 				IPHONEOS_DEPLOYMENT_TARGET = 10.0;
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks @loader_path/Frameworks";
+				MODULEMAP_FILE = "MoPubSDK-Carthage/module.modulemap";
 				MTL_ENABLE_DEBUG_INFO = YES;
 				ONLY_ACTIVE_ARCH = NO;
 				PRODUCT_BUNDLE_IDENTIFIER = "com.mopub.MoPubSDK-Carthage";
@@ -4235,6 +4240,7 @@
 				INSTALL_PATH = "$(LOCAL_LIBRARY_DIR)/Frameworks";
 				IPHONEOS_DEPLOYMENT_TARGET = 10.0;
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks @loader_path/Frameworks";
+				MODULEMAP_FILE = "MoPubSDK-Carthage/module.modulemap";
 				MTL_ENABLE_DEBUG_INFO = NO;
 				PRODUCT_BUNDLE_IDENTIFIER = "com.mopub.MoPubSDK-Carthage";
 				PRODUCT_NAME = "$(TARGET_NAME:c99extidentifier)";
