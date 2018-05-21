@@ -313,7 +313,7 @@
 		2AF032162016B78800909F29 /* MPNativeAdSource.h in Headers */ = {isa = PBXBuildFile; fileRef = A7A9AC2119745B4E00C26A7E /* MPNativeAdSource.h */; };
 		2AF032172016B78800909F29 /* MPNativeAdSourceDelegate.h in Headers */ = {isa = PBXBuildFile; fileRef = A7A9AC2619745B9100C26A7E /* MPNativeAdSourceDelegate.h */; };
 		2AF032182016B78800909F29 /* MPNativeAdSourceQueue.h in Headers */ = {isa = PBXBuildFile; fileRef = 4AAB5335197ED97D00A73C98 /* MPNativeAdSourceQueue.h */; };
-		2AF032192016B78800909F29 /* MPNativeAdUtils.h in Headers */ = {isa = PBXBuildFile; fileRef = 46EDEE6519832A3B00241385 /* MPNativeAdUtils.h */; };
+		2AF032192016B78800909F29 /* MPNativeAdUtils.h in Headers */ = {isa = PBXBuildFile; fileRef = 46EDEE6519832A3B00241385 /* MPNativeAdUtils.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		2AF0321A2016B78800909F29 /* MPNativeCache.h in Headers */ = {isa = PBXBuildFile; fileRef = 4AE42F9B18D8FD2100DE4BF6 /* MPNativeCache.h */; };
 		2AF0321B2016B78800909F29 /* MPNativePositionResponseDeserializer.h in Headers */ = {isa = PBXBuildFile; fileRef = A72F913819C0D4C700A5601B /* MPNativePositionResponseDeserializer.h */; };
 		2AF0321C2016B78800909F29 /* MPNativePositionSource.h in Headers */ = {isa = PBXBuildFile; fileRef = A72F90D919B7B1FF00A5601B /* MPNativePositionSource.h */; };
@@ -2282,6 +2282,7 @@
 			isa = PBXHeadersBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				2AF032192016B78800909F29 /* MPNativeAdUtils.h in Headers */,
 				2AF030C92016731800909F29 /* MoPub.h in Headers */,
 				2AF031CD2016B74400909F29 /* MOPUBNativeVideoAdRendererSettings.h in Headers */,
 				2AF031CE2016B74400909F29 /* MOPUBNativeVideoAdRenderer.h in Headers */,
@@ -2365,7 +2366,6 @@
 				2AF032162016B78800909F29 /* MPNativeAdSource.h in Headers */,
 				2AF032172016B78800909F29 /* MPNativeAdSourceDelegate.h in Headers */,
 				2AF032182016B78800909F29 /* MPNativeAdSourceQueue.h in Headers */,
-				2AF032192016B78800909F29 /* MPNativeAdUtils.h in Headers */,
 				2AF0321A2016B78800909F29 /* MPNativeCache.h in Headers */,
 				2AF0321B2016B78800909F29 /* MPNativePositionResponseDeserializer.h in Headers */,
 				2AF0321C2016B78800909F29 /* MPNativePositionSource.h in Headers */,

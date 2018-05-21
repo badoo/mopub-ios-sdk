@@ -6,6 +6,7 @@
 //
 
 #import "MPConstants.h"
+#import "MoPub-Bridging-Header.h"
 
 #import "MOPUBDisplayAgentType.h"
 #import "MPAdConversionTracker.h"
@@ -15,6 +16,7 @@
 #import "MPBannerCustomEventDelegate.h"
 #import "MPBool.h"
 #import "MPConsentChangedNotification.h"
+#import "MPConsentChangedReason.h"
 #import "MPConsentError.h"
 #import "MPConsentStatus.h"
 #import "MPGlobal.h"
@@ -40,6 +42,7 @@
 #import "MPNativeAd.h"
 #import "MPNativeAdAdapter.h"
 #import "MPNativeAdConstants.h"
+#import "MPNativeAdUtils.h"
 #import "MPNativeCustomEvent.h"
 #import "MPNativeCustomEventDelegate.h"
 #import "MPNativeAdError.h"

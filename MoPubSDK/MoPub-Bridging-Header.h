@@ -33,7 +33,6 @@
 #import "MPNativeAdRendererSettings.h"
 #import "MPNativeAdRenderer.h"
 #import "MPStaticNativeAdRenderer.h"
-#import "MPGoogleAdMobNativeRenderer.h"
 #import "MOPUBNativeVideoAdRendererSettings.h"
 #import "MOPUBNativeVideoAdRenderer.h"
 #import "MPNativeAdRenderingImageLoader.h"
