@@ -413,8 +413,8 @@
 		2AF032832016B78800909F29 /* MPVASTTrackingEvent.h in Headers */ = {isa = PBXBuildFile; fileRef = A7A422951B603CB400024A3A /* MPVASTTrackingEvent.h */; };
 		2AF032842016B78800909F29 /* MPVASTWrapper.h in Headers */ = {isa = PBXBuildFile; fileRef = A776A5331B5DDF9900095706 /* MPVASTWrapper.h */; };
 		2AF032852016B78800909F29 /* MPVASTTracking.h in Headers */ = {isa = PBXBuildFile; fileRef = 873B37ED1BA8CBE000D57423 /* MPVASTTracking.h */; };
-		2AF032862016B78800909F29 /* MPCoreInstanceProvider.h in Headers */ = {isa = PBXBuildFile; fileRef = 4A5968C018CFE71200D0D1AD /* MPCoreInstanceProvider.h */; };
-		2AF032872016B78800909F29 /* MPInstanceProvider.h in Headers */ = {isa = PBXBuildFile; fileRef = AEF9D4FE171CA895005AAA5A /* MPInstanceProvider.h */; };
+		2AF032862016B78800909F29 /* MPCoreInstanceProvider.h in Headers */ = {isa = PBXBuildFile; fileRef = 4A5968C018CFE71200D0D1AD /* MPCoreInstanceProvider.h */; settings = {ATTRIBUTES = (Public, ); }; };
+		2AF032872016B78800909F29 /* MPInstanceProvider.h in Headers */ = {isa = PBXBuildFile; fileRef = AEF9D4FE171CA895005AAA5A /* MPInstanceProvider.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		2AF032892016B78800909F29 /* MPViewabilityAdapter.h in Headers */ = {isa = PBXBuildFile; fileRef = BC1A914F1F95687D00D4895B /* MPViewabilityAdapter.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		2AF0328A2016B78800909F29 /* MPViewabilityTracker.h in Headers */ = {isa = PBXBuildFile; fileRef = 2A7F96DA1E66411700114565 /* MPViewabilityTracker.h */; };
 		2AF0328B2016B78800909F29 /* MPWebView+Viewability.h in Headers */ = {isa = PBXBuildFile; fileRef = 2A80EAE81E6779F500D7FDD9 /* MPWebView+Viewability.h */; };
@@ -2282,6 +2282,8 @@
 			isa = PBXHeadersBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				2AF032862016B78800909F29 /* MPCoreInstanceProvider.h in Headers */,
+				2AF032872016B78800909F29 /* MPInstanceProvider.h in Headers */,
 				2AF032192016B78800909F29 /* MPNativeAdUtils.h in Headers */,
 				2AF030C92016731800909F29 /* MoPub.h in Headers */,
 				2AF031CD2016B74400909F29 /* MOPUBNativeVideoAdRendererSettings.h in Headers */,
@@ -2477,8 +2479,6 @@
 				2AF032832016B78800909F29 /* MPVASTTrackingEvent.h in Headers */,
 				2AF032842016B78800909F29 /* MPVASTWrapper.h in Headers */,
 				2AF032852016B78800909F29 /* MPVASTTracking.h in Headers */,
-				2AF032862016B78800909F29 /* MPCoreInstanceProvider.h in Headers */,
-				2AF032872016B78800909F29 /* MPInstanceProvider.h in Headers */,
 				2AF0328A2016B78800909F29 /* MPViewabilityTracker.h in Headers */,
 				2AF0328B2016B78800909F29 /* MPWebView+Viewability.h in Headers */,
 			);
