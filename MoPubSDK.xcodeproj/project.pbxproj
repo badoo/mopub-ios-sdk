@@ -335,7 +335,7 @@
 		2AF032332016B78800909F29 /* MPAPIEndpoints.h in Headers */ = {isa = PBXBuildFile; fileRef = A778C8A61ABB4ED4003F427D /* MPAPIEndpoints.h */; };
 		2AF032342016B78800909F29 /* MPClosableView.h in Headers */ = {isa = PBXBuildFile; fileRef = 57D6485B1A0DE39500433CFE /* MPClosableView.h */; };
 		2AF032352016B78800909F29 /* MPCountdownTimerView.h in Headers */ = {isa = PBXBuildFile; fileRef = BCF0FA971DC9536B00ADFE4F /* MPCountdownTimerView.h */; };
-		2AF032362016B78800909F29 /* MPEnhancedDeeplinkRequest.h in Headers */ = {isa = PBXBuildFile; fileRef = A7BB73E11B34D79B00B3161B /* MPEnhancedDeeplinkRequest.h */; };
+		2AF032362016B78800909F29 /* MPEnhancedDeeplinkRequest.h in Headers */ = {isa = PBXBuildFile; fileRef = A7BB73E11B34D79B00B3161B /* MPEnhancedDeeplinkRequest.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		2AF032392016B78800909F29 /* MPLastResortDelegate.h in Headers */ = {isa = PBXBuildFile; fileRef = AE14FA4A1774D95D00ABF744 /* MPLastResortDelegate.h */; };
 		2AF0323A2016B78800909F29 /* MPProgressOverlayView.h in Headers */ = {isa = PBXBuildFile; fileRef = AEF9D4E2171CA895005AAA5A /* MPProgressOverlayView.h */; };
 		2AF0323B2016B78800909F29 /* MPRealTimeTimer.h in Headers */ = {isa = PBXBuildFile; fileRef = 2AFF1B781EC2795500495994 /* MPRealTimeTimer.h */; };
@@ -2282,6 +2282,7 @@
 			isa = PBXHeadersBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				2AF032362016B78800909F29 /* MPEnhancedDeeplinkRequest.h in Headers */,
 				2AF0323C2016B78800909F29 /* MPURLActionInfo.h in Headers */,
 				2AF0323D2016B78800909F29 /* MPURLResolver.h in Headers */,
 				2AF032862016B78800909F29 /* MPCoreInstanceProvider.h in Headers */,
@@ -2392,7 +2393,6 @@
 				2AF032332016B78800909F29 /* MPAPIEndpoints.h in Headers */,
 				2AF032342016B78800909F29 /* MPClosableView.h in Headers */,
 				2AF032352016B78800909F29 /* MPCountdownTimerView.h in Headers */,
-				2AF032362016B78800909F29 /* MPEnhancedDeeplinkRequest.h in Headers */,
 				2AF032392016B78800909F29 /* MPLastResortDelegate.h in Headers */,
 				2AF0323A2016B78800909F29 /* MPProgressOverlayView.h in Headers */,
 				2AF0323B2016B78800909F29 /* MPRealTimeTimer.h in Headers */,
