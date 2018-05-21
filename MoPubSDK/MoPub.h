@@ -19,8 +19,10 @@
 #import "MPConsentChangedReason.h"
 #import "MPConsentError.h"
 #import "MPConsentStatus.h"
+#import "MPCoreInstanceProvider.h"
 #import "MPGlobal.h"
 #import "MPIdentityProvider.h"
+#import "MPInstanceProvider.h"
 #import "MPInterstitialAdController.h"
 #import "MPInterstitialCustomEvent.h"
 #import "MPInterstitialCustomEventDelegate.h"
@@ -37,6 +39,7 @@
 #import "MPRewardedVideoError.h"
 #import "MPViewabilityAdapter.h"
 #import "MPViewabilityOption.h"
+#import "MPURLResolver.h"
 
 #if MP_HAS_NATIVE_PACKAGE
 #import "MPNativeAd.h"

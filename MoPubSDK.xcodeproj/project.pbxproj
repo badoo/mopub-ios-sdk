@@ -339,8 +339,8 @@
 		2AF032392016B78800909F29 /* MPLastResortDelegate.h in Headers */ = {isa = PBXBuildFile; fileRef = AE14FA4A1774D95D00ABF744 /* MPLastResortDelegate.h */; };
 		2AF0323A2016B78800909F29 /* MPProgressOverlayView.h in Headers */ = {isa = PBXBuildFile; fileRef = AEF9D4E2171CA895005AAA5A /* MPProgressOverlayView.h */; };
 		2AF0323B2016B78800909F29 /* MPRealTimeTimer.h in Headers */ = {isa = PBXBuildFile; fileRef = 2AFF1B781EC2795500495994 /* MPRealTimeTimer.h */; };
-		2AF0323C2016B78800909F29 /* MPURLActionInfo.h in Headers */ = {isa = PBXBuildFile; fileRef = A7BB73CC1B32240900B3161B /* MPURLActionInfo.h */; };
-		2AF0323D2016B78800909F29 /* MPURLResolver.h in Headers */ = {isa = PBXBuildFile; fileRef = AEF9D4E4171CA895005AAA5A /* MPURLResolver.h */; };
+		2AF0323C2016B78800909F29 /* MPURLActionInfo.h in Headers */ = {isa = PBXBuildFile; fileRef = A7BB73CC1B32240900B3161B /* MPURLActionInfo.h */; settings = {ATTRIBUTES = (Public, ); }; };
+		2AF0323D2016B78800909F29 /* MPURLResolver.h in Headers */ = {isa = PBXBuildFile; fileRef = AEF9D4E4171CA895005AAA5A /* MPURLResolver.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		2AF0323E2016B78800909F29 /* MPVideoConfig.h in Headers */ = {isa = PBXBuildFile; fileRef = A72210301B792C6F0099DCF6 /* MPVideoConfig.h */; };
 		2AF0323F2016B78800909F29 /* MPXMLParser.h in Headers */ = {isa = PBXBuildFile; fileRef = A776A5081B5DDE0A00095706 /* MPXMLParser.h */; };
 		2AF032402016B78800909F29 /* MPBannerCustomEvent+Internal.h in Headers */ = {isa = PBXBuildFile; fileRef = B2950B3E1FBE5E5B00C40BF5 /* MPBannerCustomEvent+Internal.h */; };
@@ -2282,6 +2282,8 @@
 			isa = PBXHeadersBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				2AF0323C2016B78800909F29 /* MPURLActionInfo.h in Headers */,
+				2AF0323D2016B78800909F29 /* MPURLResolver.h in Headers */,
 				2AF032862016B78800909F29 /* MPCoreInstanceProvider.h in Headers */,
 				2AF032872016B78800909F29 /* MPInstanceProvider.h in Headers */,
 				2AF032192016B78800909F29 /* MPNativeAdUtils.h in Headers */,
@@ -2394,8 +2396,6 @@
 				2AF032392016B78800909F29 /* MPLastResortDelegate.h in Headers */,
 				2AF0323A2016B78800909F29 /* MPProgressOverlayView.h in Headers */,
 				2AF0323B2016B78800909F29 /* MPRealTimeTimer.h in Headers */,
-				2AF0323C2016B78800909F29 /* MPURLActionInfo.h in Headers */,
-				2AF0323D2016B78800909F29 /* MPURLResolver.h in Headers */,
 				2AF0323E2016B78800909F29 /* MPVideoConfig.h in Headers */,
 				2AF0323F2016B78800909F29 /* MPXMLParser.h in Headers */,
 				2AF032402016B78800909F29 /* MPBannerCustomEvent+Internal.h in Headers */,
