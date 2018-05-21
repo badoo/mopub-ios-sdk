@@ -64,7 +64,7 @@
     if (self) {
         _frame = frame;
 
-        self.destinationDisplayAgent = [[MPCoreInstanceProvider sharedProvider] buildMPAdDestinationDisplayAgentWithDelegate:self];
+        self.destinationDisplayAgent = [MPAdDestinationDisplayAgent agentWithDelegate:self];
         self.delegate = delegate;
         self.shouldHandleRequests = YES;
         self.adAlertManager = [[MPCoreInstanceProvider sharedProvider] buildMPAdAlertManagerWithDelegate:self];
@@ -125,6 +125,7 @@
         self.view = nil;
     }
     self.view = [[MPWebView alloc] initWithFrame:self.frame];
+    self.view.shouldConformToSafeArea = [self isInterstitialAd];
     self.view.delegate = self;
     [self.view addGestureRecognizer:self.userInteractionRecognizer];
 
@@ -276,8 +277,6 @@
 {
     if ([URL mp_hasTelephoneScheme] || [URL mp_hasTelephonePromptScheme]) {
         return YES;
-    } else if (!(self.configuration.shouldInterceptLinks)) {
-        return NO;
     } else if (navigationType == UIWebViewNavigationTypeLinkClicked) {
         return YES;
     } else if (navigationType == UIWebViewNavigationTypeOther && self.userInteractedWithWebView) {

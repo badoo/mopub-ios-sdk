@@ -290,7 +290,6 @@
 				57A22B9F1AD317000064A85B /* Frameworks */,
 				57A22BA01AD317000064A85B /* Resources */,
 				81A576604598392C57E13F4B /* [CP] Embed Pods Frameworks */,
-				40A932E326A1CB95C51009DC /* [CP] Copy Pods Resources */,
 			);
 			buildRules = (
 			);
@@ -309,7 +308,6 @@
 				57CE73F21AD6F86D0003830D /* Sources */,
 				57CE74971AD6F86D0003830D /* Frameworks */,
 				57CE74AB1AD6F86D0003830D /* Resources */,
-				715572FB843DE335F70656D3 /* [CP] Embed Pods Frameworks */,
 				F89F88211599F98F730C1FC8 /* [CP] Copy Pods Resources */,
 			);
 			buildRules = (
@@ -386,59 +384,6 @@
 /* End PBXResourcesBuildPhase section */
 
 /* Begin PBXShellScriptBuildPhase section */
-		40A932E326A1CB95C51009DC /* [CP] Copy Pods Resources */ = {
-			isa = PBXShellScriptBuildPhase;
-			buildActionMask = 2147483647;
-			files = (
-			);
-			inputPaths = (
-				"${SRCROOT}/Pods/Target Support Files/Pods-MoPubSwiftSampleApp/Pods-MoPubSwiftSampleApp-resources.sh",
-				"${PODS_ROOT}/../../../MoPubSDK/Internal/Common/MPAdBrowserController.xib",
-				"${PODS_ROOT}/../../../MoPubSDK/Resources/MPCloseBtn.png",
-				"${PODS_ROOT}/../../../MoPubSDK/Resources/MPCloseBtn@2x.png",
-				"${PODS_ROOT}/../../../MoPubSDK/Resources/MPCloseBtn@3x.png",
-				"${PODS_ROOT}/../../../MoPubSDK/Resources/MPCloseButtonX.png",
-				"${PODS_ROOT}/../../../MoPubSDK/Resources/MPCloseButtonX@2x.png",
-				"${PODS_ROOT}/../../../MoPubSDK/Resources/MPCloseButtonX@3x.png",
-				"${PODS_ROOT}/../../../MoPubSDK/Resources/MPCountdownTimer.html",
-				"${PODS_ROOT}/../../../MoPubSDK/Resources/MPDAAIcon.png",
-				"${PODS_ROOT}/../../../MoPubSDK/Resources/MPDAAIcon@2x.png",
-				"${PODS_ROOT}/../../../MoPubSDK/Resources/MPDAAIcon@3x.png",
-				"${PODS_ROOT}/../../../MoPubSDK/Resources/MPMutedBtn.png",
-				"${PODS_ROOT}/../../../MoPubSDK/Resources/MPMutedBtn@2x.png",
-				"${PODS_ROOT}/../../../MoPubSDK/Resources/MPMutedBtn@3x.png",
-				"${PODS_ROOT}/../../../MoPubSDK/Resources/MPPlayBtn.png",
-				"${PODS_ROOT}/../../../MoPubSDK/Resources/MPPlayBtn@2x.png",
-				"${PODS_ROOT}/../../../MoPubSDK/Resources/MPPlayBtn@3x.png",
-				"${PODS_ROOT}/../../../MoPubSDK/Resources/MPUnmutedBtn.png",
-				"${PODS_ROOT}/../../../MoPubSDK/Resources/MPUnmutedBtn@2x.png",
-				"${PODS_ROOT}/../../../MoPubSDK/Resources/MPUnmutedBtn@3x.png",
-				"${PODS_ROOT}/../../../MoPubSDK/Resources/MRAID.bundle",
-			);
-			name = "[CP] Copy Pods Resources";
-			outputPaths = (
-				"${TARGET_BUILD_DIR}/${UNLOCALIZED_RESOURCES_FOLDER_PATH}",
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-			shellPath = /bin/sh;
-			shellScript = "\"${SRCROOT}/Pods/Target Support Files/Pods-MoPubSwiftSampleApp/Pods-MoPubSwiftSampleApp-resources.sh\"\n";
-			showEnvVarsInLog = 0;
-		};
-		715572FB843DE335F70656D3 /* [CP] Embed Pods Frameworks */ = {
-			isa = PBXShellScriptBuildPhase;
-			buildActionMask = 2147483647;
-			files = (
-			);
-			inputPaths = (
-			);
-			name = "[CP] Embed Pods Frameworks";
-			outputPaths = (
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-			shellPath = /bin/sh;
-			shellScript = "\"${SRCROOT}/Pods/Target Support Files/Pods-MoPubSwiftSampleApp+CustomEvents/Pods-MoPubSwiftSampleApp+CustomEvents-frameworks.sh\"\n";
-			showEnvVarsInLog = 0;
-		};
 		81A576604598392C57E13F4B /* [CP] Embed Pods Frameworks */ = {
 			isa = PBXShellScriptBuildPhase;
 			buildActionMask = 2147483647;
@@ -446,7 +391,7 @@
 			);
 			inputPaths = (
 				"${SRCROOT}/Pods/Target Support Files/Pods-MoPubSwiftSampleApp/Pods-MoPubSwiftSampleApp-frameworks.sh",
-				"${BUILT_PRODUCTS_DIR}/mopub-ios-sdk.common/MoPub.framework",
+				"${BUILT_PRODUCTS_DIR}/mopub-ios-sdk-framework/MoPub.framework",
 			);
 			name = "[CP] Embed Pods Frameworks";
 			outputPaths = (
@@ -521,12 +466,33 @@
 				"${PODS_ROOT}/../../../MoPubSDK/Resources/MPUnmutedBtn@2x.png",
 				"${PODS_ROOT}/../../../MoPubSDK/Resources/MPUnmutedBtn@3x.png",
 				"${PODS_ROOT}/../../../MoPubSDK/Resources/MRAID.bundle",
-				"${PODS_ROOT}/TapjoySDK/TapjoySDK_iOS_v11.11.1/Libraries/Tapjoy.embeddedframework/Resources/TapjoyResources.bundle",
-				"${PODS_ROOT}/TapjoySDK/TapjoySDK_iOS_v11.11.1/Libraries/Tapjoy.embeddedframework/Tapjoy.framework/Versions/A/Resources/TapjoyResources.bundle",
+				"${PODS_ROOT}/TapjoySDK/TapjoySDK_iOS_v11.12.1/Libraries/Tapjoy.embeddedframework/Resources/TapjoyResources.bundle",
+				"${PODS_ROOT}/TapjoySDK/TapjoySDK_iOS_v11.12.1/Libraries/Tapjoy.embeddedframework/Tapjoy.framework/Versions/A/Resources/TapjoyResources.bundle",
 			);
 			name = "[CP] Copy Pods Resources";
 			outputPaths = (
-				"${TARGET_BUILD_DIR}/${UNLOCALIZED_RESOURCES_FOLDER_PATH}",
+				"${TARGET_BUILD_DIR}/${UNLOCALIZED_RESOURCES_FOLDER_PATH}/MPAdBrowserController.nib",
+				"${TARGET_BUILD_DIR}/${UNLOCALIZED_RESOURCES_FOLDER_PATH}/MPCloseBtn.png",
+				"${TARGET_BUILD_DIR}/${UNLOCALIZED_RESOURCES_FOLDER_PATH}/MPCloseBtn@2x.png",
+				"${TARGET_BUILD_DIR}/${UNLOCALIZED_RESOURCES_FOLDER_PATH}/MPCloseBtn@3x.png",
+				"${TARGET_BUILD_DIR}/${UNLOCALIZED_RESOURCES_FOLDER_PATH}/MPCloseButtonX.png",
+				"${TARGET_BUILD_DIR}/${UNLOCALIZED_RESOURCES_FOLDER_PATH}/MPCloseButtonX@2x.png",
+				"${TARGET_BUILD_DIR}/${UNLOCALIZED_RESOURCES_FOLDER_PATH}/MPCloseButtonX@3x.png",
+				"${TARGET_BUILD_DIR}/${UNLOCALIZED_RESOURCES_FOLDER_PATH}/MPCountdownTimer.html",
+				"${TARGET_BUILD_DIR}/${UNLOCALIZED_RESOURCES_FOLDER_PATH}/MPDAAIcon.png",
+				"${TARGET_BUILD_DIR}/${UNLOCALIZED_RESOURCES_FOLDER_PATH}/MPDAAIcon@2x.png",
+				"${TARGET_BUILD_DIR}/${UNLOCALIZED_RESOURCES_FOLDER_PATH}/MPDAAIcon@3x.png",
+				"${TARGET_BUILD_DIR}/${UNLOCALIZED_RESOURCES_FOLDER_PATH}/MPMutedBtn.png",
+				"${TARGET_BUILD_DIR}/${UNLOCALIZED_RESOURCES_FOLDER_PATH}/MPMutedBtn@2x.png",
+				"${TARGET_BUILD_DIR}/${UNLOCALIZED_RESOURCES_FOLDER_PATH}/MPMutedBtn@3x.png",
+				"${TARGET_BUILD_DIR}/${UNLOCALIZED_RESOURCES_FOLDER_PATH}/MPPlayBtn.png",
+				"${TARGET_BUILD_DIR}/${UNLOCALIZED_RESOURCES_FOLDER_PATH}/MPPlayBtn@2x.png",
+				"${TARGET_BUILD_DIR}/${UNLOCALIZED_RESOURCES_FOLDER_PATH}/MPPlayBtn@3x.png",
+				"${TARGET_BUILD_DIR}/${UNLOCALIZED_RESOURCES_FOLDER_PATH}/MPUnmutedBtn.png",
+				"${TARGET_BUILD_DIR}/${UNLOCALIZED_RESOURCES_FOLDER_PATH}/MPUnmutedBtn@2x.png",
+				"${TARGET_BUILD_DIR}/${UNLOCALIZED_RESOURCES_FOLDER_PATH}/MPUnmutedBtn@3x.png",
+				"${TARGET_BUILD_DIR}/${UNLOCALIZED_RESOURCES_FOLDER_PATH}/MRAID.bundle",
+				"${TARGET_BUILD_DIR}/${UNLOCALIZED_RESOURCES_FOLDER_PATH}/TapjoyResources.bundle",
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
