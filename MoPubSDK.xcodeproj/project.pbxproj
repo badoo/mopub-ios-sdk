@@ -7,6 +7,7 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		0B724DA520B346D900CD3F02 /* MPInterstitialAdManager.h in Headers */ = {isa = PBXBuildFile; fileRef = AEF9D4F4171CA895005AAA5A /* MPInterstitialAdManager.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		2A2701EF2020FD68004A72E6 /* MPViewabilityOption.h in Headers */ = {isa = PBXBuildFile; fileRef = 2A2701ED2020FC7E004A72E6 /* MPViewabilityOption.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		2A2701F02020FD71004A72E6 /* MOPUBDisplayAgentType.h in Headers */ = {isa = PBXBuildFile; fileRef = 2A2701EE2020FCDC004A72E6 /* MOPUBDisplayAgentType.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		2A27020B20214502004A72E6 /* MOPUBExperimentProvider.m in Sources */ = {isa = PBXBuildFile; fileRef = B2D54B551ED20521004E3C7B /* MOPUBExperimentProvider.m */; };
@@ -303,13 +304,13 @@
 		2AF0320B2016B78800909F29 /* MPCollectionViewAdPlacerCell.h in Headers */ = {isa = PBXBuildFile; fileRef = 573A82E81B8E488400ED4067 /* MPCollectionViewAdPlacerCell.h */; };
 		2AF0320C2016B78800909F29 /* MPDiskLRUCache.h in Headers */ = {isa = PBXBuildFile; fileRef = A77FBEFF18C5343E00531E8A /* MPDiskLRUCache.h */; };
 		2AF0320D2016B78800909F29 /* MPImageDownloadQueue.h in Headers */ = {isa = PBXBuildFile; fileRef = A77FBF0118C5343E00531E8A /* MPImageDownloadQueue.h */; };
-		2AF0320E2016B78800909F29 /* MPMoPubNativeAdAdapter.h in Headers */ = {isa = PBXBuildFile; fileRef = 4AF54B53194A217F0093F714 /* MPMoPubNativeAdAdapter.h */; };
+		2AF0320E2016B78800909F29 /* MPMoPubNativeAdAdapter.h in Headers */ = {isa = PBXBuildFile; fileRef = 4AF54B53194A217F0093F714 /* MPMoPubNativeAdAdapter.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		2AF0320F2016B78800909F29 /* MPMoPubNativeCustomEvent.h in Headers */ = {isa = PBXBuildFile; fileRef = 571FA439193FC4D300A36583 /* MPMoPubNativeCustomEvent.h */; };
 		2AF032112016B78800909F29 /* MPNativeAdConfigValues+Internal.h in Headers */ = {isa = PBXBuildFile; fileRef = 2A501D3D1F68AD5100806177 /* MPNativeAdConfigValues+Internal.h */; };
 		2AF032122016B78800909F29 /* MPNativeAdConfigValues.h in Headers */ = {isa = PBXBuildFile; fileRef = 2A501D2C1F68ABDE00806177 /* MPNativeAdConfigValues.h */; };
 		2AF032132016B78800909F29 /* MPNativeAdData.h in Headers */ = {isa = PBXBuildFile; fileRef = A7A1CDDB197478E20082A6FA /* MPNativeAdData.h */; };
 		2AF032142016B78800909F29 /* MPNativeAdRendererConstants.h in Headers */ = {isa = PBXBuildFile; fileRef = 3DD2F5DD1CBE970D003F2D81 /* MPNativeAdRendererConstants.h */; };
-		2AF032152016B78800909F29 /* MPNativeAdRendererImageHandler.h in Headers */ = {isa = PBXBuildFile; fileRef = 57AC69871BB21FFC0053C556 /* MPNativeAdRendererImageHandler.h */; };
+		2AF032152016B78800909F29 /* MPNativeAdRendererImageHandler.h in Headers */ = {isa = PBXBuildFile; fileRef = 57AC69871BB21FFC0053C556 /* MPNativeAdRendererImageHandler.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		2AF032162016B78800909F29 /* MPNativeAdSource.h in Headers */ = {isa = PBXBuildFile; fileRef = A7A9AC2119745B4E00C26A7E /* MPNativeAdSource.h */; };
 		2AF032172016B78800909F29 /* MPNativeAdSourceDelegate.h in Headers */ = {isa = PBXBuildFile; fileRef = A7A9AC2619745B9100C26A7E /* MPNativeAdSourceDelegate.h */; };
 		2AF032182016B78800909F29 /* MPNativeAdSourceQueue.h in Headers */ = {isa = PBXBuildFile; fileRef = 4AAB5335197ED97D00A73C98 /* MPNativeAdSourceQueue.h */; };
@@ -317,7 +318,7 @@
 		2AF0321A2016B78800909F29 /* MPNativeCache.h in Headers */ = {isa = PBXBuildFile; fileRef = 4AE42F9B18D8FD2100DE4BF6 /* MPNativeCache.h */; };
 		2AF0321B2016B78800909F29 /* MPNativePositionResponseDeserializer.h in Headers */ = {isa = PBXBuildFile; fileRef = A72F913819C0D4C700A5601B /* MPNativePositionResponseDeserializer.h */; };
 		2AF0321C2016B78800909F29 /* MPNativePositionSource.h in Headers */ = {isa = PBXBuildFile; fileRef = A72F90D919B7B1FF00A5601B /* MPNativePositionSource.h */; };
-		2AF0321D2016B78800909F29 /* MPNativeView.h in Headers */ = {isa = PBXBuildFile; fileRef = 573A82EA1B8E488400ED4067 /* MPNativeView.h */; };
+		2AF0321D2016B78800909F29 /* MPNativeView.h in Headers */ = {isa = PBXBuildFile; fileRef = 573A82EA1B8E488400ED4067 /* MPNativeView.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		2AF0321E2016B78800909F29 /* MPStreamAdPlacementData.h in Headers */ = {isa = PBXBuildFile; fileRef = A7A1CDE51974904A0082A6FA /* MPStreamAdPlacementData.h */; };
 		2AF0321F2016B78800909F29 /* MPStreamAdPlacer.h in Headers */ = {isa = PBXBuildFile; fileRef = A7A1CDC219745F0E0082A6FA /* MPStreamAdPlacer.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		2AF032202016B78800909F29 /* MPTableViewAdPlacerCell.h in Headers */ = {isa = PBXBuildFile; fileRef = 573A82EE1B8E488400ED4067 /* MPTableViewAdPlacerCell.h */; };
@@ -327,10 +328,10 @@
 		2AF0322B2016B78800909F29 /* MPActivityViewControllerHelper.h in Headers */ = {isa = PBXBuildFile; fileRef = 875390C21B04073F001F0550 /* MPActivityViewControllerHelper.h */; };
 		2AF0322C2016B78800909F29 /* MPActivityViewControllerHelper+TweetShare.h in Headers */ = {isa = PBXBuildFile; fileRef = 875390C41B04073F001F0550 /* MPActivityViewControllerHelper+TweetShare.h */; };
 		2AF0322D2016B78800909F29 /* MPAdBrowserController.h in Headers */ = {isa = PBXBuildFile; fileRef = AEF9D4D4171CA895005AAA5A /* MPAdBrowserController.h */; };
-		2AF0322E2016B78800909F29 /* MPAdConfiguration.h in Headers */ = {isa = PBXBuildFile; fileRef = AEF9D4D7171CA895005AAA5A /* MPAdConfiguration.h */; };
+		2AF0322E2016B78800909F29 /* MPAdConfiguration.h in Headers */ = {isa = PBXBuildFile; fileRef = AEF9D4D7171CA895005AAA5A /* MPAdConfiguration.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		2AF0322F2016B78800909F29 /* MPAdDestinationDisplayAgent.h in Headers */ = {isa = PBXBuildFile; fileRef = AEF9D4D9171CA895005AAA5A /* MPAdDestinationDisplayAgent.h */; };
 		2AF032302016B78800909F29 /* MPAdImpressionTimer.h in Headers */ = {isa = PBXBuildFile; fileRef = 2A5275B81FCE1FCF00FF39D5 /* MPAdImpressionTimer.h */; };
-		2AF032312016B78800909F29 /* MPAdServerCommunicator.h in Headers */ = {isa = PBXBuildFile; fileRef = AEF9D4DB171CA895005AAA5A /* MPAdServerCommunicator.h */; };
+		2AF032312016B78800909F29 /* MPAdServerCommunicator.h in Headers */ = {isa = PBXBuildFile; fileRef = AEF9D4DB171CA895005AAA5A /* MPAdServerCommunicator.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		2AF032322016B78800909F29 /* MPAdServerURLBuilder.h in Headers */ = {isa = PBXBuildFile; fileRef = AEF9D4DD171CA895005AAA5A /* MPAdServerURLBuilder.h */; };
 		2AF032332016B78800909F29 /* MPAPIEndpoints.h in Headers */ = {isa = PBXBuildFile; fileRef = A778C8A61ABB4ED4003F427D /* MPAPIEndpoints.h */; };
 		2AF032342016B78800909F29 /* MPClosableView.h in Headers */ = {isa = PBXBuildFile; fileRef = 57D6485B1A0DE39500433CFE /* MPClosableView.h */; };
@@ -349,8 +350,7 @@
 		2AF032432016B78800909F29 /* MPBannerCustomEventAdapter.h in Headers */ = {isa = PBXBuildFile; fileRef = AEF9D4CC171CA895005AAA5A /* MPBannerCustomEventAdapter.h */; };
 		2AF032442016B78800909F29 /* MPBaseBannerAdapter.h in Headers */ = {isa = PBXBuildFile; fileRef = AEF9D4CE171CA895005AAA5A /* MPBaseBannerAdapter.h */; };
 		2AF032452016B78800909F29 /* MPPrivateBannerCustomEventDelegate.h in Headers */ = {isa = PBXBuildFile; fileRef = AEF9D4D2171CA895005AAA5A /* MPPrivateBannerCustomEventDelegate.h */; };
-		2AF032462016B78800909F29 /* MPBaseInterstitialAdapter.h in Headers */ = {isa = PBXBuildFile; fileRef = AEF9D4F2171CA895005AAA5A /* MPBaseInterstitialAdapter.h */; };
-		2AF032472016B78800909F29 /* MPInterstitialAdManager.h in Headers */ = {isa = PBXBuildFile; fileRef = AEF9D4F4171CA895005AAA5A /* MPInterstitialAdManager.h */; };
+		2AF032462016B78800909F29 /* MPBaseInterstitialAdapter.h in Headers */ = {isa = PBXBuildFile; fileRef = AEF9D4F2171CA895005AAA5A /* MPBaseInterstitialAdapter.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		2AF032482016B78800909F29 /* MPInterstitialAdManagerDelegate.h in Headers */ = {isa = PBXBuildFile; fileRef = AEF9D4F6171CA895005AAA5A /* MPInterstitialAdManagerDelegate.h */; };
 		2AF032492016B78800909F29 /* MPInterstitialCustomEventAdapter.h in Headers */ = {isa = PBXBuildFile; fileRef = AEF9D4F7171CA895005AAA5A /* MPInterstitialCustomEventAdapter.h */; };
 		2AF0324A2016B78800909F29 /* MPInterstitialViewController.h in Headers */ = {isa = PBXBuildFile; fileRef = AEF9D4F9171CA895005AAA5A /* MPInterstitialViewController.h */; };
@@ -2282,6 +2282,13 @@
 			isa = PBXHeadersBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				2AF032152016B78800909F29 /* MPNativeAdRendererImageHandler.h in Headers */,
+				2AF0320E2016B78800909F29 /* MPMoPubNativeAdAdapter.h in Headers */,
+				2AF0322E2016B78800909F29 /* MPAdConfiguration.h in Headers */,
+				0B724DA520B346D900CD3F02 /* MPInterstitialAdManager.h in Headers */,
+				2AF032312016B78800909F29 /* MPAdServerCommunicator.h in Headers */,
+				2AF032462016B78800909F29 /* MPBaseInterstitialAdapter.h in Headers */,
+				2AF0321D2016B78800909F29 /* MPNativeView.h in Headers */,
 				2AF032362016B78800909F29 /* MPEnhancedDeeplinkRequest.h in Headers */,
 				2AF0323C2016B78800909F29 /* MPURLActionInfo.h in Headers */,
 				2AF0323D2016B78800909F29 /* MPURLResolver.h in Headers */,
@@ -2360,21 +2367,18 @@
 				BCD118872034E01100C03B7D /* MPMoPubConfiguration.h in Headers */,
 				2AF0320D2016B78800909F29 /* MPImageDownloadQueue.h in Headers */,
 				BCD118882034E01600C03B7D /* MPAdvancedBidder.h in Headers */,
-				2AF0320E2016B78800909F29 /* MPMoPubNativeAdAdapter.h in Headers */,
 				2AF0320F2016B78800909F29 /* MPMoPubNativeCustomEvent.h in Headers */,
 				2AF032112016B78800909F29 /* MPNativeAdConfigValues+Internal.h in Headers */,
 				2AF032122016B78800909F29 /* MPNativeAdConfigValues.h in Headers */,
 				BC64EC592069977E00CB33A7 /* MPMediationManager.h in Headers */,
 				2AF032132016B78800909F29 /* MPNativeAdData.h in Headers */,
 				2AF032142016B78800909F29 /* MPNativeAdRendererConstants.h in Headers */,
-				2AF032152016B78800909F29 /* MPNativeAdRendererImageHandler.h in Headers */,
 				2AF032162016B78800909F29 /* MPNativeAdSource.h in Headers */,
 				2AF032172016B78800909F29 /* MPNativeAdSourceDelegate.h in Headers */,
 				2AF032182016B78800909F29 /* MPNativeAdSourceQueue.h in Headers */,
 				2AF0321A2016B78800909F29 /* MPNativeCache.h in Headers */,
 				2AF0321B2016B78800909F29 /* MPNativePositionResponseDeserializer.h in Headers */,
 				2AF0321C2016B78800909F29 /* MPNativePositionSource.h in Headers */,
-				2AF0321D2016B78800909F29 /* MPNativeView.h in Headers */,
 				2AF0321E2016B78800909F29 /* MPStreamAdPlacementData.h in Headers */,
 				2AF0321F2016B78800909F29 /* MPStreamAdPlacer.h in Headers */,
 				2AF032202016B78800909F29 /* MPTableViewAdPlacerCell.h in Headers */,
@@ -2385,10 +2389,8 @@
 				2AF0322B2016B78800909F29 /* MPActivityViewControllerHelper.h in Headers */,
 				2AF0322C2016B78800909F29 /* MPActivityViewControllerHelper+TweetShare.h in Headers */,
 				2AF0322D2016B78800909F29 /* MPAdBrowserController.h in Headers */,
-				2AF0322E2016B78800909F29 /* MPAdConfiguration.h in Headers */,
 				2AF0322F2016B78800909F29 /* MPAdDestinationDisplayAgent.h in Headers */,
 				2AF032302016B78800909F29 /* MPAdImpressionTimer.h in Headers */,
-				2AF032312016B78800909F29 /* MPAdServerCommunicator.h in Headers */,
 				2AF032322016B78800909F29 /* MPAdServerURLBuilder.h in Headers */,
 				2AF032332016B78800909F29 /* MPAPIEndpoints.h in Headers */,
 				2AF032342016B78800909F29 /* MPClosableView.h in Headers */,
@@ -2405,8 +2407,6 @@
 				2AF032432016B78800909F29 /* MPBannerCustomEventAdapter.h in Headers */,
 				2AF032442016B78800909F29 /* MPBaseBannerAdapter.h in Headers */,
 				2AF032452016B78800909F29 /* MPPrivateBannerCustomEventDelegate.h in Headers */,
-				2AF032462016B78800909F29 /* MPBaseInterstitialAdapter.h in Headers */,
-				2AF032472016B78800909F29 /* MPInterstitialAdManager.h in Headers */,
 				BC11921D207BE949005DF26E /* MPConsentManager.h in Headers */,
 				2AF032482016B78800909F29 /* MPInterstitialAdManagerDelegate.h in Headers */,
 				2AF032492016B78800909F29 /* MPInterstitialCustomEventAdapter.h in Headers */,

@@ -42,9 +42,11 @@
 #import "MPURLResolver.h"
 
 #if MP_HAS_NATIVE_PACKAGE
+#import "MPMoPubNativeAdAdapter.h"
 #import "MPNativeAd.h"
 #import "MPNativeAdAdapter.h"
 #import "MPNativeAdConstants.h"
+#import "MPNativeAdRendererImageHandler.h"
 #import "MPNativeAdUtils.h"
 #import "MPNativeCustomEvent.h"
 #import "MPNativeCustomEventDelegate.h"
@@ -52,6 +54,8 @@
 #import "MPNativeAdRendering.h"
 #import "MPNativeAdRequest.h"
 #import "MPNativeAdRequestTargeting.h"
+#import "MPNativeView.h"
+#import "MPInterstitialAdManager.h"
 #import "MPCollectionViewAdPlacer.h"
 #import "MPTableViewAdPlacer.h"
 #import "MPClientAdPositioning.h"
