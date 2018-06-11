@@ -113,13 +113,13 @@ didReceiveResponse:(NSURLResponse *)response
 - (void)URLSession:(NSURLSession *)session
           dataTask:(NSURLSessionDataTask *)dataTask
     didReceiveData:(NSData *)data {
-    MPHTTPNetworkTaskData *taskData;
+    MPHTTPNetworkTaskData *taskData = nil;
     @synchronized(self.sessions) {
         // Retrieve the task data.
         taskData = self.sessions[dataTask];
-        if (taskData == nil) {
-            return;
-        }
+    }
+    if (taskData == nil) {
+        return;
     }
 
     // Append the new data to the task.
@@ -135,14 +135,14 @@ didReceiveResponse:(NSURLResponse *)response
 willPerformHTTPRedirection:(NSHTTPURLResponse *)response
         newRequest:(NSURLRequest *)request
  completionHandler:(void (^)(NSURLRequest * _Nullable))completionHandler {
-    MPHTTPNetworkTaskData *taskData;
+    MPHTTPNetworkTaskData *taskData = nil;
     @synchronized(self.sessions) {
         // Retrieve the task data.
         taskData = self.sessions[task];
-        if (taskData == nil) {
-            completionHandler(request);
-            return;
-        }
+    }
+    if (taskData == nil) {
+        completionHandler(request);
+        return;
     }
 
     // If there is a redirection handler block registered with the HTTP task, we should
@@ -159,14 +159,16 @@ willPerformHTTPRedirection:(NSHTTPURLResponse *)response
 - (void)URLSession:(NSURLSession *)session
               task:(NSURLSessionTask *)task
 didCompleteWithError:(nullable NSError *)error {
-    MPHTTPNetworkTaskData *taskData;
+    MPHTTPNetworkTaskData *taskData = nil;
     @synchronized(self.sessions) {
         // Retrieve the task data.
         taskData = self.sessions[task];
-        if (taskData == nil) {
-            return;
-        }
-
+    }
+    if (taskData == nil) {
+        return;
+    }
+    
+    @synchronized(self.sessions) {
         // Remove the task data from the currently in flight sessions.
         self.sessions[task] = nil;
     }
