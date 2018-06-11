@@ -64,7 +64,9 @@ NSString * const kMoPubSDKNetworkDomain = @"MoPubSDKNetworkDomain";
     MPHTTPNetworkTaskData * taskData = [[MPHTTPNetworkTaskData alloc] initWithResponseHandler:responseHandler errorHandler:errorHandler shouldRedirectWithNewRequest:shouldRedirectWithNewRequest];
 
     // Update the sessions.
-    MPHTTPNetworkSession.sharedInstance.sessions[task] = taskData;
+    @synchronized(MPHTTPNetworkSession.sharedInstance.sessions) {
+        MPHTTPNetworkSession.sharedInstance.sessions[task] = taskData;
+    }
 
     return task;
 }
@@ -111,10 +113,13 @@ didReceiveResponse:(NSURLResponse *)response
 - (void)URLSession:(NSURLSession *)session
           dataTask:(NSURLSessionDataTask *)dataTask
     didReceiveData:(NSData *)data {
-    // Retrieve the task data.
-    MPHTTPNetworkTaskData * taskData = self.sessions[dataTask];
-    if (taskData == nil) {
-        return;
+    MPHTTPNetworkTaskData *taskData;
+    @synchronized(self.sessions) {
+        // Retrieve the task data.
+        taskData = self.sessions[dataTask];
+        if (taskData == nil) {
+            return;
+        }
     }
 
     // Append the new data to the task.
@@ -130,11 +135,14 @@ didReceiveResponse:(NSURLResponse *)response
 willPerformHTTPRedirection:(NSHTTPURLResponse *)response
         newRequest:(NSURLRequest *)request
  completionHandler:(void (^)(NSURLRequest * _Nullable))completionHandler {
-    // Retrieve the task data.
-    MPHTTPNetworkTaskData * taskData = self.sessions[task];
-    if (taskData == nil) {
-        completionHandler(request);
-        return;
+    MPHTTPNetworkTaskData *taskData;
+    @synchronized(self.sessions) {
+        // Retrieve the task data.
+        taskData = self.sessions[task];
+        if (taskData == nil) {
+            completionHandler(request);
+            return;
+        }
     }
 
     // If there is a redirection handler block registered with the HTTP task, we should
@@ -151,15 +159,18 @@ willPerformHTTPRedirection:(NSHTTPURLResponse *)response
 - (void)URLSession:(NSURLSession *)session
               task:(NSURLSessionTask *)task
 didCompleteWithError:(nullable NSError *)error {
-    // Retrieve the task data.
-    MPHTTPNetworkTaskData * taskData = self.sessions[task];
-    if (taskData == nil) {
-        return;
+    MPHTTPNetworkTaskData *taskData;
+    @synchronized(self.sessions) {
+        // Retrieve the task data.
+        taskData = self.sessions[task];
+        if (taskData == nil) {
+            return;
+        }
+
+        // Remove the task data from the currently in flight sessions.
+        self.sessions[task] = nil;
     }
-
-    // Remove the task data from the currently in flight sessions.
-    self.sessions[task] = nil;
-
+    
     // Validate that response is not an error.
     if (error != nil) {
         MPLogError(@"Network request failed with: %@", error.localizedDescription);
