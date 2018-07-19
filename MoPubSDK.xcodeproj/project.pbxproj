@@ -329,7 +329,7 @@
 		2AF0322D2016B78800909F29 /* MPAdBrowserController.h in Headers */ = {isa = PBXBuildFile; fileRef = AEF9D4D4171CA895005AAA5A /* MPAdBrowserController.h */; };
 		2AF0322E2016B78800909F29 /* MPAdConfiguration.h in Headers */ = {isa = PBXBuildFile; fileRef = AEF9D4D7171CA895005AAA5A /* MPAdConfiguration.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		2AF0322F2016B78800909F29 /* MPAdDestinationDisplayAgent.h in Headers */ = {isa = PBXBuildFile; fileRef = AEF9D4D9171CA895005AAA5A /* MPAdDestinationDisplayAgent.h */; };
-		2AF032302016B78800909F29 /* MPAdImpressionTimer.h in Headers */ = {isa = PBXBuildFile; fileRef = 2A5275B81FCE1FCF00FF39D5 /* MPAdImpressionTimer.h */; };
+		2AF032302016B78800909F29 /* MPAdImpressionTimer.h in Headers */ = {isa = PBXBuildFile; fileRef = 2A5275B81FCE1FCF00FF39D5 /* MPAdImpressionTimer.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		2AF032312016B78800909F29 /* MPAdServerCommunicator.h in Headers */ = {isa = PBXBuildFile; fileRef = AEF9D4DB171CA895005AAA5A /* MPAdServerCommunicator.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		2AF032322016B78800909F29 /* MPAdServerURLBuilder.h in Headers */ = {isa = PBXBuildFile; fileRef = AEF9D4DD171CA895005AAA5A /* MPAdServerURLBuilder.h */; };
 		2AF032332016B78800909F29 /* MPAPIEndpoints.h in Headers */ = {isa = PBXBuildFile; fileRef = A778C8A61ABB4ED4003F427D /* MPAPIEndpoints.h */; };
@@ -339,8 +339,8 @@
 		2AF032392016B78800909F29 /* MPLastResortDelegate.h in Headers */ = {isa = PBXBuildFile; fileRef = AE14FA4A1774D95D00ABF744 /* MPLastResortDelegate.h */; };
 		2AF0323A2016B78800909F29 /* MPProgressOverlayView.h in Headers */ = {isa = PBXBuildFile; fileRef = AEF9D4E2171CA895005AAA5A /* MPProgressOverlayView.h */; };
 		2AF0323B2016B78800909F29 /* MPRealTimeTimer.h in Headers */ = {isa = PBXBuildFile; fileRef = 2AFF1B781EC2795500495994 /* MPRealTimeTimer.h */; settings = {ATTRIBUTES = (Public, ); }; };
-		2AF0323C2016B78800909F29 /* MPURLActionInfo.h in Headers */ = {isa = PBXBuildFile; fileRef = A7BB73CC1B32240900B3161B /* MPURLActionInfo.h */; };
-		2AF0323D2016B78800909F29 /* MPURLResolver.h in Headers */ = {isa = PBXBuildFile; fileRef = AEF9D4E4171CA895005AAA5A /* MPURLResolver.h */; };
+		2AF0323C2016B78800909F29 /* MPURLActionInfo.h in Headers */ = {isa = PBXBuildFile; fileRef = A7BB73CC1B32240900B3161B /* MPURLActionInfo.h */; settings = {ATTRIBUTES = (Public, ); }; };
+		2AF0323D2016B78800909F29 /* MPURLResolver.h in Headers */ = {isa = PBXBuildFile; fileRef = AEF9D4E4171CA895005AAA5A /* MPURLResolver.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		2AF0323E2016B78800909F29 /* MPVideoConfig.h in Headers */ = {isa = PBXBuildFile; fileRef = A72210301B792C6F0099DCF6 /* MPVideoConfig.h */; };
 		2AF0323F2016B78800909F29 /* MPXMLParser.h in Headers */ = {isa = PBXBuildFile; fileRef = A776A5081B5DDE0A00095706 /* MPXMLParser.h */; };
 		2AF032402016B78800909F29 /* MPBannerCustomEvent+Internal.h in Headers */ = {isa = PBXBuildFile; fileRef = B2950B3E1FBE5E5B00C40BF5 /* MPBannerCustomEvent+Internal.h */; };
@@ -388,7 +388,7 @@
 		2AF0326B2016B78800909F29 /* MPGlobal.h in Headers */ = {isa = PBXBuildFile; fileRef = AEF9D51F171CA895005AAA5A /* MPGlobal.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		2AF0326C2016B78800909F29 /* MPIdentityProvider.h in Headers */ = {isa = PBXBuildFile; fileRef = AEF9D521171CA895005AAA5A /* MPIdentityProvider.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		2AF0326D2016B78800909F29 /* MPLogging.h in Headers */ = {isa = PBXBuildFile; fileRef = AEF9D523171CA895005AAA5A /* MPLogging.h */; settings = {ATTRIBUTES = (Public, ); }; };
-		2AF0326E2016B78800909F29 /* MPReachability.h in Headers */ = {isa = PBXBuildFile; fileRef = AEF9D525171CA895005AAA5A /* MPReachability.h */; };
+		2AF0326E2016B78800909F29 /* MPReachability.h in Headers */ = {isa = PBXBuildFile; fileRef = AEF9D525171CA895005AAA5A /* MPReachability.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		2AF0326F2016B78800909F29 /* MPSessionTracker.h in Headers */ = {isa = PBXBuildFile; fileRef = AEF9D527171CA895005AAA5A /* MPSessionTracker.h */; };
 		2AF032702016B78800909F29 /* MPStoreKitProvider.h in Headers */ = {isa = PBXBuildFile; fileRef = AEF9D529171CA895005AAA5A /* MPStoreKitProvider.h */; };
 		2AF032712016B78800909F29 /* MPTimer.h in Headers */ = {isa = PBXBuildFile; fileRef = AEF9D52B171CA895005AAA5A /* MPTimer.h */; };
@@ -2309,6 +2309,10 @@
 			isa = PBXHeadersBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				2AF0323C2016B78800909F29 /* MPURLActionInfo.h in Headers */,
+				2AF0323D2016B78800909F29 /* MPURLResolver.h in Headers */,
+				2AF0326E2016B78800909F29 /* MPReachability.h in Headers */,
+				2AF032302016B78800909F29 /* MPAdImpressionTimer.h in Headers */,
 				2AF032152016B78800909F29 /* MPNativeAdRendererImageHandler.h in Headers */,
 				2AF0320E2016B78800909F29 /* MPMoPubNativeAdAdapter.h in Headers */,
 				2AF0322E2016B78800909F29 /* MPAdConfiguration.h in Headers */,
@@ -2317,10 +2321,7 @@
 				2AF032462016B78800909F29 /* MPBaseInterstitialAdapter.h in Headers */,
 				2AF0321D2016B78800909F29 /* MPNativeView.h in Headers */,
 				2AF032362016B78800909F29 /* MPEnhancedDeeplinkRequest.h in Headers */,
-				2AF0323C2016B78800909F29 /* MPURLActionInfo.h in Headers */,
-				2AF0323D2016B78800909F29 /* MPURLResolver.h in Headers */,
 				2AF032862016B78800909F29 /* MPCoreInstanceProvider.h in Headers */,
-				2AF032872016B78800909F29 /* MPInstanceProvider.h in Headers */,
 				2AF032192016B78800909F29 /* MPNativeAdUtils.h in Headers */,
 				2AF030C92016731800909F29 /* MoPub.h in Headers */,
 				2AF031CD2016B74400909F29 /* MOPUBNativeVideoAdRendererSettings.h in Headers */,
@@ -2418,7 +2419,6 @@
 				2AF0322C2016B78800909F29 /* MPActivityViewControllerHelper+TweetShare.h in Headers */,
 				2AF0322D2016B78800909F29 /* MPAdBrowserController.h in Headers */,
 				2AF0322F2016B78800909F29 /* MPAdDestinationDisplayAgent.h in Headers */,
-				2AF032302016B78800909F29 /* MPAdImpressionTimer.h in Headers */,
 				2AF032322016B78800909F29 /* MPAdServerURLBuilder.h in Headers */,
 				2AF032332016B78800909F29 /* MPAPIEndpoints.h in Headers */,
 				2AF032342016B78800909F29 /* MPClosableView.h in Headers */,
@@ -2481,7 +2481,6 @@
 				BC0ADDF02080023C000ADEA4 /* NSString+MPConsentStatus.h in Headers */,
 				2AF0326C2016B78800909F29 /* MPIdentityProvider.h in Headers */,
 				2AF0326D2016B78800909F29 /* MPLogging.h in Headers */,
-				2AF0326E2016B78800909F29 /* MPReachability.h in Headers */,
 				2AF0326F2016B78800909F29 /* MPSessionTracker.h in Headers */,
 				2AF032702016B78800909F29 /* MPStoreKitProvider.h in Headers */,
 				2AF032712016B78800909F29 /* MPTimer.h in Headers */,
