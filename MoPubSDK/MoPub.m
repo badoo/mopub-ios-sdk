@@ -22,6 +22,7 @@
 #import "MPAdConversionTracker.h"
 #import "MPConsentManager.h"
 #import "MPConsentChangedNotification.h"
+#import "MPSessionTracker.h"
 
 @interface MoPub ()
 
@@ -146,6 +147,9 @@
             dispatch_group_leave(initializationGroup);
         }];
 
+        // Configure session tracker
+        [MPSessionTracker initializeNotificationObservers];
+
         // Configure mediated network SDKs
         dispatch_group_enter(initializationGroup);
         NSArray<Class<MPMediationSdkInitializable>> * mediatedNetworks = configuration.mediatedNetworks;
@@ -241,6 +245,10 @@
     return [MPConsentManager sharedManager].isGDPRApplicable;
 }
 
+- (void)forceGDPRApplicable {
+    [MPConsentManager sharedManager].forceIsGDPRApplicable = YES;
+}
+
 - (MPConsentStatus)currentConsentStatus {
     return [MPConsentManager sharedManager].currentStatus;
 }
@@ -273,8 +281,18 @@
     [[MPConsentManager sharedManager] loadConsentDialogWithCompletion:completion];
 }
 
+- (void)showConsentDialogFromViewController:(UIViewController *)viewController
+                                    didShow:(void (^ _Nullable)(void))didShow
+                                 didDismiss:(void (^ _Nullable)(void))didDismiss {
+    [[MPConsentManager sharedManager] showConsentDialogFromViewController:viewController
+                                                                  didShow:didShow
+                                                               didDismiss:didDismiss];
+}
+
 - (void)showConsentDialogFromViewController:(UIViewController *)viewController completion:(void (^ _Nullable)(void))completion {
-    [[MPConsentManager sharedManager] showConsentDialogFromViewController:viewController completion:completion];
+    [self showConsentDialogFromViewController:viewController
+                                      didShow:completion
+                                   didDismiss:nil];
 }
 
 - (BOOL)isConsentDialogReady {

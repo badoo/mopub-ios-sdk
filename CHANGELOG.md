@@ -1,3 +1,19 @@
+## Version 5.2.0 (July 9, 2018)
+- **Features**
+  - SDK initialization is required for ads to load.
+  - Added callback to the consent dialog when it is dismissed.
+
+- **Bug Fixes**
+  - Synchronized access to shared `NSMutableDictionary` in `MPHTTPNetworkSession`.
+  - Video ads using Device orientation now appear aligned correctly on iPhone X.
+
+## Version 5.1.0 (June 5, 2018)
+- **Features**
+  - Updated `MPReachability` to be IPv6 compliant.
+  - Allow publishers to determine which users should be treated as GDPR compliant users through the new API `forceGDPRApplicable`.
+  - Alert a publisher (through logs) when they are trying to use the new GDPR consent flow without being whitelisted.
+  - Banner refresh will only occur after an impression.
+
 ## Version 5.0.0 (May 14, 2018)
 - **Features**
   - General Data Protection Regulation (GDPR) update to support a way for publishers to determine GDPR applicability and to obtain and manage consent from users in European Economic Area, the United Kingdom, or Switzerland to serve personalize ads.
