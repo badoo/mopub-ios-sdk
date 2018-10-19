@@ -25,6 +25,11 @@
  * The delegate of the `MPNativeAd` object.
  */
 @property (nonatomic, weak) id<MPNativeAdDelegate> delegate;
+/**
+ * Exposed click status of the Ad to destinguish between clicks on Ad and Info.
+ * - Alexander Balaban
+ */
+@property (nonatomic, assign) BOOL hasTrackedClick;
 
 /**
  * A dictionary representing the native ad properties.
