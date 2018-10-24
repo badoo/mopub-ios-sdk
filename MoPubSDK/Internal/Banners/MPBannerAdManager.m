@@ -28,6 +28,7 @@
 @property (nonatomic, assign) BOOL hasRequestedAtLeastOneAd;
 @property (nonatomic, assign) UIInterfaceOrientation currentOrientation;
 @property (nonatomic, assign) BOOL shouldSuspendLoading;
+@property (nonatomic, assign) BOOL hasRequestedDuringSuspension;
 
 - (void)loadAdWithURL:(NSURL *)URL;
 - (void)applicationWillEnterForeground;
@@ -111,8 +112,10 @@
 
 - (void)applicationWillEnterForeground
 {
-    BOOL shouldLoad = self.shouldSuspendLoading || (self.automaticallyRefreshesContents && self.hasRequestedAtLeastOneAd);
     self.shouldSuspendLoading = NO;
+
+    BOOL shouldLoad = self.hasRequestedDuringSuspension || (self.automaticallyRefreshesContents && self.hasRequestedAtLeastOneAd);
+    self.hasRequestedDuringSuspension = NO;
     if (shouldLoad) {
         [self loadAdWithURL:nil];
     }
@@ -152,6 +155,7 @@
 - (void)loadAdWithURL:(NSURL *)URL
 {
     if (self.shouldSuspendLoading) {
+        self.hasRequestedDuringSuspension = YES;
         MPLogWarn(@"Banner view (%@) is requested during non-active application state. Wait till application will enter foreground", [self.delegate adUnitId]);
         return;
     }
