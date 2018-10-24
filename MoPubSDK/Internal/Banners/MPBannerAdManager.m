@@ -27,6 +27,7 @@
 @property (nonatomic, assign) BOOL automaticallyRefreshesContents;
 @property (nonatomic, assign) BOOL hasRequestedAtLeastOneAd;
 @property (nonatomic, assign) UIInterfaceOrientation currentOrientation;
+@property (nonatomic, assign) BOOL shouldSuspendLoading;
 
 - (void)loadAdWithURL:(NSURL *)URL;
 - (void)applicationWillEnterForeground;
@@ -110,13 +111,16 @@
 
 - (void)applicationWillEnterForeground
 {
-    if (self.automaticallyRefreshesContents && self.hasRequestedAtLeastOneAd) {
+    BOOL shouldLoad = self.shouldSuspendLoading || (self.automaticallyRefreshesContents && self.hasRequestedAtLeastOneAd);
+    self.shouldSuspendLoading = NO;
+    if (shouldLoad) {
         [self loadAdWithURL:nil];
     }
 }
 
 - (void)applicationDidEnterBackground
 {
+    self.shouldSuspendLoading = YES;
     [self pauseRefreshTimer];
 }
 
@@ -147,6 +151,11 @@
 
 - (void)loadAdWithURL:(NSURL *)URL
 {
+    if (self.shouldSuspendLoading) {
+        MPLogWarn(@"Banner view (%@) is requested during non-active application state. Wait till application will enter foreground", [self.delegate adUnitId]);
+        return;
+    }
+
     URL = [URL copy]; //if this is the URL from the requestingConfiguration, it's about to die...
     // Cancel the current request/requesting adapter
     self.requestingConfiguration = nil;

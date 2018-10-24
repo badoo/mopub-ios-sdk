@@ -29,7 +29,7 @@
  * Exposed click status of the Ad to destinguish between clicks on Ad and Info.
  * - Alexander Balaban
  */
-@property (nonatomic, assign) BOOL hasTrackedClick;
+@property (nonatomic, readonly) BOOL hasTrackedClick;
 
 /**
  * A dictionary representing the native ad properties.
