@@ -1,3 +1,24 @@
+## Version 5.4.1 (November 28, 2018)
+- **Bug Fixes**
+  - Changed the MoPubSampleApp+Framework target to MoPubSampleApp in the Objective-C Sample App.
+  - Fixed crash when `MPTableViewAdPlacer` makes multiple ad requests within a short amount of time.
+  - Fixed bug with the internal state of rewarded video when the video fails to play.
+
+## Version 5.4.0 (October 3, 2018)
+- **Features**
+  - SDK distribution as a dynamic framework is now available.
+  - Local extras are now supported for all ad formats.
+
+- **Bug Fixes**
+  - HTTP error codes now include the localized error description.
+  - Added missing mraid.js file protections when showing MRAID ads.
+  - Fixed native video crash.
+  - Fixed native ad timeout timer invalidation. 
+
+## Version 5.3.0 (August 15, 2018)
+- **Features**
+  - Laying the foundation for platform optimization work that enables the SDK to receive multiple ad responses per ad request, reducing the number of round trips between the server and the client required to fill the requests.
+
 ## Version 5.2.0 (July 9, 2018)
 - **Features**
   - SDK initialization is required for ads to load.
