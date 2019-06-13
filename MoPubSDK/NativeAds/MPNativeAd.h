@@ -26,6 +26,12 @@
 /** @name Ad Resources */
 
 /**
+ * Exposed click status of the Ad to destinguish between clicks on Ad and Info.
+ * - Alexander Balaban
+ */
+@property (nonatomic, readonly) BOOL hasTrackedClick;
+
+/**
  * The delegate of the `MPNativeAd` object.
  */
 @property (nonatomic, weak) id<MPNativeAdDelegate> delegate;
