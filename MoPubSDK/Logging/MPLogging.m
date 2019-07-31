@@ -35,7 +35,8 @@ NSString * const kMPWarmingUpErrorLogFormatWithAdUnitID = @"Ad unit %@ is curren
 }
 
 + (void)logEvent:(MPLogEvent *)event source:(NSString *)source fromClass:(Class)aClass {
-    [MPLogManager.sharedInstance logEvent:event source:source fromClass:NSStringFromClass(aClass)];
+    NSString * className = (aClass != Nil ? NSStringFromClass(aClass) : @"");
+    [MPLogManager.sharedInstance logEvent:event source:source fromClass:className];
 }
 
 @end

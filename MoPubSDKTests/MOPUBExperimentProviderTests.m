@@ -46,8 +46,11 @@
     [MOPUBExperimentProvider setDisplayAgentOverriddenByClientFlag:NO];
     NSDictionary * headers = @{ kClickthroughExperimentBrowserAgent: @"2"};
     MPAdConfiguration * config = [[MPAdConfiguration alloc] initWithMetadata:headers data:nil adType:MPAdTypeFullscreen];
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wdeprecated-declarations"
     XCTAssertEqual(config.clickthroughExperimentBrowserAgent, MOPUBDisplayAgentTypeSafariViewController);
     XCTAssertEqual([MOPUBExperimentProvider displayAgentType], MOPUBDisplayAgentTypeSafariViewController);
+#pragma clang diagnostic pop
 }
 
 - (void)testClickthroughClientOverride {
@@ -55,13 +58,19 @@
 
     NSDictionary * headers = @{ kClickthroughExperimentBrowserAgent: @"2"};
     MPAdConfiguration * config = [[MPAdConfiguration alloc] initWithMetadata:headers data:nil adType:MPAdTypeFullscreen];
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wdeprecated-declarations"
     XCTAssertEqual(config.clickthroughExperimentBrowserAgent, MOPUBDisplayAgentTypeSafariViewController);
+#pragma clang diagnostic pop
 
     XCTAssertEqual([MOPUBExperimentProvider displayAgentType], MOPUBDisplayAgentTypeInApp);
 
     // Display agent type is overridden to MOPUBDisplayAgentTypeSafariViewController
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wdeprecated-declarations"
     [[MoPub sharedInstance] setClickthroughDisplayAgentType:MOPUBDisplayAgentTypeSafariViewController];
     XCTAssertEqual([MOPUBExperimentProvider displayAgentType], MOPUBDisplayAgentTypeSafariViewController);
+#pragma clang diagnostic pop
 
     // Display agent type is overridden to MOPUBDisplayAgentTypeNativeSafari
     [[MoPub sharedInstance] setClickthroughDisplayAgentType:MOPUBDisplayAgentTypeNativeSafari];

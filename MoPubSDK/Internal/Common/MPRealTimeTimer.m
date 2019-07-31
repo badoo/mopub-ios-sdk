@@ -68,8 +68,8 @@
     self.timer = [MPTimer timerWithTimeInterval:self.currentTimeInterval
                                          target:self
                                        selector:@selector(fire)
-                                        repeats:NO];
-    self.timer.runLoopMode = NSRunLoopCommonModes;
+                                        repeats:NO
+                                    runLoopMode:NSRunLoopCommonModes];
     [self.timer scheduleNow];
     if (!self.fireDate) {
         self.fireDate = [NSDate dateWithTimeIntervalSinceNow:self.currentTimeInterval];

@@ -21,10 +21,18 @@ typedef enum
 /**
  * The MPAdView class provides a view that can display banner advertisements.
  */
-
+IB_DESIGNABLE
 @interface MPAdView : UIView <MPMoPubAd>
 
 /** @name Initializing a Banner Ad */
+
+/**
+ * Initializes an MPAdView with the given ad unit ID.
+ *
+ * @param adUnitId A string representing a MoPub ad unit ID.
+ * @return A newly initialized ad view corresponding to the given ad unit ID and size.
+ */
+- (id)initWithAdUnitId:(NSString *)adUnitId;
 
 /**
  * Initializes an MPAdView with the given ad unit ID and banner size.
@@ -33,7 +41,7 @@ typedef enum
  * @param size The desired ad size. A list of standard ad sizes is available in MPConstants.h.
  * @return A newly initialized ad view corresponding to the given ad unit ID and size.
  */
-- (id)initWithAdUnitId:(NSString *)adUnitId size:(CGSize)size;
+- (id)initWithAdUnitId:(NSString *)adUnitId size:(CGSize)size __attribute__((deprecated("Use initWithAdUnitId: instead")));
 
 /** @name Setting and Getting the Delegate */
 
@@ -54,7 +62,12 @@ typedef enum
  * application set aside for advertising. If no ad unit ID is set, the ad view will use a default
  * ID that only receives test ads.
  */
-@property (nonatomic, copy) NSString *adUnitId;
+@property (nonatomic, copy) IBInspectable NSString *adUnitId;
+
+/**
+ * The maximum desired ad size. A list of standard ad sizes is available in MPConstants.h.
+ */
+@property (nonatomic, assign) IBInspectable CGSize maxAdSize;
 
 /**
  * A string representing a set of non-personally identifiable keywords that should be passed to the MoPub ad server to receive
@@ -93,7 +106,8 @@ typedef enum
 /** @name Loading a Banner Ad */
 
 /**
- * Requests a new ad from the MoPub ad server.
+ * Requests a new ad from the MoPub ad server with a maximum desired ad size equal to
+ * the size of the current @c bounds of this view.
  *
  * If the ad view is already loading an ad, this call will be ignored. You may use `forceRefreshAd`
  * if you would like cancel any existing ad requests and force a new ad to load.
@@ -101,7 +115,20 @@ typedef enum
 - (void)loadAd;
 
 /**
- * Cancels any existing ad requests and requests a new ad from the MoPub ad server.
+ * Requests a new ad from the MoPub ad server with the specified maximum desired ad size.
+ *
+ * If the ad view is already loading an ad, this call will be ignored. You may use `forceRefreshAd`
+ * if you would like cancel any existing ad requests and force a new ad to load.
+ *
+ * @param size The maximum desired ad size to request. You may specify this value manually,
+ * or use one of the presets found in @c MPConstants.h for the most common types of maximum ad sizes.
+ * If using @c kMPPresetMaxAdSizeMatchFrame, the frame will be used as the maximum ad size.
+ */
+- (void)loadAdWithMaxAdSize:(CGSize)size;
+
+/**
+ * Cancels any existing ad requests and requests a new ad from the MoPub ad server
+ * using the previously loaded maximum desired ad size.
  */
 - (void)forceRefreshAd;
 

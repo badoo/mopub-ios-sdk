@@ -45,7 +45,19 @@
  *
  * @param view The ad view sending the message.
  */
-- (void)adViewDidLoadAd:(MPAdView *)view;
+- (void)adViewDidLoadAd:(MPAdView *)view __attribute__((deprecated("Deprecated; please use adViewDidLoadAd:adSize: instead.")));
+
+/**
+ * Sent when an ad view successfully loads an ad.
+ *
+ * Your implementation of this method should insert the ad view into the view hierarchy, if you
+ * have not already done so.
+ *
+ * @param view The ad view sending the message.
+ * @param adSize The size of the ad that was successfully loaded. It is recommended to resize
+ * the @c MPAdView frame to match the height of the loaded ad.
+ */
+- (void)adViewDidLoadAd:(MPAdView *)view adSize:(CGSize)adSize;
 
 /**
  * Sent when an ad view fails to load an ad.

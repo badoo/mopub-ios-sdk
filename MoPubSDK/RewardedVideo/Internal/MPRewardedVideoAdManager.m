@@ -95,10 +95,7 @@
         // set customerId. Other ads require customerId on presentation in which we will use this new id coming in when presenting the ad.
         self.customerId = customerId;
         self.targeting = targeting;
-        [self loadAdWithURL:[MPAdServerURLBuilder URLWithAdUnitID:self.adUnitID
-                                                         keywords:targeting.keywords
-                                                 userDataKeywords:targeting.userDataKeywords
-                                                         location:targeting.location]];
+        [self loadAdWithURL:[MPAdServerURLBuilder URLWithAdUnitID:self.adUnitID targeting:targeting]];
     }
 }
 
@@ -320,7 +317,7 @@
     // Playback of the rewarded video failed; reset the internal played state
     // so that a new rewarded video ad can be loaded.
     self.ready = NO;
-    self.playedAd = YES;
+    self.playedAd = NO;
 
     MPLogAdEvent([MPLogEvent adShowFailedWithError:error], self.adUnitID);
     [self.delegate rewardedVideoDidFailToPlayForAdManager:self error:error];

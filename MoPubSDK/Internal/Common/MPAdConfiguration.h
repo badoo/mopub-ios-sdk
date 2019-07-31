@@ -31,6 +31,7 @@ extern NSString * const kCreativeIdMetadataKey;
 extern NSString * const kCustomEventClassNameMetadataKey;
 extern NSString * const kCustomEventClassDataMetadataKey;
 extern NSString * const kNextUrlMetadataKey;
+extern NSString * const kFormatMetadataKey;
 extern NSString * const kBeforeLoadUrlMetadataKey;
 extern NSString * const kAfterLoadUrlMetadataKey;
 extern NSString * const kAfterLoadSuccessUrlMetadataKey;
@@ -75,6 +76,7 @@ extern NSString * const kBannerImpressionMinPixelMetadataKey;
 
 @property (nonatomic, assign) MPAdType adType;
 @property (nonatomic, assign) BOOL adUnitWarmingUp;
+@property (nonatomic, readonly) BOOL isMraidAd;
 @property (nonatomic, copy) NSString *networkType;
 // If this flag is YES, it implies that we've reached the end of the waterfall for the request
 // and there is no need to hit ad server again.
@@ -110,7 +112,12 @@ extern NSString * const kBannerImpressionMinPixelMetadataKey;
 @property (nonatomic, assign) NSTimeInterval rewardedPlayableDuration;
 @property (nonatomic, assign) BOOL rewardedPlayableShouldRewardOnClick;
 @property (nonatomic, copy) NSString *advancedBidPayload;
-@property (nonatomic, strong) MPImpressionData * impressionData;
+@property (nonatomic, strong) MPImpressionData *impressionData;
+
+/**
+ Unified ad unit format in its raw string representation.
+ */
+@property (nonatomic, copy) NSString *format;
 
 // viewable impression tracking experiment
 @property (nonatomic) NSTimeInterval impressionMinVisibleTimeInSec;

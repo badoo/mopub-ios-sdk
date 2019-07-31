@@ -30,11 +30,16 @@ class BannerAdDataSource: NSObject, AdDataSource {
     var eventTriggered: [AdEvent: Bool] = [:]
     
     /**
+     The maximum desired ad size to request on a load
+     */
+    private var maxDesiredAdSize: CGSize = kMPPresetMaxAdSizeMatchFrame
+    
+    /**
      Status event titles that correspond to the events found in `MPAdViewDelegate`
      */
     lazy var title: [AdEvent: String] = {
         var titleStrings: [AdEvent: String] = [:]
-        titleStrings[.didLoad] = "adViewDidLoadAd(_:)"
+        titleStrings[.didLoad] = "adViewDidLoadAd(_:, adSize _:)"
         titleStrings[.didFailToLoad] = "adView(_:, didFailToLoadAdWithError _:)"
         titleStrings[.willPresentModal] = "willPresentModalViewForAd(_:)"
         titleStrings[.didDismissModal] = "didDismissModalViewForAd(_:)"
@@ -55,7 +60,7 @@ class BannerAdDataSource: NSObject, AdDataSource {
     /**
      Initializes the Banner ad data source.
      - Parameter adUnit: Banner ad unit.
-     - Parameter size: Banner ad size.
+     - Parameter size: Maximum desired ad size.
      */
     init(adUnit: AdUnit, bannerSize size: CGSize) {
         super.init()
@@ -63,12 +68,14 @@ class BannerAdDataSource: NSObject, AdDataSource {
         
         // Instantiate the banner.
         adView = {
-            let view: MPAdView = MPAdView(adUnitId: adUnit.id, size: size)
+            let view: MPAdView = MPAdView(adUnitId: adUnit.id)
             view.delegate = self
             view.backgroundColor = .lightGray
-            
+            view.translatesAutoresizingMaskIntoConstraints = false
             return view
         }()
+        
+        maxDesiredAdSize = size
     }
     
     // MARK: - AdDataSource
@@ -137,7 +144,7 @@ class BannerAdDataSource: NSObject, AdDataSource {
         // to load.
         adView.keywords = adUnit.keywords
         adView.userDataKeywords = adUnit.userDataKeywords
-        adView.loadAd()
+        adView.loadAd(withMaxAdSize: maxDesiredAdSize)
     }
 }
 
@@ -148,10 +155,15 @@ extension BannerAdDataSource: MPAdViewDelegate {
         return delegate?.adPresentationViewController
     }
     
-    func adViewDidLoadAd(_ view: MPAdView!) {
+    func adViewDidLoadAd(_ view: MPAdView!, adSize: CGSize) {
         isAdLoading = false
         isAdLoaded = true
-        setStatus(for: .didLoad) { [weak self] in
+        
+        // Resize the MPAdView frame to match the creative height
+        view.frame.size.height = adSize.height
+        delegate?.adPresentationViewController?.view.setNeedsLayout()
+                
+        setStatus(for: .didLoad, message: "The ad size is \(adSize)") { [weak self] in
             self?.delegate?.adPresentationTableView.reloadData()
         }
     }

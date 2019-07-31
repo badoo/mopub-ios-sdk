@@ -26,15 +26,6 @@ BOOL MPViewIsVisible(UIView *view);
 BOOL MPViewIntersectsParentWindowWithPercent(UIView *view, CGFloat percentVisible);
 NSString *MPResourcePathForResource(NSString *resourceName);
 NSArray *MPConvertStringArrayToURLArray(NSArray *strArray);
-////////////////////////////////////////////////////////////////////////////////////////////////////
-
-/*
- * Availability constants.
- */
-
-#define MP_IOS_7_0  70000
-#define MP_IOS_8_0  80000
-#define MP_IOS_9_0  90000
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 
@@ -64,8 +55,6 @@ UIInterfaceOrientationMask MPInterstitialOrientationTypeToUIInterfaceOrientation
 
 @interface UIApplication (MPAdditions)
 
-// Correct way to hide/show the status bar on pre-ios 7.
-- (void)mp_preIOS7setApplicationStatusBarHidden:(BOOL)hidden;
 - (BOOL)mp_supportsOrientationMask:(UIInterfaceOrientationMask)orientationMask;
 - (BOOL)mp_doesOrientation:(UIInterfaceOrientation)orientation matchOrientationMask:(UIInterfaceOrientationMask)orientationMask;
 

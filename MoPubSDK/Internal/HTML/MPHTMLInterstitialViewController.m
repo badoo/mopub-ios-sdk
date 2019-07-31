@@ -102,9 +102,8 @@
 - (void)viewWillTransitionToSize:(CGSize)size withTransitionCoordinator:(id<UIViewControllerTransitionCoordinator>)coordinator
 {
     [coordinator animateAlongsideTransition:^(id<UIViewControllerTransitionCoordinatorContext> context) {
-        UIInterfaceOrientation orientation = [[UIApplication sharedApplication] statusBarOrientation];
-        [self.backingViewAgent rotateToOrientation:orientation];
-     } completion:nil];
+        [self.backingViewAgent forceRedraw];
+    } completion:nil];
 
     [super viewWillTransitionToSize:size withTransitionCoordinator:coordinator];
 }

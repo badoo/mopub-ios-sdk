@@ -23,6 +23,7 @@
 #import "MPConsentChangedReason.h"
 #import "MPConsentError.h"
 #import "MPConsentStatus.h"
+#import "MPEngineInfo.h"
 #import "MPError.h"
 #import "MPGlobal.h"
 #import "MPIdentityProvider.h"
@@ -186,6 +187,12 @@ NS_ASSUME_NONNULL_BEGIN
  * @param vendors The viewability vendor(s) to be disabled. This is a bitmask value; ORing vendors together is okay.
  */
 - (void)disableViewability:(MPViewabilityOption)vendors;
+
+/**
+ Sets the engine that is using this MoPub SDK.
+ @param info Engine information.
+ */
+- (void)setEngineInformation:(MPEngineInfo *)info;
 
 @end
 

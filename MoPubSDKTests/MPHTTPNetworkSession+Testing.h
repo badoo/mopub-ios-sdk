@@ -9,6 +9,8 @@
 #import "MPHTTPNetworkSession.h"
 #import "MPHTTPNetworkTaskData.h"
 
+NS_ASSUME_NONNULL_BEGIN
+
 @interface MPHTTPNetworkSession (Testing)
 
 // Expose private methods
@@ -20,3 +22,5 @@
 - (void)URLSession:(NSURLSession *)session task:(NSURLSessionTask *)task didCompleteWithError:(nullable NSError *)error;
 
 @end
+
+NS_ASSUME_NONNULL_END

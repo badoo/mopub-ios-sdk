@@ -7,6 +7,7 @@
 //
 
 #import "MoPub.h"
+#import "MPAdServerURLBuilder.h"
 #import "MPConsentManager.h"
 #import "MPConstants.h"
 #import "MPCoreInstanceProvider.h"
@@ -22,6 +23,8 @@
 #import "MPConsentManager.h"
 #import "MPConsentChangedNotification.h"
 #import "MPSessionTracker.h"
+
+static NSString * const kPublisherEnteredAdUnitIdStorageKey = @"com.mopub.mopub-ios-sdk.initialization.publisher.entered.ad.unit.id";
 
 @interface MoPub ()
 
@@ -111,10 +114,15 @@
 - (void)initializeSdkWithConfiguration:(MPMoPubConfiguration *)configuration
                             completion:(void(^_Nullable)(void))completionBlock
 {
-    static dispatch_once_t onceToken;
-    dispatch_once(&onceToken, ^{
-        [self setSdkWithConfiguration:configuration completion:completionBlock];
-    });
+    if (@available(iOS 9, *)) {
+        static dispatch_once_t onceToken;
+        dispatch_once(&onceToken, ^{
+            [self setSdkWithConfiguration:configuration completion:completionBlock];
+        });
+    } else {
+        MPLogEvent([MPLogEvent error:[NSError sdkMinimumOsVersion:9] message:nil]);
+        NSAssert(false, @"MoPub SDK requires iOS 9 and up");
+    }
 }
 
 - (void)setSdkWithConfiguration:(MPMoPubConfiguration *)configuration
@@ -133,6 +141,12 @@
         // Configure the consent manager and synchronize regardless of the result
         // of `checkForDoNotTrackAndTransition`.
         dispatch_group_enter(initializationGroup);
+        // If the publisher has changed their adunit ID for app initialization, clear our adunit ID caches
+        NSString * cachedPublisherEnteredAdUnitID = [NSUserDefaults.standardUserDefaults stringForKey:kPublisherEnteredAdUnitIdStorageKey];
+        if (![configuration.adUnitIdForAppInitialization isEqualToString:cachedPublisherEnteredAdUnitID]) {
+            [MPConsentManager.sharedManager clearAdUnitIdUsedForConsent];
+            [NSUserDefaults.standardUserDefaults setObject:configuration.adUnitIdForAppInitialization forKey:kPublisherEnteredAdUnitIdStorageKey];
+        }
         MPConsentManager.sharedManager.adUnitIdUsedForConsent = configuration.adUnitIdForAppInitialization;
         MPConsentManager.sharedManager.allowLegitimateInterest = configuration.allowLegitimateInterest;
         [MPConsentManager.sharedManager checkForDoNotTrackAndTransition];
@@ -189,6 +203,11 @@
     [MPViewabilityTracker disableViewability:vendors];
 }
 
+- (void)setEngineInformation:(MPEngineInfo *)info
+{
+    MPAdServerURLBuilder.engineInformation = info;
+}
+
 @end
 
 @implementation MoPub (Mediation)
@@ -223,7 +242,7 @@
 }
 
 - (void)clearCachedNetworks {
-    return [MPMediationManager.sharedManager clearCache];
+    [MPMediationManager.sharedManager clearCache];
 }
 
 @end

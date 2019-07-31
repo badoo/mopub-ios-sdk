@@ -15,7 +15,7 @@
 
 + (MPNativeAdRequestTargeting *)targeting
 {
-    return [[MPNativeAdRequestTargeting alloc] init];
+    return [[MPNativeAdRequestTargeting alloc] initWithCreativeSafeSize:CGSizeZero];
 }
 
 - (void)setDesiredAssets:(NSSet *)desiredAssets

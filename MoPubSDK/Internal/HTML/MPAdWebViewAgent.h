@@ -31,7 +31,6 @@ typedef NSUInteger MPAdWebViewEvent;
 
 - (id)initWithAdWebViewFrame:(CGRect)frame delegate:(id<MPAdWebViewAgentDelegate>)delegate;
 - (void)loadConfiguration:(MPAdConfiguration *)configuration;
-- (void)rotateToOrientation:(UIInterfaceOrientation)orientation;
 - (void)invokeJavaScriptForEvent:(MPAdWebViewEvent)event;
 - (void)forceRedraw;
 

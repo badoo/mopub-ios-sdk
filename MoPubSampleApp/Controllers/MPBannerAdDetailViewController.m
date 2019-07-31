@@ -119,9 +119,14 @@
     return self;
 }
 
-- (void)adViewDidLoadAd:(MPAdView *)view
+- (void)adViewDidLoadAd:(MPAdView *)view adSize:(CGSize)adSize
 {
     self.loadAdButton.enabled = YES;
+    self.adView.frame = ({
+        CGRect frame = self.adView.frame;
+        frame.size.height = adSize.height;
+        frame;
+    });
 
     [self.spinner stopAnimating];
     [self endTimer];

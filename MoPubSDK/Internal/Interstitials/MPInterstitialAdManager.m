@@ -90,10 +90,7 @@
         [self.delegate managerDidLoadInterstitial:self];
     } else {
         self.targeting = targeting;
-        [self loadAdWithURL:[MPAdServerURLBuilder URLWithAdUnitID:ID
-                                                         keywords:targeting.keywords
-                                                 userDataKeywords:targeting.userDataKeywords
-                                                         location:targeting.location]];
+        [self loadAdWithURL:[MPAdServerURLBuilder URLWithAdUnitID:ID targeting:targeting]];
     }
 }
 
@@ -171,7 +168,7 @@
     [self.delegate manager:self didFailToLoadInterstitialWithError:error];
 }
 
-- (void)setUpAdapterWithConfiguration:(MPAdConfiguration *)configuration;
+- (void)setUpAdapterWithConfiguration:(MPAdConfiguration *)configuration
 {
     // Notify Ad Server of the adapter load. This is fire and forget.
     [self.communicator sendBeforeLoadUrlWithConfiguration:configuration];

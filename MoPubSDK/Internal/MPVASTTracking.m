@@ -102,7 +102,7 @@ static const NSInteger kStartTrackerTime = 0;
 
 @implementation MPVASTTracking
 
-- (instancetype)initWithMPVideoConfig:(MPVideoConfig *)videoConfig videoView:(UIView *)videoView;
+- (instancetype)initWithMPVideoConfig:(MPVideoConfig *)videoConfig videoView:(UIView *)videoView
 {
     self = [super init];
     if (self) {

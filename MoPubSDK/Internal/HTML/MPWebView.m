@@ -75,14 +75,10 @@ static BOOL gForceWKWebView = NO;
         WKUserContentController *contentController = [[WKUserContentController alloc] init];
         WKWebViewConfiguration *config = [[WKWebViewConfiguration alloc] init];
         config.allowsInlineMediaPlayback = kMoPubAllowsInlineMediaPlaybackDefault;
-        if (@available(iOS 9.0, *)) {
-            config.requiresUserActionForMediaPlayback = kMoPubRequiresUserActionForMediaPlaybackDefault;
-        } else {
-            config.mediaPlaybackRequiresUserAction = kMoPubRequiresUserActionForMediaPlaybackDefault;
-        }
+        config.requiresUserActionForMediaPlayback = kMoPubRequiresUserActionForMediaPlaybackDefault;
         config.userContentController = contentController;
 
-        if (@available(iOS 11.0, *)) {
+        if (@available(iOS 11, *)) {
             [WKContentRuleListStore.defaultStore compileContentRuleListForIdentifier:@"ContentBlockingRules" encodedContentRuleList:MPContentBlocker.blockedResourcesList completionHandler:^(WKContentRuleList * rulesList, NSError * error) {
                 if (error == nil) {
                     [config.userContentController addContentRuleList:rulesList];
@@ -207,7 +203,7 @@ static UIView *gOffscreenView = nil;
     // If it's attached to self, the autoresizing mask should come into play & this is just extra work.
     if ([keyPath isEqualToString:kMoPubFrameKeyPathString]
         && [self.wkWebView.superview isEqual:gOffscreenView]) {
-        if (@available(iOS 11.0, *)) {
+        if (@available(iOS 11, *)) {
             // In iOS 11, WKWebView loads web view contents into the safe area only unless `viewport-fit=cover` is
             // included in the page's viewport tag. Also, as of iOS 11, it appears WKWebView does not redraw page
             // contents to match the safe area of a new position after being moved. As a result, making `wkWebView`'s
@@ -250,7 +246,7 @@ static UIView *gOffscreenView = nil;
 }
 
 - (void)constrainView:(UIView *)view shouldUseSafeArea:(BOOL)shouldUseSafeArea {
-    if (@available(iOS 11.0, *)) {
+    if (@available(iOS 11, *)) {
         view.translatesAutoresizingMaskIntoConstraints = NO;
 
         if (self.webViewLayoutConstraints) {
@@ -290,7 +286,7 @@ textEncodingName:(NSString *)encodingName
                         MIMEType:MIMEType
                 textEncodingName:encodingName
                          baseURL:baseURL];
-    } else if (@available(iOS 9.0, *)) {
+    } else {
         [self.wkWebView loadData:data
                         MIMEType:MIMEType
            characterEncodingName:encodingName
@@ -368,25 +364,19 @@ textEncodingName:(NSString *)encodingName
 }
 
 - (void)setAllowsLinkPreview:(BOOL)allowsLinkPreview {
-    if (@available(iOS 9.0, *)) {
-        if (self.uiWebView) {
-            self.uiWebView.allowsLinkPreview = allowsLinkPreview;
-        } else {
-            self.wkWebView.allowsLinkPreview = allowsLinkPreview;
-        }
+    if (self.uiWebView) {
+        self.uiWebView.allowsLinkPreview = allowsLinkPreview;
+    } else {
+        self.wkWebView.allowsLinkPreview = allowsLinkPreview;
     }
 }
 
 - (BOOL)allowsLinkPreview {
-    if (@available(iOS 9.0, *)) {
-        if (self.uiWebView) {
-            return self.uiWebView.allowsLinkPreview;
-        } else {
-            return self.wkWebView.allowsLinkPreview;
-        }
+    if (self.uiWebView) {
+        return self.uiWebView.allowsLinkPreview;
+    } else {
+        return self.wkWebView.allowsLinkPreview;
     }
-
-    return NO;
 }
 
 - (void)setScalesPageToFit:(BOOL)scalesPageToFit {
@@ -452,13 +442,7 @@ textEncodingName:(NSString *)encodingName
     if (self.uiWebView) {
         return self.uiWebView.mediaPlaybackRequiresUserAction;
     } else {
-        if (@available(iOS 9.0, *)) {
-            return self.wkWebView.configuration.requiresUserActionForMediaPlayback;
-        } else if (![self.wkWebView.configuration respondsToSelector:@selector(requiresUserActionForMediaPlayback)]) {
-            return self.wkWebView.configuration.mediaPlaybackRequiresUserAction;
-        } else {
-            return NO;
-        }
+        return self.wkWebView.configuration.requiresUserActionForMediaPlayback;
     }
 }
 
@@ -466,26 +450,16 @@ textEncodingName:(NSString *)encodingName
     if (self.uiWebView) {
         return self.uiWebView.mediaPlaybackAllowsAirPlay;
     } else {
-        if (@available(iOS 9.0, *)) {
-            return self.wkWebView.configuration.allowsAirPlayForMediaPlayback;
-        } else if (![self.wkWebView.configuration respondsToSelector:@selector(allowsAirPlayForMediaPlayback)]) {
-            return self.wkWebView.configuration.mediaPlaybackAllowsAirPlay;
-        } else {
-            return NO;
-        }
+        return self.wkWebView.configuration.allowsAirPlayForMediaPlayback;
     }
 }
 
 - (BOOL)allowsPictureInPictureMediaPlayback {
-    if (@available(iOS 9.0, *)) {
-        if (self.uiWebView) {
-            return self.uiWebView.allowsPictureInPictureMediaPlayback;
-        } else {
-            return self.wkWebView.configuration.allowsPictureInPictureMediaPlayback;
-        }
+    if (self.uiWebView) {
+        return self.uiWebView.allowsPictureInPictureMediaPlayback;
+    } else {
+        return self.wkWebView.configuration.allowsPictureInPictureMediaPlayback;
     }
-
-    return NO;
 }
 
 #pragma mark - UIWebViewDelegate
@@ -633,11 +607,7 @@ windowFeatures:(WKWindowFeatures *)windowFeatures {
 - (void)webView:(WKWebView *)webView
 runJavaScriptAlertPanelWithMessage:(NSString *)message
 initiatedByFrame:(WKFrameInfo *)frame
-#if __IPHONE_OS_VERSION_MAX_ALLOWED < MP_IOS_9_0 // This pre-processor code is to be sure we can compile under both iOS 8 and 9 SDKs
-completionHandler:(void (^)())completionHandler {
-#else
 completionHandler:(void (^)(void))completionHandler {
-#endif
     completionHandler();
 }
 

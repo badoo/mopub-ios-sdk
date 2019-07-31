@@ -49,7 +49,7 @@
 
 @implementation MPAdWebViewAgent
 
-- (id)initWithAdWebViewFrame:(CGRect)frame delegate:(id<MPAdWebViewAgentDelegate>)delegate;
+- (id)initWithAdWebViewFrame:(CGRect)frame delegate:(id<MPAdWebViewAgentDelegate>)delegate
 {
     self = [super init];
     if (self) {
@@ -87,7 +87,7 @@
 
 #pragma mark - <UIGestureRecognizerDelegate>
 
-- (BOOL)gestureRecognizer:(UIGestureRecognizer *)gestureRecognizer shouldRecognizeSimultaneouslyWithGestureRecognizer:(UIGestureRecognizer *)otherGestureRecognizer;
+- (BOOL)gestureRecognizer:(UIGestureRecognizer *)gestureRecognizer shouldRecognizeSimultaneouslyWithGestureRecognizer:(UIGestureRecognizer *)otherGestureRecognizer
 {
     return YES;
 }
@@ -332,26 +332,6 @@
 
 - (void)forceRedraw
 {
-    UIInterfaceOrientation orientation = [[UIApplication sharedApplication] statusBarOrientation];
-    int angle = -1;
-    switch (orientation) {
-        case UIInterfaceOrientationPortrait: angle = 0; break;
-        case UIInterfaceOrientationLandscapeLeft: angle = 90; break;
-        case UIInterfaceOrientationLandscapeRight: angle = -90; break;
-        case UIInterfaceOrientationPortraitUpsideDown: angle = 180; break;
-        default: break;
-    }
-
-    if (angle == -1) return;
-
-    // UIWebView doesn't seem to fire the 'orientationchange' event upon rotation, so we do it here.
-    NSString *orientationEventScript = [NSString stringWithFormat:
-                                        @"window.__defineGetter__('orientation',function(){return %d;});"
-                                        @"(function(){ var evt = document.createEvent('Events');"
-                                        @"evt.initEvent('orientationchange',true,true);window.dispatchEvent(evt);})();",
-                                        angle];
-    [self.view stringByEvaluatingJavaScriptFromString:orientationEventScript];
-
     // XXX: In iOS 7, off-screen UIWebViews will fail to render certain image creatives.
     // Specifically, creatives that only contain an <img> tag whose src attribute uses a 302
     // redirect will not be rendered at all. One workaround is to temporarily change the web view's

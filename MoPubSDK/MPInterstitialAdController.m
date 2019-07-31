@@ -9,6 +9,7 @@
 #import "MPInterstitialAdController.h"
 #import "MoPub+Utility.h"
 #import "MPAdTargeting.h"
+#import "MPGlobal.h"
 #import "MPImpressionTrackedNotification.h"
 #import "MPInterstitialAdManager.h"
 #import "MPInterstitialAdManagerDelegate.h"
@@ -66,7 +67,7 @@
 
 - (void)loadAd
 {
-    MPAdTargeting * targeting = [[MPAdTargeting alloc] init];
+    MPAdTargeting * targeting = [MPAdTargeting targetingWithCreativeSafeSize:MPApplicationFrame(YES).size];
     targeting.keywords = self.keywords;
     targeting.localExtras = self.localExtras;
     targeting.location = self.location;

@@ -76,11 +76,7 @@ static NSString * const kAnimationKey = @"Timer";
         _countdownLabel = ({
             UILabel * label = [[UILabel alloc] initWithFrame:CGRectMake(0, 0, [MPCountdownTimerView intrinsicContentDimension], [MPCountdownTimerView intrinsicContentDimension])];
             label.center = ringCenter;
-            if (@available(iOS 8.2, *)) {
-                label.font = [UIFont systemFontOfSize:12 weight:UIFontWeightBold];
-            } else {
-                label.font = [UIFont systemFontOfSize:12];
-            }
+            label.font = [UIFont systemFontOfSize:12 weight:UIFontWeightBold];
             label.text = [NSString stringWithFormat:@"%.0f", ceil(seconds)];
             label.textAlignment = NSTextAlignmentCenter;
             label.textColor = UIColor.whiteColor;

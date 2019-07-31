@@ -25,6 +25,7 @@
 #import "MPAdConversionTracker.h"
 
 // NSUserDefault keys
+static NSString * const kAdUnitIdUsedForConsentStorageKey        = @"com.mopub.mopub-ios-sdk.consent.ad.unit.id";
 static NSString * const kConsentedIabVendorListStorageKey        = @"com.mopub.mopub-ios-sdk.consented.iab.vendor.list";
 static NSString * const kConsentedPrivacyPolicyVersionStorageKey = @"com.mopub.mopub-ios-sdk.consented.privacy.policy.version";
 static NSString * const kConsentedVendorListVersionStorageKey    = @"com.mopub.mopub-ios-sdk.consented.vendor.list.version";
@@ -137,16 +138,9 @@ static NSString * const kMacroReplaceLanguageCode = @"%%LANGUAGE%%";
         _consentDialogViewController = nil;
         _syncFrequency = kDefaultRefreshInterval;
 
-        // Initializing the timer must be done last since it depends on the value of _syncFrequency
-        __weak __typeof__(self) weakSelf = self;
-        dispatch_async(dispatch_get_global_queue( DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^{
-            // During SDK init, the chain of calls `MPConsentManager.sharedManager` -> `newNextUpdateTimer`
-            // -> `MPTimer.scheduleNow` -> `MPLogDebug` -> `MPIdentityProvider.identifier` ->
-            // `MPConsentManager.sharedManager` will cause a crash with EXC_BAD_INSTRUCTION since
-            // the same `dispatch_once` is called twice for `MPConsentManager.sharedManager` in the
-            // same call stack. To avoid this crash, call `newNextUpdateTimer` asynchronusly for now.
-            weakSelf.nextUpdateTimer = [weakSelf newNextUpdateTimer];
-        });
+        // Initializing the timer must be done last since it depends on the
+        // value of _syncFrequency
+        _nextUpdateTimer = [self newNextUpdateTimer];
     }
 
     return self;
@@ -528,8 +522,10 @@ static NSString * const kMacroReplaceLanguageCode = @"%%LANGUAGE%%";
 
     // Before beginning the sync, check for a nil or empty ad unit ID, and output to the log if there's an issue.
     // Otherwise, output the ad unit ID to the log.
-    if (self.adUnitIdUsedForConsent == nil || [self.adUnitIdUsedForConsent isEqualToString:@""]) {
-        MPLogInfo(@"Warning: no ad unit available for GDPR sync. Please make sure that the SDK is initialized correctly via `initializeSdkWithConfiguration:completion:` as soon as possible after app startup.");
+    if (self.adUnitIdUsedForConsent.length == 0) {
+        NSString * description = @"Warning: no ad unit available for GDPR sync. Please make sure that the SDK is initialized correctly via `initializeSdkWithConfiguration:completion:` as soon as possible after app startup.";
+        MPLogInfo(@"%@", description);
+        NSAssert(NO, description); // Crash the app if this is set up incorrectly
     } else {
         MPLogDebug(@"Ad unit used for GDPR sync: %@", self.adUnitIdUsedForConsent);
     }
@@ -546,49 +542,62 @@ static NSString * const kMacroReplaceLanguageCode = @"%%LANGUAGE%%";
     [MPHTTPNetworkSession startTaskWithHttpRequest:syncRequest responseHandler:^(NSData * _Nonnull data, NSHTTPURLResponse * _Nonnull response) {
         __typeof__(self) strongSelf = weakSelf;
 
-        // Update the last successfully synchronized state.
-        // We still update this state even if we failed to parse the response
-        // because this is a reflection of what we last sent to the server.
-        // If we've made it this far, it means that the `synchronizedStatus` was
-        // successfully sent to the server. However, it may be the case that the
-        // server sends us back an invalid response.
-        [NSUserDefaults.standardUserDefaults setObject:synchronizedStatus forKey:kLastSynchronizedConsentStatusStorageKey];
-
-        // Reset the GDPR applies transition state since it was successfully sent to
-        // ad server.
-        strongSelf.isForcedGDPRAppliesTransition = NO;
-
-        // Deserialize the JSON response and attempt to parse it
-        NSError * deserializationError = nil;
-        NSDictionary * json = [NSJSONSerialization JSONObjectWithData:data options:kNilOptions error:&deserializationError];
-        if (deserializationError != nil) {
-            // Complete with error.
-            MPLogEvent([MPLogEvent consentSyncFailedWithError:deserializationError]);
-            completion(deserializationError);
-        }
-        else if (![strongSelf updateConsentStateWithParameters:json]) {
-            // Attempt to parse and update the consent state
-            NSError * parseError = [NSError errorWithDomain:kConsentErrorDomain code:MPConsentErrorCodeFailedToParseSynchronizationResponse userInfo:@{ NSLocalizedDescriptionKey: @"Failed to parse consent synchronization response; one or more required fields are missing" }];
-            MPLogEvent([MPLogEvent consentSyncFailedWithError:parseError]);
-            completion(parseError);
-        }
-        else {
-            // Success
-            MPLogEvent([MPLogEvent consentSyncCompletedWithMessage:nil]);
-            completion(nil);
-        }
-
-        // `updateConsentStateWithParameters` might update `syncFrequency`, which is referenced in
-        // `newNextUpdateTimer`, so, call `updateConsentStateWithParameters` before `newNextUpdateTimer`
-        strongSelf.nextUpdateTimer = [strongSelf newNextUpdateTimer];
+        [strongSelf didFinishSynchronizationWithData:data
+                                  synchronizedStatus:synchronizedStatus
+                                          completion:completion];
     } errorHandler:^(NSError * _Nonnull error) {
         __typeof__(self) strongSelf = weakSelf;
 
-        // Schedule the next timer and complete with error.
-        strongSelf.nextUpdateTimer = [strongSelf newNextUpdateTimer];
-        MPLogEvent([MPLogEvent consentSyncFailedWithError:error]);
-        completion(error);
+        [strongSelf didFailSynchronizationWithError:error completion:completion];
     }];
+}
+
+- (void)didFinishSynchronizationWithData:(NSData *)data synchronizedStatus:(NSString *)synchronizedStatus completion:(void (^ _Nonnull)(NSError * error))completion {
+    // Update the last successfully synchronized state.
+    // We still update this state even if we failed to parse the response
+    // because this is a reflection of what we last sent to the server.
+    // If we've made it this far, it means that the `synchronizedStatus` was
+    // successfully sent to the server. However, it may be the case that the
+    // server sends us back an invalid response.
+    [NSUserDefaults.standardUserDefaults setObject:synchronizedStatus forKey:kLastSynchronizedConsentStatusStorageKey];
+
+    // Cache the working adunit ID
+    [self cacheAdUnitIdUsedForConsent];
+
+    // Reset the GDPR applies transition state since it was successfully sent to
+    // ad server.
+    self.isForcedGDPRAppliesTransition = NO;
+
+    // Deserialize the JSON response and attempt to parse it
+    NSError * deserializationError = nil;
+    NSDictionary * json = [NSJSONSerialization JSONObjectWithData:data options:kNilOptions error:&deserializationError];
+    if (deserializationError != nil) {
+        // Complete with error.
+        MPLogEvent([MPLogEvent consentSyncFailedWithError:deserializationError]);
+        completion(deserializationError);
+    }
+    else if (![self updateConsentStateWithParameters:json]) {
+        // Attempt to parse and update the consent state
+        NSError * parseError = [NSError errorWithDomain:kConsentErrorDomain code:MPConsentErrorCodeFailedToParseSynchronizationResponse userInfo:@{ NSLocalizedDescriptionKey: @"Failed to parse consent synchronization response; one or more required fields are missing" }];
+        MPLogEvent([MPLogEvent consentSyncFailedWithError:parseError]);
+        completion(parseError);
+    }
+    else {
+        // Success
+        MPLogEvent([MPLogEvent consentSyncCompletedWithMessage:nil]);
+        completion(nil);
+    }
+
+    // `updateConsentStateWithParameters` might update `syncFrequency`, which is referenced in
+    // `newNextUpdateTimer`, so, call `updateConsentStateWithParameters` before `newNextUpdateTimer`
+    self.nextUpdateTimer = [self newNextUpdateTimer];
+}
+
+- (void)didFailSynchronizationWithError:(NSError *)error completion:(void (^ _Nonnull)(NSError * error))completion {
+    // Schedule the next timer and complete with error.
+    self.nextUpdateTimer = [self newNextUpdateTimer];
+    MPLogEvent([MPLogEvent consentSyncFailedWithError:error]);
+    completion(error);
 }
 
 #pragma mark - Next Update Timer
@@ -878,6 +887,44 @@ static NSString * const kMacroReplaceLanguageCode = @"%%LANGUAGE%%";
     }
 }
 
+#pragma mark - Caching Adunit ID
+
+- (NSString *)adUnitIdUsedForConsent {
+    // If an adunit ID is cached, use the cached one rather than what's currently stored in the ivar,
+    // as the cache is known good.
+    NSString * cachedAdUnitId = [NSUserDefaults.standardUserDefaults stringForKey:kAdUnitIdUsedForConsentStorageKey];
+
+    if (cachedAdUnitId == nil) {
+        return _adUnitIdUsedForConsent;
+    }
+
+    return cachedAdUnitId;
+}
+
+- (void)cacheAdUnitIdUsedForConsent {
+    // If an adunit ID is already cached, we know it's good, so do not cache a new one.
+    NSString * cachedAdUnitId = [NSUserDefaults.standardUserDefaults stringForKey:kAdUnitIdUsedForConsentStorageKey];
+    if (cachedAdUnitId != nil) {
+        return;
+    }
+
+    [NSUserDefaults.standardUserDefaults setObject:self.adUnitIdUsedForConsent forKey:kAdUnitIdUsedForConsentStorageKey];
+}
+
+- (void)setAdUnitIdUsedForConsent:(NSString *)adUnitIdUsedForConsent isKnownGood:(BOOL)isKnownGood {
+    self.adUnitIdUsedForConsent = adUnitIdUsedForConsent;
+
+    if (isKnownGood) {
+        [self cacheAdUnitIdUsedForConsent];
+    }
+}
+
+- (void)clearAdUnitIdUsedForConsent {
+    [NSUserDefaults.standardUserDefaults setObject:nil forKey:kAdUnitIdUsedForConsentStorageKey];
+    // Using ivar here to get around warning about nullability
+    _adUnitIdUsedForConsent = nil;
+}
+
 @end
 
 @implementation MPConsentManager (State)
@@ -928,7 +975,7 @@ static NSString * const kMacroReplaceLanguageCode = @"%%LANGUAGE%%";
 }
 
 - (BOOL)forceIsGDPRApplicable {
-    return [[NSUserDefaults standardUserDefaults] boolForKey:kForceGDPRAppliesStorageKey];
+    return [NSUserDefaults.standardUserDefaults boolForKey:kForceGDPRAppliesStorageKey];
 }
 
 #pragma mark - Read Only Properties

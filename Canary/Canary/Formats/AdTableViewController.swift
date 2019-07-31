@@ -92,6 +92,10 @@ class AdTableViewController: UIViewController, AdViewController {
         
         // Update the title
         title = dataSource.adUnit.name
+        
+        // Add split view controller collapse button if applicable
+        navigationItem.leftBarButtonItem = splitViewController?.displayModeButtonItem
+        navigationItem.leftItemsSupplementBackButton = true
     }
     
     override func viewWillTransition(to size: CGSize, with coordinator: UIViewControllerTransitionCoordinator) {

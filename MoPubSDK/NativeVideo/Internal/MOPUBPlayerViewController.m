@@ -13,6 +13,7 @@
 #import "MOPUBActivityIndicatorView.h"
 #import "MPAdDestinationDisplayAgent.h"
 #import "MPCoreInstanceProvider.h"
+#import "MPExtendedHitBoxButton.h"
 #import "MPGlobal.h"
 #import "MPLogging.h"
 #import "MOPUBNativeVideoAdConfigValues.h"
@@ -21,7 +22,6 @@
 #import "UIView+MPAdditions.h"
 #import "MOPUBNativeVideoAdConfigValues.h"
 #import "MPVideoConfig.h"
-#import "UIButton+MPAdditions.h"
 
 #define kDefaultVideoAspectRatio 16.0f/9.0f
 
@@ -55,7 +55,7 @@ static const double kVideoFinishedBufferingAllowedError = 0.1;
 
 @interface MOPUBPlayerViewController() <MOPUBAVPlayerDelegate, MOPUBPlayerViewDelegate, MPAdDestinationDisplayAgentDelegate>
 
-@property (nonatomic) UIButton *muteButton;
+@property (nonatomic) MPExtendedHitBoxButton *muteButton;
 @property (nonatomic) UIActivityIndicatorView *loadingIndicator;
 @property (nonatomic) MPAdDestinationDisplayAgent *displayAgent;
 
@@ -233,11 +233,11 @@ static const double kVideoFinishedBufferingAllowedError = 0.1;
 - (void)createMuteButton
 {
     if (!self.muteButton) {
-        self.muteButton = [UIButton buttonWithType:UIButtonTypeCustom];
+        self.muteButton = [MPExtendedHitBoxButton buttonWithType:UIButtonTypeCustom];
         [self.muteButton setImage:[UIImage imageNamed:MPResourcePathForResource(kMutedButtonImage)] forState:UIControlStateNormal];
         [self.muteButton setImage:[UIImage imageNamed:MPResourcePathForResource(kUnmutedButtonImage)] forState:UIControlStateSelected];
         [self.muteButton addTarget:self action:@selector(muteButtonTapped) forControlEvents:UIControlEventTouchUpInside];
-        self.muteButton.mp_TouchAreaInsets = UIEdgeInsetsMake(kMuteIconInlineModeTouchAreaInsets, kMuteIconInlineModeTouchAreaInsets, kMuteIconInlineModeTouchAreaInsets, kMuteIconInlineModeTouchAreaInsets);
+        self.muteButton.touchAreaInsets = UIEdgeInsetsMake(kMuteIconInlineModeTouchAreaInsets, kMuteIconInlineModeTouchAreaInsets, kMuteIconInlineModeTouchAreaInsets, kMuteIconInlineModeTouchAreaInsets);
         [self.muteButton sizeToFit];
         [self.view addSubview:self.muteButton];
         self.muteButton.frame = CGRectMake(kMuteIconInlineModeLeftMargin, CGRectGetMaxY(self.view.bounds) -  kMuteIconInlineModeBottomMargin - CGRectGetHeight(self.muteButton.bounds), CGRectGetWidth(self.muteButton.bounds), CGRectGetHeight(self.muteButton.bounds));

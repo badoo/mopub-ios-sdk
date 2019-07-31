@@ -79,6 +79,8 @@
 		BC3B0C992007DBAA002D28B1 /* TweetCollectionViewCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = BC3B0C972007DBAA002D28B1 /* TweetCollectionViewCell.swift */; };
 		BC3B0C9B2007DBC8002D28B1 /* TweetCollectionViewCell.xib in Resources */ = {isa = PBXBuildFile; fileRef = BC3B0C9A2007DBC8002D28B1 /* TweetCollectionViewCell.xib */; };
 		BC3B0C9C2007DBC8002D28B1 /* TweetCollectionViewCell.xib in Resources */ = {isa = PBXBuildFile; fileRef = BC3B0C9A2007DBC8002D28B1 /* TweetCollectionViewCell.xib */; };
+		BC4309C822BD811400A7CBE5 /* AppDelegate+Initialization.swift in Sources */ = {isa = PBXBuildFile; fileRef = BC4309C722BD811400A7CBE5 /* AppDelegate+Initialization.swift */; };
+		BC4309C922BD811400A7CBE5 /* AppDelegate+Initialization.swift in Sources */ = {isa = PBXBuildFile; fileRef = BC4309C722BD811400A7CBE5 /* AppDelegate+Initialization.swift */; };
 		BC4CE299213604DA00CA0220 /* NativeAdTableViewController.xib in Resources */ = {isa = PBXBuildFile; fileRef = BC4CE298213604DA00CA0220 /* NativeAdTableViewController.xib */; };
 		BC4CE29A213604DA00CA0220 /* NativeAdTableViewController.xib in Resources */ = {isa = PBXBuildFile; fileRef = BC4CE298213604DA00CA0220 /* NativeAdTableViewController.xib */; };
 		BC4CE29C2136054500CA0220 /* NativeAdTableDataSource.swift in Sources */ = {isa = PBXBuildFile; fileRef = BC4CE29B2136054500CA0220 /* NativeAdTableDataSource.swift */; };
@@ -99,8 +101,6 @@
 		BC4FE30B2208E90800B5D240 /* CollapsibleAdapterInfoTableViewCell.xib in Resources */ = {isa = PBXBuildFile; fileRef = BC4FE3092208E90800B5D240 /* CollapsibleAdapterInfoTableViewCell.xib */; };
 		BC525EC8212F15A5007B1761 /* MediumRectangleAdViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = BC525EC7212F15A5007B1761 /* MediumRectangleAdViewController.swift */; };
 		BC525EC9212F15A5007B1761 /* MediumRectangleAdViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = BC525EC7212F15A5007B1761 /* MediumRectangleAdViewController.swift */; };
-		BC525ED1212F229A007B1761 /* LeaderboardAdViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = BC525ED0212F229A007B1761 /* LeaderboardAdViewController.swift */; };
-		BC525ED2212F229A007B1761 /* LeaderboardAdViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = BC525ED0212F229A007B1761 /* LeaderboardAdViewController.swift */; };
 		BC525ED4212F2D71007B1761 /* InterstitialAdDataSource.swift in Sources */ = {isa = PBXBuildFile; fileRef = BC525ED3212F2D71007B1761 /* InterstitialAdDataSource.swift */; };
 		BC525ED5212F2D71007B1761 /* InterstitialAdDataSource.swift in Sources */ = {isa = PBXBuildFile; fileRef = BC525ED3212F2D71007B1761 /* InterstitialAdDataSource.swift */; };
 		BC525ED7212F50E3007B1761 /* RewardedAdDataSource.swift in Sources */ = {isa = PBXBuildFile; fileRef = BC525ED6212F50E3007B1761 /* RewardedAdDataSource.swift */; };
@@ -321,6 +321,7 @@
 		BC3B0C942007DAA5002D28B1 /* NativeAdCollectionViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NativeAdCollectionViewController.swift; sourceTree = "<group>"; };
 		BC3B0C972007DBAA002D28B1 /* TweetCollectionViewCell.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TweetCollectionViewCell.swift; sourceTree = "<group>"; };
 		BC3B0C9A2007DBC8002D28B1 /* TweetCollectionViewCell.xib */ = {isa = PBXFileReference; lastKnownFileType = file.xib; path = TweetCollectionViewCell.xib; sourceTree = "<group>"; };
+		BC4309C722BD811400A7CBE5 /* AppDelegate+Initialization.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "AppDelegate+Initialization.swift"; sourceTree = "<group>"; };
 		BC4CE298213604DA00CA0220 /* NativeAdTableViewController.xib */ = {isa = PBXFileReference; lastKnownFileType = file.xib; path = NativeAdTableViewController.xib; sourceTree = "<group>"; };
 		BC4CE29B2136054500CA0220 /* NativeAdTableDataSource.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NativeAdTableDataSource.swift; sourceTree = "<group>"; };
 		BC4CE29E2136FB6100CA0220 /* AdViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AdViewController.swift; sourceTree = "<group>"; };
@@ -331,7 +332,6 @@
 		BC4FE3062208E8E500B5D240 /* CollapsibleAdapterInfoTableViewCell.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CollapsibleAdapterInfoTableViewCell.swift; sourceTree = "<group>"; };
 		BC4FE3092208E90800B5D240 /* CollapsibleAdapterInfoTableViewCell.xib */ = {isa = PBXFileReference; lastKnownFileType = file.xib; path = CollapsibleAdapterInfoTableViewCell.xib; sourceTree = "<group>"; };
 		BC525EC7212F15A5007B1761 /* MediumRectangleAdViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MediumRectangleAdViewController.swift; sourceTree = "<group>"; };
-		BC525ED0212F229A007B1761 /* LeaderboardAdViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LeaderboardAdViewController.swift; sourceTree = "<group>"; };
 		BC525ED3212F2D71007B1761 /* InterstitialAdDataSource.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = InterstitialAdDataSource.swift; sourceTree = "<group>"; };
 		BC525ED6212F50E3007B1761 /* RewardedAdDataSource.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RewardedAdDataSource.swift; sourceTree = "<group>"; };
 		BC525EDF2130A362007B1761 /* NativeAdDataSource.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NativeAdDataSource.swift; sourceTree = "<group>"; };
@@ -560,6 +560,7 @@
 				BC7892E8220B9C22007A6218 /* AccessibilityIdentifier.swift */,
 				BC4FE3052208C57A00B5D240 /* AdapterVersions */,
 				BC33E0361FBB627B0060ECBE /* AppDelegate.swift */,
+				BC4309C722BD811400A7CBE5 /* AppDelegate+Initialization.swift */,
 				BC00C5B7208FCF46008E0AEB /* AppDelegate+Consent.swift */,
 				BC33E03F1FBB627B0060ECBE /* Assets.xcassets */,
 				BC04944520F911C900CFD9C2 /* Base */,
@@ -699,7 +700,6 @@
 				BC525EE22130A61D007B1761 /* BaseNativeAdDataSource.swift */,
 				BC525ED3212F2D71007B1761 /* InterstitialAdDataSource.swift */,
 				BC01F64F2004191400D6898B /* InterstitialAdViewController.swift */,
-				BC525ED0212F229A007B1761 /* LeaderboardAdViewController.swift */,
 				BC525EC7212F15A5007B1761 /* MediumRectangleAdViewController.swift */,
 				BC4CE2A42137343C00CA0220 /* NativeAdCollectionDataSource.swift */,
 				BC3B0C942007DAA5002D28B1 /* NativeAdCollectionViewController.swift */,
@@ -1127,16 +1127,12 @@
 			buildActionMask = 2147483647;
 			files = (
 			);
-			inputFileListPaths = (
-			);
 			inputPaths = (
 				"${PODS_ROOT}/Target Support Files/Pods-Internal Application/Pods-Internal Application-resources.sh",
-				"${PODS_ROOT}/TapjoySDK/TapjoySDK_iOS_v12.2.1/Libraries/Tapjoy.embeddedframework/Resources/TapjoyResources.bundle",
-				"${PODS_ROOT}/TapjoySDK/TapjoySDK_iOS_v12.2.1/Libraries/Tapjoy.embeddedframework/Tapjoy.framework/Versions/A/Resources/TapjoyResources.bundle",
+				"${PODS_ROOT}/TapjoySDK/TapjoySDK_iOS_v12.3.1/Libraries/Tapjoy.embeddedframework/Resources/TapjoyResources.bundle",
+				"${PODS_ROOT}/TapjoySDK/TapjoySDK_iOS_v12.3.1/Libraries/Tapjoy.embeddedframework/Tapjoy.framework/Versions/A/Resources/TapjoyResources.bundle",
 			);
 			name = "[CP] Copy Pods Resources";
-			outputFileListPaths = (
-			);
 			outputPaths = (
 				"${TARGET_BUILD_DIR}/${UNLOCALIZED_RESOURCES_FOLDER_PATH}/TapjoyResources.bundle",
 			);
@@ -1150,10 +1146,9 @@
 			buildActionMask = 2147483647;
 			files = (
 			);
-			inputFileListPaths = (
-			);
 			inputPaths = (
 				"${PODS_ROOT}/Target Support Files/Pods-AppStore Application/Pods-AppStore Application-frameworks.sh",
+				"${BUILT_PRODUCTS_DIR}/FBSDKCoreKit/FBSDKCoreKit.framework",
 				"${BUILT_PRODUCTS_DIR}/Flurry-iOS-SDK/Flurry_iOS_SDK.framework",
 				"${BUILT_PRODUCTS_DIR}/GoogleUtilities/GoogleUtilities.framework",
 				"${BUILT_PRODUCTS_DIR}/LoremIpsum/LoremIpsum.framework",
@@ -1181,9 +1176,8 @@
 				"${BUILT_PRODUCTS_DIR}/nanopb/nanopb.framework",
 			);
 			name = "[CP] Embed Pods Frameworks";
-			outputFileListPaths = (
-			);
 			outputPaths = (
+				"${TARGET_BUILD_DIR}/${FRAMEWORKS_FOLDER_PATH}/FBSDKCoreKit.framework",
 				"${TARGET_BUILD_DIR}/${FRAMEWORKS_FOLDER_PATH}/Flurry_iOS_SDK.framework",
 				"${TARGET_BUILD_DIR}/${FRAMEWORKS_FOLDER_PATH}/GoogleUtilities.framework",
 				"${TARGET_BUILD_DIR}/${FRAMEWORKS_FOLDER_PATH}/LoremIpsum.framework",
@@ -1220,16 +1214,12 @@
 			buildActionMask = 2147483647;
 			files = (
 			);
-			inputFileListPaths = (
-			);
 			inputPaths = (
 				"${PODS_ROOT}/Target Support Files/Pods-AppStore Application/Pods-AppStore Application-resources.sh",
-				"${PODS_ROOT}/TapjoySDK/TapjoySDK_iOS_v12.2.1/Libraries/Tapjoy.embeddedframework/Resources/TapjoyResources.bundle",
-				"${PODS_ROOT}/TapjoySDK/TapjoySDK_iOS_v12.2.1/Libraries/Tapjoy.embeddedframework/Tapjoy.framework/Versions/A/Resources/TapjoyResources.bundle",
+				"${PODS_ROOT}/TapjoySDK/TapjoySDK_iOS_v12.3.1/Libraries/Tapjoy.embeddedframework/Resources/TapjoyResources.bundle",
+				"${PODS_ROOT}/TapjoySDK/TapjoySDK_iOS_v12.3.1/Libraries/Tapjoy.embeddedframework/Tapjoy.framework/Versions/A/Resources/TapjoyResources.bundle",
 			);
 			name = "[CP] Copy Pods Resources";
-			outputFileListPaths = (
-			);
 			outputPaths = (
 				"${TARGET_BUILD_DIR}/${UNLOCALIZED_RESOURCES_FOLDER_PATH}/TapjoyResources.bundle",
 			);
@@ -1265,10 +1255,9 @@
 			buildActionMask = 2147483647;
 			files = (
 			);
-			inputFileListPaths = (
-			);
 			inputPaths = (
 				"${PODS_ROOT}/Target Support Files/Pods-Internal Application/Pods-Internal Application-frameworks.sh",
+				"${BUILT_PRODUCTS_DIR}/FBSDKCoreKit/FBSDKCoreKit.framework",
 				"${BUILT_PRODUCTS_DIR}/Flurry-iOS-SDK/Flurry_iOS_SDK.framework",
 				"${BUILT_PRODUCTS_DIR}/GoogleUtilities/GoogleUtilities.framework",
 				"${BUILT_PRODUCTS_DIR}/LoremIpsum/LoremIpsum.framework",
@@ -1296,9 +1285,8 @@
 				"${BUILT_PRODUCTS_DIR}/nanopb/nanopb.framework",
 			);
 			name = "[CP] Embed Pods Frameworks";
-			outputFileListPaths = (
-			);
 			outputPaths = (
+				"${TARGET_BUILD_DIR}/${FRAMEWORKS_FOLDER_PATH}/FBSDKCoreKit.framework",
 				"${TARGET_BUILD_DIR}/${FRAMEWORKS_FOLDER_PATH}/Flurry_iOS_SDK.framework",
 				"${TARGET_BUILD_DIR}/${FRAMEWORKS_FOLDER_PATH}/GoogleUtilities.framework",
 				"${TARGET_BUILD_DIR}/${FRAMEWORKS_FOLDER_PATH}/LoremIpsum.framework",
@@ -1407,7 +1395,6 @@
 				BCE7078920B34C7A00DA4BCB /* MPConsentStatus+Description.swift in Sources */,
 				BC01F6502004191400D6898B /* InterstitialAdViewController.swift in Sources */,
 				BCFE5B431FE84B5200D760E9 /* BannerAdViewController.swift in Sources */,
-				BC525ED1212F229A007B1761 /* LeaderboardAdViewController.swift in Sources */,
 				BC01F65320042BD600D6898B /* RewardedAdViewController.swift in Sources */,
 				BC3B0C8920058290002D28B1 /* NativeAdViewController.swift in Sources */,
 				BC4E235F20A5FE2E000BA519 /* ContainerViewController.swift in Sources */,
@@ -1458,6 +1445,7 @@
 				BC4CE29F2136FB6100CA0220 /* AdViewController.swift in Sources */,
 				BC3B0C8C20058D7C002D28B1 /* NativeAdView.swift in Sources */,
 				EC469C072260EF1D006CABAA /* TypedNotification.swift in Sources */,
+				BC4309C822BD811400A7CBE5 /* AppDelegate+Initialization.swift in Sources */,
 				2A35FAAB21B5DA6200DC8805 /* QRCodeCameraInterfaceViewController.swift in Sources */,
 				BCB4DF25211B913F005BD171 /* AdDataSource.swift in Sources */,
 				BC7892E9220B9C22007A6218 /* AccessibilityIdentifier.swift in Sources */,
@@ -1485,7 +1473,6 @@
 				BCE7078A20B34C7A00DA4BCB /* MPConsentStatus+Description.swift in Sources */,
 				BC01F6512004191400D6898B /* InterstitialAdViewController.swift in Sources */,
 				BCFE5B441FE84B5200D760E9 /* BannerAdViewController.swift in Sources */,
-				BC525ED2212F229A007B1761 /* LeaderboardAdViewController.swift in Sources */,
 				BC01F65420042BD600D6898B /* RewardedAdViewController.swift in Sources */,
 				BC3B0C8A20058290002D28B1 /* NativeAdViewController.swift in Sources */,
 				BC4E236020A5FE2E000BA519 /* ContainerViewController.swift in Sources */,
@@ -1507,6 +1494,7 @@
 				BC647D9B20F967C800FAA12C /* BaseSplitViewController.swift in Sources */,
 				B275DB2E200FD64000F053F8 /* SavedAdsDataSource.swift in Sources */,
 				BCEB5DA72008270300FE5165 /* CGFloat+Random.swift in Sources */,
+				BC4309C922BD811400A7CBE5 /* AppDelegate+Initialization.swift in Sources */,
 				BC713BAE21700BBC003655B2 /* ReleaseTestingSplitViewController.swift in Sources */,
 				BC003AFE20DC42FE00CD1FEB /* LogingLevelMenuDataSource.swift in Sources */,
 				BC525EEA2135BA4E007B1761 /* PreferredWidthLabel.swift in Sources */,
@@ -1787,7 +1775,7 @@
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 5.7.1;
+				CURRENT_PROJECT_VERSION = 5.8.0;
 				DEVELOPMENT_TEAM = 4S7XS533V3;
 				INFOPLIST_FILE = Canary/Configuration/Info.plist;
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks";
@@ -1804,7 +1792,7 @@
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 5.7.1;
+				CURRENT_PROJECT_VERSION = 5.8.0;
 				DEVELOPMENT_TEAM = 4S7XS533V3;
 				INFOPLIST_FILE = Canary/Configuration/Info.plist;
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks";
@@ -1821,7 +1809,7 @@
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon.Internal;
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 5.7.1;
+				CURRENT_PROJECT_VERSION = 5.8.0;
 				DEVELOPMENT_TEAM = 4S7XS533V3;
 				INFOPLIST_FILE = "Canary/Internal/Internal-Info.plist";
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks";
@@ -1839,7 +1827,7 @@
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon.Internal;
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 5.7.1;
+				CURRENT_PROJECT_VERSION = 5.8.0;
 				DEVELOPMENT_TEAM = 4S7XS533V3;
 				INFOPLIST_FILE = "Canary/Internal/Internal-Info.plist";
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks";

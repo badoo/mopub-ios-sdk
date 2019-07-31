@@ -194,8 +194,11 @@ extern NSString * const kNativeImpressionMinVisiblePixelsMetadataKey;
 - (void)testClickthroughExperimentSafariViewController {
     NSDictionary * headers = @{ kClickthroughExperimentBrowserAgent: @"2"};
     MPAdConfiguration * config = [[MPAdConfiguration alloc] initWithMetadata:headers data:nil adType:MPAdTypeFullscreen];
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wdeprecated-declarations"
     XCTAssertEqual(config.clickthroughExperimentBrowserAgent, MOPUBDisplayAgentTypeSafariViewController);
     XCTAssertEqual([MOPUBExperimentProvider displayAgentType], MOPUBDisplayAgentTypeSafariViewController);
+#pragma clang diagnostic pop
 }
 
 #pragma mark - Viewability

@@ -42,9 +42,12 @@ CGFloat MPStatusBarHeight() {
 
 CGRect MPApplicationFrame(BOOL includeSafeAreaInsets)
 {
-    CGRect frame = MPScreenBounds();
+    // Starting with iOS8, the orientation of the device is taken into account when
+    // requesting the key window's bounds. We are making the assumption that the
+    // key window is equivalent to the application frame.
+    CGRect frame = [UIApplication sharedApplication].keyWindow.frame;
 
-    if (@available(iOS 11.0, *)) {
+    if (@available(iOS 11, *)) {
         if (includeSafeAreaInsets) {
             // Safe area insets include the status bar offset.
             UIEdgeInsets safeInsets = UIApplication.sharedApplication.keyWindow.safeAreaInsets;
@@ -65,23 +68,9 @@ CGRect MPApplicationFrame(BOOL includeSafeAreaInsets)
 
 CGRect MPScreenBounds()
 {
-    // Prior to iOS 8, window and screen coordinates were fixed and always specified relative to the
-    // device’s screen in a portrait orientation. Starting with iOS8, the `fixedCoordinateSpace`
-    // property was introduced which specifies bounds that always reflect the screen dimensions of
-    // the device in a portrait-up orientation.
-    CGRect bounds = [UIScreen mainScreen].bounds;
-    if ([[UIScreen mainScreen] respondsToSelector:@selector(fixedCoordinateSpace)]) {
-        bounds = [UIScreen mainScreen].fixedCoordinateSpace.bounds;
-    }
-
-    // Rotate the portrait-up bounds if the orientation of the device is in landscape.
-    if (UIInterfaceOrientationIsLandscape(MPInterfaceOrientation())) {
-        CGFloat width = bounds.size.width;
-        bounds.size.width = bounds.size.height;
-        bounds.size.height = width;
-    }
-
-    return bounds;
+    // Starting with iOS8, the orientation of the device is taken into account when
+    // requesting the key window's bounds.
+    return [UIScreen mainScreen].bounds;
 }
 
 CGSize MPScreenResolution()
@@ -202,21 +191,13 @@ NSString *MPResourcePathForResource(NSString *resourceName)
     if ([[NSBundle mainBundle] pathForResource:@"MoPub" ofType:@"bundle"] != nil) {
         return [@"MoPub.bundle" stringByAppendingPathComponent:resourceName];
     }
-    else if ([[UIDevice currentDevice].systemVersion compare:@"8.0" options:NSNumericSearch] != NSOrderedAscending) {
+    else {
         // When using open source or cocoapods (on ios 8 and above), we can rely on the MoPub class
         // living in the same bundle/framework as the assets.
         // We can use pathForResource on ios 8 and above to succesfully load resources.
         NSBundle *resourceBundle = [NSBundle bundleForClass:[MoPub class]];
         NSString *resourcePath = [resourceBundle pathForResource:resourceName ofType:nil];
         return resourcePath;
-    }
-    else {
-        // We can just return the resource name because:
-        // 1. This is being used as an open source release so the resource will be
-        // in the main bundle.
-        // 2. This is cocoapods but CAN'T be using frameworks since that is only allowed
-        // on ios 8 and above.
-        return resourceName;
     }
 }
 
@@ -263,15 +244,6 @@ UIInterfaceOrientationMask MPInterstitialOrientationTypeToUIInterfaceOrientation
 @end
 
 @implementation UIApplication (MPAdditions)
-
-- (void)mp_preIOS7setApplicationStatusBarHidden:(BOOL)hidden
-{
-    // Hiding the status bar should use a fade effect.
-    // Displaying the status bar should use no animation.
-    UIStatusBarAnimation animation = hidden ?
-    UIStatusBarAnimationFade : UIStatusBarAnimationNone;
-    [[UIApplication sharedApplication] setStatusBarHidden:hidden withAnimation:animation];
-}
 
 - (BOOL)mp_supportsOrientationMask:(UIInterfaceOrientationMask)orientationMask
 {

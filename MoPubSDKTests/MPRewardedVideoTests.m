@@ -10,6 +10,7 @@
 #import "MPAdConfiguration.h"
 #import "MPAdServerKeys.h"
 #import "MoPub.h"
+#import "MPMockAdServerCommunicator.h"
 #import "MPRewardedVideo.h"
 #import "MPRewardedVideo+Testing.h"
 #import "MPRewardedVideoAdapter+Testing.h"
@@ -791,6 +792,53 @@ static const NSTimeInterval kTestTimeout = 2; // seconds
     MPURL * s2sMoPubUrl = [s2sUrl isKindOfClass:[MPURL class]] ? (MPURL *)s2sUrl : nil;
     XCTAssertNotNil(s2sMoPubUrl);
     XCTAssert([[s2sMoPubUrl stringForPOSTDataKey:kRewardedCustomEventNameKey] isEqualToString:@"MPMoPubRewardedVideoCustomEvent"]);
+}
+
+#pragma mark - Ad Sizing
+
+- (void)testRewardedCreativeSizeSent {
+    // Semaphore to wait for asynchronous method to finish before continuing the test.
+    XCTestExpectation * expectation = [self expectationWithDescription:@"Wait for reward completion block to fire."];
+
+    // Configure delegate handler to listen for the reward event.
+    MPRewardedVideoDelegateHandler * delegateHandler = [MPRewardedVideoDelegateHandler new];
+    delegateHandler.didFailToLoadAd = ^{
+        // Expecting load failure due to no configuration response.
+        // This doesn't matter since we are just verifying the URL that
+        // is being sent to the Ad Server communicator.
+        [expectation fulfill];
+    };
+
+    NSString * adUnitId = [NSString stringWithFormat:@"%@:%s", kTestAdUnitId, __FUNCTION__];
+
+    MPMockAdServerCommunicator * mockAdServerCommunicator = nil;
+    MPRewardedVideoAdManager * manager = [MPRewardedVideo makeAdManagerForAdUnitId:adUnitId];
+    manager.communicator = ({
+        MPMockAdServerCommunicator * mock = [[MPMockAdServerCommunicator alloc] initWithDelegate:manager];
+        mockAdServerCommunicator = mock;
+        mock;
+    });
+    [MPRewardedVideo setDelegate:delegateHandler forAdUnitId:adUnitId];
+    [MPRewardedVideo loadRewardedVideoAdWithAdUnitID:adUnitId withMediationSettings:nil];
+
+    [self waitForExpectationsWithTimeout:kTestTimeout handler:^(NSError * _Nullable error) {
+        XCTAssertNil(error);
+    }];
+
+    [MPRewardedVideo removeDelegateForAdUnitId:adUnitId];
+
+    XCTAssertNotNil(mockAdServerCommunicator);
+    XCTAssertNotNil(mockAdServerCommunicator.lastUrlLoaded);
+
+    MPURL * url = [mockAdServerCommunicator.lastUrlLoaded isKindOfClass:[MPURL class]] ? (MPURL *)mockAdServerCommunicator.lastUrlLoaded : nil;
+    XCTAssertNotNil(url);
+
+    NSNumber * sc = [url numberForPOSTDataKey:kScaleFactorKey];
+    NSNumber * cw = [url numberForPOSTDataKey:kCreativeSafeWidthKey];
+    NSNumber * ch = [url numberForPOSTDataKey:kCreativeSafeHeightKey];
+    CGRect frame = MPApplicationFrame(YES);
+    XCTAssert(cw.floatValue == frame.size.width * sc.floatValue);
+    XCTAssert(ch.floatValue == frame.size.height * sc.floatValue);
 }
 
 @end

@@ -7,6 +7,7 @@
 //
 
 #import <UIKit/UIKit.h>
+#import "MPExtendedHitBoxButton.h"
 #import "MPGlobal.h"
 
 @class CLLocation;
@@ -19,7 +20,7 @@
 
 @property (nonatomic, assign) MPInterstitialCloseButtonStyle closeButtonStyle;
 @property (nonatomic, assign) MPInterstitialOrientationType orientationType;
-@property (nonatomic, strong) UIButton *closeButton;
+@property (nonatomic, strong) MPExtendedHitBoxButton *closeButton;
 @property (nonatomic, weak) id<MPInterstitialViewControllerDelegate> delegate;
 
 - (void)presentInterstitialFromViewController:(UIViewController *)controller complete:(void(^)(NSError *))complete;

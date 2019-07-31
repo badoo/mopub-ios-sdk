@@ -1111,23 +1111,6 @@
     XCTAssert([[syncUrl stringForPOSTDataKey:kExtrasKey] isEqualToString:@"i'm extra!"]);
 }
 
-- (void)testAutomaticAdUnitIdPopulation {
-    MPConsentManager * manager = MPConsentManager.sharedManager;
-
-#pragma clang diagnostic push
-#pragma clang diagnostic ignored "-Wnonnull"
-    // Intentially set the explicitly marked `nonnull` property to `nil` to
-    // simulate an uninitialized state.
-    manager.adUnitIdUsedForConsent = nil;
-#pragma clang diagnostic pop
-    XCTAssertNil(manager.adUnitIdUsedForConsent);
-
-    MPURL * url = [MPAdServerURLBuilder URLWithAdUnitID:@"abc123" keywords:nil userDataKeywords:nil location:nil];
-    XCTAssertNotNil(url);
-    XCTAssertNotNil(manager.adUnitIdUsedForConsent);
-    XCTAssert([manager.adUnitIdUsedForConsent isEqualToString:@"abc123"]);
-}
-
 #pragma mark - Macro Replacement
 
 - (void)testValidPrivacyPolicyPreferredLanguageReplacement {
@@ -1283,6 +1266,235 @@
     XCTAssertNotNil(loadError);
     XCTAssert(loadError.code == MPConsentErrorCodeGDPRIsNotApplicable);
     XCTAssertFalse(MPConsentManager.sharedManager.isConsentDialogLoaded);
+}
+
+#pragma mark - Adunit ID Caching Mechanism
+
+- (void)testAdunitIDNotOverwrittenIfAnotherIsCached {
+    MPConsentManager * manager = MPConsentManager.sharedManager;
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wnonnull"
+    // Intentially set the explicitly marked `nonnull` property to `nil` to
+    // simulate an uninitialized state.
+    manager.adUnitIdUsedForConsent = nil;
+#pragma clang diagnostic pop
+    // Be sure the adunit ID is presently nil
+    XCTAssertNil(manager.adUnitIdUsedForConsent);
+
+    NSString * cachedAdunitID = @"adunit ID";
+    [NSUserDefaults.standardUserDefaults setObject:cachedAdunitID forKey:kAdUnitIdUsedForConsentStorageKey];
+
+    // Check to make sure the cached value is returned
+    XCTAssert([manager.adUnitIdUsedForConsent isEqualToString:cachedAdunitID]);
+
+    // Attempt to set a different adunit ID
+    NSString * differentAdunitID = @"another adunit ID";
+    manager.adUnitIdUsedForConsent = differentAdunitID;
+
+    // Check to make sure the manager is still using the original adunit ID
+    XCTAssertFalse([manager.adUnitIdUsedForConsent isEqualToString:differentAdunitID]);
+    XCTAssert([manager.adUnitIdUsedForConsent isEqualToString:cachedAdunitID]);
+}
+
+- (void)testIsKnownGoodWillCache {
+    MPConsentManager * manager = MPConsentManager.sharedManager;
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wnonnull"
+    // Intentially set the explicitly marked `nonnull` property to `nil` to
+    // simulate an uninitialized state.
+    manager.adUnitIdUsedForConsent = nil;
+#pragma clang diagnostic pop
+    // Be sure the adunit ID is presently nil
+    XCTAssertNil(manager.adUnitIdUsedForConsent);
+
+    // Make and set adunit ID as known good
+    NSString * adunitID = @"adunit ID";
+    [manager setAdUnitIdUsedForConsent:adunitID isKnownGood:YES];
+
+    // Check to make sure the ID populated
+    XCTAssert([manager.adUnitIdUsedForConsent isEqualToString:adunitID]);
+    // Check to make sure it's cached
+    XCTAssert([adunitID isEqualToString:[NSUserDefaults.standardUserDefaults stringForKey:kAdUnitIdUsedForConsentStorageKey]]);
+}
+
+- (void)testIsNotKnownGoodWillNotCache {
+    MPConsentManager * manager = MPConsentManager.sharedManager;
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wnonnull"
+    // Intentially set the explicitly marked `nonnull` property to `nil` to
+    // simulate an uninitialized state.
+    manager.adUnitIdUsedForConsent = nil;
+#pragma clang diagnostic pop
+    // Be sure the adunit ID is presently nil
+    XCTAssertNil(manager.adUnitIdUsedForConsent);
+
+    // Make and set adunit ID
+    NSString * adunitID = @"adunit ID";
+    [manager setAdUnitIdUsedForConsent:adunitID isKnownGood:NO];
+
+    // Check to make sure the ID populated
+    XCTAssert([manager.adUnitIdUsedForConsent isEqualToString:adunitID]);
+    // Check to make sure it's not cached
+    XCTAssertNil([NSUserDefaults.standardUserDefaults stringForKey:kAdUnitIdUsedForConsentStorageKey]);
+}
+
+- (void)testSettingDirectlyIsSameAsNotKnownGood {
+    MPConsentManager * manager = MPConsentManager.sharedManager;
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wnonnull"
+    // Intentially set the explicitly marked `nonnull` property to `nil` to
+    // simulate an uninitialized state.
+    manager.adUnitIdUsedForConsent = nil;
+#pragma clang diagnostic pop
+    // Be sure the adunit ID is presently nil
+    XCTAssertNil(manager.adUnitIdUsedForConsent);
+
+    // Make and set adunit ID
+    NSString * adunitID = @"adunit ID";
+    manager.adUnitIdUsedForConsent = adunitID;
+
+    // Check to make sure the ID populated
+    XCTAssert([manager.adUnitIdUsedForConsent isEqualToString:adunitID]);
+    // Check to make sure it's not cached
+    XCTAssertNil([NSUserDefaults.standardUserDefaults stringForKey:kAdUnitIdUsedForConsentStorageKey]);
+}
+
+- (void)testSuccessfulSyncCachesAdunitID {
+    MPConsentManager * manager = MPConsentManager.sharedManager;
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wnonnull"
+    // Intentially set the explicitly marked `nonnull` property to `nil` to
+    // simulate an uninitialized state.
+    manager.adUnitIdUsedForConsent = nil;
+#pragma clang diagnostic pop
+    // Be sure the adunit ID is presently nil
+    XCTAssertNil(manager.adUnitIdUsedForConsent);
+
+    // Make and set adunit ID
+    NSString * adunitID = @"adunit ID";
+    manager.adUnitIdUsedForConsent = adunitID;
+
+    // Check to make sure the ID populated
+    XCTAssert([manager.adUnitIdUsedForConsent isEqualToString:adunitID]);
+    // Check to make sure it's not yet cached
+    XCTAssertNil([NSUserDefaults.standardUserDefaults stringForKey:kAdUnitIdUsedForConsentStorageKey]);
+
+    // Simulate successful sync
+    [manager didFinishSynchronizationWithData:[NSData data]
+                           synchronizedStatus:@""
+                                   completion:^(NSError * error){}];
+
+    // Check to make sure the ID is still populated
+    XCTAssert([manager.adUnitIdUsedForConsent isEqualToString:adunitID]);
+    // Check to make sure it is now cached
+    XCTAssert([adunitID isEqualToString:[NSUserDefaults.standardUserDefaults stringForKey:kAdUnitIdUsedForConsentStorageKey]]);
+}
+
+- (void)testUnsuccessfulSyncDoesNotCacheAdunitID {
+    MPConsentManager * manager = MPConsentManager.sharedManager;
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wnonnull"
+    // Intentially set the explicitly marked `nonnull` property to `nil` to
+    // simulate an uninitialized state.
+    manager.adUnitIdUsedForConsent = nil;
+#pragma clang diagnostic pop
+    // Be sure the adunit ID is presently nil
+    XCTAssertNil(manager.adUnitIdUsedForConsent);
+
+    // Make and set adunit ID
+    NSString * adunitID = @"adunit ID";
+    manager.adUnitIdUsedForConsent = adunitID;
+
+    // Check to make sure the ID populated
+    XCTAssert([manager.adUnitIdUsedForConsent isEqualToString:adunitID]);
+    // Check to make sure it's not yet cached
+    XCTAssertNil([NSUserDefaults.standardUserDefaults stringForKey:kAdUnitIdUsedForConsentStorageKey]);
+
+    // Simulate successful sync
+    [manager didFailSynchronizationWithError:nil
+                                  completion:^(NSError * error){}];
+
+    // Check to make sure the ID is still populated
+    XCTAssert([manager.adUnitIdUsedForConsent isEqualToString:adunitID]);
+    // Check to make sure it is still not cached
+    XCTAssertNil([NSUserDefaults.standardUserDefaults stringForKey:kAdUnitIdUsedForConsentStorageKey]);
+}
+
+- (void)testSuccessfulSyncDoesNotOverwritePreviouslyCachedAdunitID {
+    MPConsentManager * manager = MPConsentManager.sharedManager;
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wnonnull"
+    // Intentially set the explicitly marked `nonnull` property to `nil` to
+    // simulate an uninitialized state.
+    manager.adUnitIdUsedForConsent = nil;
+#pragma clang diagnostic pop
+    // Be sure the adunit ID is presently nil
+    XCTAssertNil(manager.adUnitIdUsedForConsent);
+
+    // Cache an adunit ID
+    NSString * cachedAdunitID = @"cached adunit ID";
+    [manager setAdUnitIdUsedForConsent:cachedAdunitID isKnownGood:YES];
+
+    // Make and set adunit ID
+    NSString * adunitID = @"adunit ID";
+    manager.adUnitIdUsedForConsent = adunitID;
+
+    // Check to make sure the cached ID is populated
+    XCTAssert([manager.adUnitIdUsedForConsent isEqualToString:cachedAdunitID]);
+    // Check to make sure it's cached
+    XCTAssert([cachedAdunitID isEqualToString:[NSUserDefaults.standardUserDefaults stringForKey:kAdUnitIdUsedForConsentStorageKey]]);
+
+    // Simulate successful sync
+    [manager didFinishSynchronizationWithData:[NSData data]
+                           synchronizedStatus:@""
+                                   completion:^(NSError * error){}];
+
+    // Check to make sure the cached ID is populated
+    XCTAssert([manager.adUnitIdUsedForConsent isEqualToString:cachedAdunitID]);
+    // Check to make sure it's cached
+    XCTAssert([cachedAdunitID isEqualToString:[NSUserDefaults.standardUserDefaults stringForKey:kAdUnitIdUsedForConsentStorageKey]]);
+}
+
+- (void)testCachedAdunitIDClears {
+    /*
+     Cache a new adunit ID
+     */
+    MPConsentManager * manager = MPConsentManager.sharedManager;
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wnonnull"
+    // Intentially set the explicitly marked `nonnull` property to `nil` to
+    // simulate an uninitialized state.
+    manager.adUnitIdUsedForConsent = nil;
+#pragma clang diagnostic pop
+    // Be sure the adunit ID is presently nil
+    XCTAssertNil(manager.adUnitIdUsedForConsent);
+
+    // Make and set adunit ID
+    NSString * adunitID = @"adunit ID";
+    manager.adUnitIdUsedForConsent = adunitID;
+
+    // Check to make sure the ID populated
+    XCTAssert([manager.adUnitIdUsedForConsent isEqualToString:adunitID]);
+    // Check to make sure it's not yet cached
+    XCTAssertNil([NSUserDefaults.standardUserDefaults stringForKey:kAdUnitIdUsedForConsentStorageKey]);
+
+    // Simulate successful sync
+    [manager didFinishSynchronizationWithData:[NSData data]
+                           synchronizedStatus:@""
+                                   completion:^(NSError * error){}];
+
+    // Check to make sure the ID is still populated
+    XCTAssert([manager.adUnitIdUsedForConsent isEqualToString:adunitID]);
+    // Check to make sure it is now cached
+    XCTAssert([adunitID isEqualToString:[NSUserDefaults.standardUserDefaults stringForKey:kAdUnitIdUsedForConsentStorageKey]]);
+
+
+    /*
+     Clear the adunit ID and make sure it's totally cleared
+     */
+    [manager clearAdUnitIdUsedForConsent];
+    XCTAssertNil(manager.adUnitIdUsedForConsent);
+    XCTAssertNil([NSUserDefaults.standardUserDefaults stringForKey:kAdUnitIdUsedForConsentStorageKey]);
 }
 
 @end

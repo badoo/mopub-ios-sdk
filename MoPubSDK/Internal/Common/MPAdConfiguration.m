@@ -33,6 +33,7 @@ NSString * const kCreativeIdMetadataKey = @"x-creativeid";
 NSString * const kCustomEventClassNameMetadataKey = @"x-custom-event-class-name";
 NSString * const kCustomEventClassDataMetadataKey = @"x-custom-event-class-data";
 NSString * const kNextUrlMetadataKey = @"x-next-url";
+NSString * const kFormatMetadataKey = @"adunit-format";
 NSString * const kBeforeLoadUrlMetadataKey = @"x-before-load-url";
 NSString * const kAfterLoadUrlMetadataKey = @"x-after-load-url";
 NSString * const kAfterLoadSuccessUrlMetadataKey = @"x-after-load-success-url";
@@ -141,6 +142,7 @@ NSString * const kAdvancedBiddingMarkupMetadataKey = @"adm";
                                               forKey:kClickthroughMetadataKey];
         self.nextURL = [self URLFromMetadata:metadata
                                          forKey:kNextUrlMetadataKey];
+        self.format = [metadata objectForKey:kFormatMetadataKey];
         self.beforeLoadURL = [self URLFromMetadata:metadata forKey:kBeforeLoadUrlMetadataKey];
         self.afterLoadUrlsWithMacros = [self URLStringsFromMetadata:metadata forKey:kAfterLoadUrlMetadataKey];
         self.afterLoadSuccessUrlsWithMacros = [self URLStringsFromMetadata:metadata forKey:kAfterLoadSuccessUrlMetadataKey];
@@ -295,8 +297,23 @@ NSString * const kAdvancedBiddingMarkupMetadataKey = @"adm";
 
 - (NSDictionary *)customEventClassDataFromMetadata:(NSDictionary *)metadata
 {
+    // Parse out custom event data if its present
     NSDictionary *result = [self dictionaryFromMetadata:metadata forKey:kCustomEventClassDataMetadataKey];
-    if (!result) {
+    if (result != nil) {
+        // Inject the unified ad unit format into the custom data so that
+        // all adapters (including mediated ones) can differentiate between
+        // banner and medium rectangle formats.
+        // The key `adunit_format` is used to denote the format, which is the same as the
+        // key for impression level revenue data since they represent the same information.
+        NSString *format = [metadata objectForKey:kFormatMetadataKey];
+        if (format.length > 0) {
+            NSMutableDictionary *dictionary = [result mutableCopy];
+            dictionary[kImpressionDataAdUnitFormatKey] = format;
+            result = dictionary;
+        }
+    }
+    // No custom event data found; this is probably a native ad payload.
+    else {
         result = [self dictionaryFromMetadata:metadata forKey:kNativeSDKParametersMetadataKey];
     }
     return result;
@@ -362,6 +379,11 @@ NSString * const kAdvancedBiddingMarkupMetadataKey = @"adm";
     }
 
     return urls.count > 0 ? urls : nil;
+}
+
+- (BOOL)isMraidAd
+{
+    return [self.metadataAdType isEqualToString:kAdTypeMraid];
 }
 
 #pragma mark - Private

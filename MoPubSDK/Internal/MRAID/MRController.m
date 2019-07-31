@@ -114,11 +114,11 @@ static NSString *const kMRAIDCommandResize = @"resize";
 
         _mraidDefaultAdFrame = adViewFrame;
 
-        _adPropertyUpdateTimer = [[MPCoreInstanceProvider sharedProvider] buildMPTimerWithTimeInterval:kAdPropertyUpdateTimerInterval
-                                                                                                target:self
-                                                                                              selector:@selector(updateMRAIDProperties)
-                                                                                               repeats:YES];
-        _adPropertyUpdateTimer.runLoopMode = NSRunLoopCommonModes;
+        _adPropertyUpdateTimer = [MPTimer timerWithTimeInterval:kAdPropertyUpdateTimerInterval
+                                                         target:self
+                                                       selector:@selector(updateMRAIDProperties)
+                                                        repeats:YES
+                                                    runLoopMode:NSRunLoopCommonModes];
 
         [[NSNotificationCenter defaultCenter] addObserver:self
                                                  selector:@selector(viewEnteredBackground)
@@ -533,7 +533,6 @@ static NSString *const kMRAIDCommandResize = @"resize";
     view.frame = self.expandModalViewController.view.bounds;
     view.autoresizingMask = UIViewAutoresizingFlexibleWidth | UIViewAutoresizingFlexibleHeight;
     self.expandModalViewController.modalTransitionStyle = UIModalTransitionStyleCrossDissolve;
-    [self.expandModalViewController hideStatusBar];
 
     [[self.delegate viewControllerForPresentingModalView] presentViewController:self.expandModalViewController
                                                                        animated:animated
@@ -605,8 +604,6 @@ static NSString *const kMRAIDCommandResize = @"resize";
     // they're in a transitional state.
     [self willBeginAnimatingAdSize];
 
-    // Tell the modal view controller to restore the state of the status bar back to what the application had it set to.
-    [self.expandModalViewController restoreStatusBarVisibility];
     __weak __typeof__(self) weakSelf = self;
     [self.expandModalViewController dismissViewControllerAnimated:YES completion:^{
         __typeof__(self) strongSelf = weakSelf;
@@ -852,12 +849,6 @@ static NSString *const kMRAIDCommandResize = @"resize";
     if (inSameOrientation) {
         fullScreenAdViewController.supportedOrientationMask = forceOrientationMask;
     } else {
-        // It doesn't seem possible to force orientation in iOS 7+. So we dismiss the current view controller and re-present it with the forced orientation.
-        // If it's an expanded ad, we need to restore the status bar visibility before we dismiss the current VC since we don't show the status bar in expanded state.
-        if (inExpandedState) {
-            [self.expandModalViewController restoreStatusBarVisibility];
-        }
-
         // Block our timer from updating properties while we force orientation on the view controller.
         [self willBeginAnimatingAdSize];
 

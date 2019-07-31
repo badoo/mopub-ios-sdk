@@ -124,11 +124,10 @@ static const NSUInteger kExcessiveCustomDataLength = 8196;
     self.configuration.adTimeoutInterval : REWARDED_VIDEO_TIMEOUT_INTERVAL;
 
     if (timeInterval > 0) {
-        self.timeoutTimer = [[MPCoreInstanceProvider sharedProvider] buildMPTimerWithTimeInterval:timeInterval
-                                                                                           target:self
-                                                                                         selector:@selector(timeout)
-                                                                                          repeats:NO];
-
+        self.timeoutTimer = [MPTimer timerWithTimeInterval:timeInterval
+                                                    target:self
+                                                  selector:@selector(timeout)
+                                                   repeats:NO];
         [self.timeoutTimer scheduleNow];
     }
 }

@@ -17,6 +17,7 @@ typedef void(^MPInterstitialAdManagerDelegateHandlerErrorBlock)(NSError *);
 
 @interface MPInterstitialAdManagerDelegateHandler : NSObject <MPInterstitialAdManagerDelegate>
 
+@property (nonatomic, copy) NSString * adUnitId;
 @property (nonatomic, strong) MPInterstitialAdController * interstitialAdController;
 @property (nonatomic, strong) CLLocation * location;
 @property (nonatomic, weak) id interstitialDelegate;

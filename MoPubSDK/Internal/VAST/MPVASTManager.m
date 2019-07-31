@@ -26,17 +26,6 @@ static NSString * const kMPVASTManagerErrorDomain = @"com.mopub.MPVASTManager";
 
 @implementation MPVASTManager
 
-+ (void)fetchVASTWithURL:(NSURL *)URL completion:(void (^)(MPVASTResponse *, NSError *))completion
-{
-    [MPHTTPNetworkSession startTaskWithHttpRequest:[MPURLRequest requestWithURL:URL] responseHandler:^(NSData * _Nonnull data, NSHTTPURLResponse * _Nonnull response) {
-        [MPVASTManager fetchVASTWithData:data completion:completion];
-    } errorHandler:^(NSError * _Nonnull error) {
-        if (completion != nil) {
-            completion(nil, error);
-        }
-    }];
-}
-
 + (void)fetchVASTWithData:(NSData *)data completion:(void (^)(MPVASTResponse *, NSError *))completion
 {
     dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^{

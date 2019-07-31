@@ -44,7 +44,7 @@
 
 - (void)rotateToOrientation:(UIInterfaceOrientation)newOrientation
 {
-    [self.bannerAgent rotateToOrientation:newOrientation];
+    [self.bannerAgent forceRedraw];
 }
 
 #pragma mark - MPAdWebViewAgentDelegate
