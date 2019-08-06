@@ -36,6 +36,10 @@
 }
 
 - (void)setRateLimitTimerWithAdUnitId:(NSString *)adUnitId milliseconds:(NSInteger)milliseconds reason:(NSString *)reason {
+    if (!adUnitId) {
+        return;
+    }
+
     @synchronized (self) {
         if (self.configurationDictionary[adUnitId] == nil) {
             self.configurationDictionary[adUnitId] = [[MPRateLimitConfiguration alloc] init];
