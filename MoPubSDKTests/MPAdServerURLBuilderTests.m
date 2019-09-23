@@ -11,6 +11,7 @@
 #import "MPAdServerURLBuilder+Testing.h"
 #import "MPAPIEndpoints.h"
 #import "MPConsentManager.h"
+#import "MPEngineInfo.h"
 #import "MPIdentityProvider.h"
 #import "MPMediationManager.h"
 #import "MPMediationManager+Testing.h"
@@ -46,13 +47,19 @@ static NSString * const kLastChangedMsStorageKey                 = @"com.mopub.m
     [defaults setObject:nil forKey:kConsentedVendorListVersionStorageKey];
     [defaults setObject:nil forKey:kLastChangedMsStorageKey];
     [defaults synchronize];
+
+    // Reset engine info
+    MPAdServerURLBuilder.engineInformation = nil;
 }
 
 #pragma mark - Viewability
 
 - (void)testViewabilityPresentInPOSTData {
     // By default, IAS should be enabled
-    MPURL * url = [MPAdServerURLBuilder URLWithAdUnitID:kTestAdUnitId keywords:kTestKeywords userDataKeywords:nil location:nil];
+    MPAdTargeting * targeting = [MPAdTargeting targetingWithCreativeSafeSize:CGSizeZero];
+    targeting.keywords = kTestKeywords;
+
+    MPURL * url = [MPAdServerURLBuilder URLWithAdUnitID:kTestAdUnitId targeting:targeting];
     XCTAssertNotNil(url);
 
     NSString * viewabilityValue = [url stringForPOSTDataKey:kViewabilityStatusKey];
@@ -63,7 +70,10 @@ static NSString * const kLastChangedMsStorageKey                 = @"com.mopub.m
     // By default, IAS should be enabled so we should disable all vendors
     [MPViewabilityTracker disableViewability:(MPViewabilityOptionIAS | MPViewabilityOptionMoat)];
 
-    MPURL * url = [MPAdServerURLBuilder URLWithAdUnitID:kTestAdUnitId keywords:kTestKeywords userDataKeywords:nil location:nil];
+    MPAdTargeting * targeting = [MPAdTargeting targetingWithCreativeSafeSize:CGSizeZero];
+    targeting.keywords = kTestKeywords;
+
+    MPURL * url = [MPAdServerURLBuilder URLWithAdUnitID:kTestAdUnitId targeting:targeting];
     XCTAssertNotNil(url);
 
     NSString * viewabilityValue = [url stringForPOSTDataKey:kViewabilityStatusKey];
@@ -134,7 +144,7 @@ static NSString * const kLastChangedMsStorageKey                 = @"com.mopub.m
     NSString * consentStatus = [NSString stringFromConsentStatus:MPConsentManager.sharedManager.currentStatus];
     XCTAssertNotNil(consentStatus);
 
-    MPURL * request = [MPAdServerURLBuilder URLWithAdUnitID:@"1234" keywords:nil userDataKeywords:nil location:nil];
+    MPURL * request = [MPAdServerURLBuilder URLWithAdUnitID:@"1234" targeting:nil];
     XCTAssertNotNil(request);
 
     NSString * consentValue = [request stringForPOSTDataKey:kCurrentConsentStatusKey];
@@ -221,10 +231,7 @@ static NSString * const kLastChangedMsStorageKey                 = @"com.mopub.m
 - (void)testFilledReasonWithNonZeroRateLimitValue {
     [[MPRateLimitManager sharedInstance] setRateLimitTimerWithAdUnitId:@"fake_adunit" milliseconds:10 reason:@"Reason"];
 
-    MPURL * url = [MPAdServerURLBuilder URLWithAdUnitID:@"fake_adunit"
-                                               keywords:nil
-                                       userDataKeywords:nil
-                                               location:nil];
+    MPURL * url = [MPAdServerURLBuilder URLWithAdUnitID:@"fake_adunit" targeting:nil];
 
     NSNumber * value = [url numberForPOSTDataKey:kBackoffMsKey];
     XCTAssertEqual([value integerValue], 10);
@@ -234,10 +241,7 @@ static NSString * const kLastChangedMsStorageKey                 = @"com.mopub.m
 - (void)testZeroRateLimitValueDoesntShow {
     [[MPRateLimitManager sharedInstance] setRateLimitTimerWithAdUnitId:@"fake_adunit" milliseconds:0 reason:nil];
 
-    MPURL * url = [MPAdServerURLBuilder URLWithAdUnitID:@"fake_adunit"
-                                               keywords:nil
-                                       userDataKeywords:nil
-                                               location:nil];
+    MPURL * url = [MPAdServerURLBuilder URLWithAdUnitID:@"fake_adunit" targeting:nil];
 
     NSNumber * value = [url numberForPOSTDataKey:kBackoffMsKey];
     XCTAssertNil(value);
@@ -247,14 +251,79 @@ static NSString * const kLastChangedMsStorageKey                 = @"com.mopub.m
 - (void)testNilReasonWithNonZeroRateLimitValue {
     [[MPRateLimitManager sharedInstance] setRateLimitTimerWithAdUnitId:@"fake_adunit" milliseconds:10 reason:nil];
 
-    MPURL * url = [MPAdServerURLBuilder URLWithAdUnitID:@"fake_adunit"
-                                               keywords:nil
-                                       userDataKeywords:nil
-                                               location:nil];
+    MPURL * url = [MPAdServerURLBuilder URLWithAdUnitID:@"fake_adunit" targeting:nil];
 
     NSNumber * value = [url numberForPOSTDataKey:kBackoffMsKey];
     XCTAssertEqual([value integerValue], 10);
     XCTAssertNil([url stringForPOSTDataKey:kBackoffReasonKey]);
+}
+
+#pragma mark - Targeting
+
+- (void)testCreativeSafeSizeTargetingValuesPresent {
+    CGFloat width = 300.0f;
+    CGFloat height = 250.0f;
+
+    MPAdTargeting * targeting = [MPAdTargeting targetingWithCreativeSafeSize:CGSizeMake(width, height)];
+
+    MPURL * url = [MPAdServerURLBuilder URLWithAdUnitID:@"fake_adunit" targeting:targeting];
+    XCTAssertNotNil(url);
+
+    NSNumber * sc = [url numberForPOSTDataKey:kScaleFactorKey];
+    NSNumber * cw = [url numberForPOSTDataKey:kCreativeSafeWidthKey];
+    NSNumber * ch = [url numberForPOSTDataKey:kCreativeSafeHeightKey];
+
+    XCTAssertNotNil(sc);
+    XCTAssertNotNil(cw);
+    XCTAssertNotNil(ch);
+    XCTAssertEqual([cw floatValue], [sc floatValue] * width);
+    XCTAssertEqual([ch floatValue], [sc floatValue] * height);
+}
+
+#pragma mark - Parameter
+
+- (void)testMoPubID {
+    MPAdTargeting * targeting = [MPAdTargeting targetingWithCreativeSafeSize:CGSizeZero];
+    MPURL * url = [MPAdServerURLBuilder URLWithAdUnitID:@"fake_ad_unit" targeting:targeting];
+    XCTAssertNotNil(url);
+    XCTAssertNotNil([url stringForPOSTDataKey:kMoPubIDKey]);
+    XCTAssertNotEqual([url stringForPOSTDataKey:kMoPubIDKey], @"");
+    XCTAssertTrue([[url stringForPOSTDataKey:kMoPubIDKey] isEqualToString:[MPIdentityProvider unobfuscatedMoPubIdentifier]]);
+}
+
+#pragma mark - Engine Information
+
+- (void)testNoEngineInformation {
+    // Verify that the engine information is present for the base URL for all
+    // Ad Server requests
+    MPAdTargeting * targeting = [MPAdTargeting targetingWithCreativeSafeSize:CGSizeZero];
+    MPURL * url = [MPAdServerURLBuilder URLWithAdUnitID:@"fake_ad_unit" targeting:targeting];
+    XCTAssertNotNil(url);
+
+    NSString * name = [url stringForPOSTDataKey:kSDKEngineNameKey];
+    XCTAssertNil(name);
+
+    NSString * version = [url stringForPOSTDataKey:kSDKEngineVersionKey];
+    XCTAssertNil(version);
+}
+
+- (void)testEngineInformationPresent {
+    // Set the engine information.
+    MPAdServerURLBuilder.engineInformation = [MPEngineInfo named:@"unity" version:@"2017.1.2f2"];
+
+    // Verify that the engine information is present for the base URL for all
+    // Ad Server requests
+    MPAdTargeting * targeting = [MPAdTargeting targetingWithCreativeSafeSize:CGSizeZero];
+    MPURL * url = [MPAdServerURLBuilder URLWithAdUnitID:@"fake_ad_unit" targeting:targeting];
+    XCTAssertNotNil(url);
+
+    NSString * name = [url stringForPOSTDataKey:kSDKEngineNameKey];
+    XCTAssertNotNil(name);
+    XCTAssert([name isEqualToString:@"unity"]);
+
+    NSString * version = [url stringForPOSTDataKey:kSDKEngineVersionKey];
+    XCTAssertNotNil(version);
+    XCTAssert([version isEqualToString:@"2017.1.2f2"]);
 }
 
 @end

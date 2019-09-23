@@ -11,7 +11,6 @@
 
 @interface MPWebView ()
 
-- (UIWebView *)uiWebView;
 - (WKWebView *)wkWebView;
 
 @end
@@ -19,7 +18,7 @@
 @implementation MPWebView (Viewability)
 
 - (UIView *)containedWebView {
-    return self.uiWebView ? self.uiWebView : self.wkWebView;
+    return self.wkWebView;
 }
 
 @end

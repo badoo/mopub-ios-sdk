@@ -14,7 +14,8 @@ static const NSTimeInterval kTimerRepeatIntervalInSeconds = 0.05;
 
 // `NSTimer` is not totally accurate and it might be slower on build machines, thus we need some
 // extra tolerance while waiting for the expections to be fulfilled.
-static const NSTimeInterval kWaitTimeTolerance = 2;
+// ADF-4255: 2 is good enough in most cases, but sometimes it still fails... So, try 5 and see.
+static const NSTimeInterval kWaitTimeTolerance = 5;
 
 /**
  * This test make use of `MPTimer.associatedTitle` to identifier the timers in each test.
@@ -74,11 +75,9 @@ static const NSTimeInterval kWaitTimeTolerance = 2;
     MPTimer * timer = [self generateTestTimerWithTitle:testName];
 
     XCTAssertFalse(timer.isCountdownActive);
-    XCTAssertFalse(timer.isScheduled);
     XCTAssertTrue(timer.isValid);
     [timer invalidate];
     XCTAssertFalse(timer.isCountdownActive);
-    XCTAssertFalse(timer.isScheduled);
     XCTAssertFalse(timer.isValid);
 }
 
@@ -90,20 +89,16 @@ static const NSTimeInterval kWaitTimeTolerance = 2;
     self.testNameVsExpectation[testName] = expectation;
 
     XCTAssertFalse(timer.isCountdownActive);
-    XCTAssertFalse(timer.isScheduled);
     XCTAssertTrue(timer.isValid);
     [timer scheduleNow];
     XCTAssertTrue(timer.isCountdownActive);
-    XCTAssertTrue(timer.isScheduled);
     XCTAssertTrue(timer.isValid);
 
     dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(kTimerRepeatIntervalInSeconds * NSEC_PER_SEC)), dispatch_get_main_queue(), ^{
         XCTAssertTrue(timer.isCountdownActive);
-        XCTAssertTrue(timer.isScheduled);
         XCTAssertTrue(timer.isValid);
         [timer invalidate];
         XCTAssertFalse(timer.isCountdownActive);
-        XCTAssertFalse(timer.isScheduled);
         XCTAssertFalse(timer.isValid);
     });
     [self waitForExpectationsWithTimeout:kTimerRepeatIntervalInSeconds * kWaitTimeTolerance handler:^(NSError * _Nullable error) {
@@ -120,24 +115,19 @@ static const NSTimeInterval kWaitTimeTolerance = 2;
     self.testNameVsExpectation[testName] = expectation;
 
     XCTAssertFalse(timer.isCountdownActive);
-    XCTAssertFalse(timer.isScheduled);
     XCTAssertTrue(timer.isValid);
     [timer scheduleNow];
     XCTAssertTrue(timer.isCountdownActive);
-    XCTAssertTrue(timer.isScheduled);
     XCTAssertTrue(timer.isValid);
 
     dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(kTimerRepeatIntervalInSeconds * NSEC_PER_SEC)), dispatch_get_main_queue(), ^{
         XCTAssertTrue(timer.isCountdownActive);
-        XCTAssertTrue(timer.isScheduled);
         XCTAssertTrue(timer.isValid);
         [timer pause];
         XCTAssertFalse(timer.isCountdownActive);
-        XCTAssertTrue(timer.isScheduled);
         XCTAssertTrue(timer.isValid);
         [timer invalidate];
         XCTAssertFalse(timer.isCountdownActive);
-        XCTAssertFalse(timer.isScheduled);
         XCTAssertFalse(timer.isValid);
     });
     [self waitForExpectationsWithTimeout:kTimerRepeatIntervalInSeconds * kWaitTimeTolerance handler:^(NSError * _Nullable error) {
@@ -154,40 +144,31 @@ static const NSTimeInterval kWaitTimeTolerance = 2;
     self.testNameVsExpectation[testName] = expectation;
 
     XCTAssertFalse(timer.isCountdownActive);
-    XCTAssertFalse(timer.isScheduled);
     XCTAssertTrue(timer.isValid);
     [timer pause];
     XCTAssertFalse(timer.isCountdownActive);
-    XCTAssertFalse(timer.isScheduled);
     XCTAssertTrue(timer.isValid);
     [timer scheduleNow];
     XCTAssertTrue(timer.isCountdownActive);
-    XCTAssertTrue(timer.isScheduled);
     XCTAssertTrue(timer.isValid);
 
     dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(kTimerRepeatIntervalInSeconds * NSEC_PER_SEC)), dispatch_get_main_queue(), ^{
         XCTAssertTrue(timer.isCountdownActive);
-        XCTAssertTrue(timer.isScheduled);
         XCTAssertTrue(timer.isValid);
         [timer pause];
         XCTAssertFalse(timer.isCountdownActive);
-        XCTAssertTrue(timer.isScheduled);
         XCTAssertTrue(timer.isValid);
         [timer resume];
         XCTAssertTrue(timer.isCountdownActive);
-        XCTAssertTrue(timer.isScheduled);
         XCTAssertTrue(timer.isValid);
         [timer invalidate];
         XCTAssertFalse(timer.isCountdownActive);
-        XCTAssertFalse(timer.isScheduled);
         XCTAssertFalse(timer.isValid);
         [timer pause];
         XCTAssertFalse(timer.isCountdownActive);
-        XCTAssertFalse(timer.isScheduled);
         XCTAssertFalse(timer.isValid);
         [timer resume];
         XCTAssertFalse(timer.isCountdownActive);
-        XCTAssertFalse(timer.isScheduled);
         XCTAssertFalse(timer.isValid);
     });
     [self waitForExpectationsWithTimeout:kTimerRepeatIntervalInSeconds * kWaitTimeTolerance handler:^(NSError * _Nullable error) {
@@ -204,11 +185,9 @@ static const NSTimeInterval kWaitTimeTolerance = 2;
     int firingCount = 10;
 
     XCTAssertFalse(timer.isCountdownActive);
-    XCTAssertFalse(timer.isScheduled);
     XCTAssertTrue(timer.isValid);
     [timer scheduleNow];
     XCTAssertTrue(timer.isCountdownActive);
-    XCTAssertTrue(timer.isScheduled);
     XCTAssertTrue(timer.isValid);
 
     dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(kTimerRepeatIntervalInSeconds * firingCount * NSEC_PER_SEC)), dispatch_get_main_queue(), ^{
@@ -221,11 +200,9 @@ static const NSTimeInterval kWaitTimeTolerance = 2;
     }];
 
     XCTAssertTrue(timer.isCountdownActive);
-    XCTAssertTrue(timer.isScheduled);
     XCTAssertTrue(timer.isValid);
     [timer invalidate];
     XCTAssertFalse(timer.isCountdownActive);
-    XCTAssertFalse(timer.isScheduled);
     XCTAssertFalse(timer.isValid);
 }
 
@@ -237,28 +214,22 @@ static const NSTimeInterval kWaitTimeTolerance = 2;
     self.testNameVsExpectation[testName] = expectation;
 
     XCTAssertFalse(timer.isCountdownActive);
-    XCTAssertFalse(timer.isScheduled);
     XCTAssertTrue(timer.isValid);
     [timer scheduleNow];
     XCTAssertTrue(timer.isCountdownActive);
-    XCTAssertTrue(timer.isScheduled);
     XCTAssertTrue(timer.isValid);
     [timer scheduleNow];
     XCTAssertTrue(timer.isCountdownActive);
-    XCTAssertTrue(timer.isScheduled);
     XCTAssertTrue(timer.isValid);
 
     dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(kTimerRepeatIntervalInSeconds * NSEC_PER_SEC)), dispatch_get_main_queue(), ^{
         XCTAssertTrue(timer.isCountdownActive);
-        XCTAssertTrue(timer.isScheduled);
         XCTAssertTrue(timer.isValid);
         [timer invalidate];
         XCTAssertFalse(timer.isCountdownActive);
-        XCTAssertFalse(timer.isScheduled);
         XCTAssertFalse(timer.isValid);
         [timer scheduleNow];
         XCTAssertFalse(timer.isCountdownActive);
-        XCTAssertFalse(timer.isScheduled);
         XCTAssertFalse(timer.isValid);
     });
     [self waitForExpectationsWithTimeout:kTimerRepeatIntervalInSeconds * kWaitTimeTolerance handler:^(NSError * _Nullable error) {

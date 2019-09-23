@@ -530,7 +530,7 @@ static const NSTimeInterval kTestTimeout   = 2; // seconds
     communicator.mockConfigurationsResponse = configurations;
     manager.communicator = communicator;
 
-    MPAdTargeting * targeting = [[MPAdTargeting alloc] init];
+    MPAdTargeting * targeting = [[MPAdTargeting alloc] initWithCreativeSafeSize:CGSizeZero];
     targeting.localExtras = @{ @"testing": @"YES" };
     [manager loadRewardedVideoAdWithCustomerId:@"CUSTOMER_ID" targeting:targeting];
 
@@ -597,7 +597,7 @@ static const NSTimeInterval kTestTimeout   = 2; // seconds
         [[MPRewardedVideo sharedInstance] rewardedVideoAdManager:manager didReceiveImpressionEventWithImpressionData:nil];
     };
 
-    MPAdTargeting * targeting = [[MPAdTargeting alloc] init];
+    MPAdTargeting * targeting = [[MPAdTargeting alloc] initWithCreativeSafeSize:CGSizeZero];
     [manager loadRewardedVideoAdWithCustomerId:@"CUSTOMER_ID" targeting:targeting];
 
     [self waitForExpectationsWithTimeout:kTestTimeout handler:^(NSError * _Nullable error) {
@@ -660,7 +660,7 @@ static const NSTimeInterval kTestTimeout   = 2; // seconds
         [[MPRewardedVideo sharedInstance] rewardedVideoAdManager:manager didReceiveImpressionEventWithImpressionData:rewardedVideoThatShouldLoad.impressionData];
     };
 
-    MPAdTargeting * targeting = [[MPAdTargeting alloc] init];
+    MPAdTargeting * targeting = [[MPAdTargeting alloc] initWithCreativeSafeSize:CGSizeZero];
     [manager loadRewardedVideoAdWithCustomerId:@"CUSTOMER_ID" targeting:targeting];
 
     [self waitForExpectationsWithTimeout:kTestTimeout handler:^(NSError * _Nullable error) {

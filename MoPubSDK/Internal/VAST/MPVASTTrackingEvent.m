@@ -9,25 +9,29 @@
 #import "MPVASTTrackingEvent.h"
 #import "MPVASTDurationOffset.h"
 
-NSString * const MPVASTTrackingEventTypeCreativeView = @"creativeView";
-NSString * const MPVASTTrackingEventTypeStart = @"start";
-NSString * const MPVASTTrackingEventTypeFirstQuartile = @"firstQuartile";
-NSString * const MPVASTTrackingEventTypeMidpoint = @"midpoint";
-NSString * const MPVASTTrackingEventTypeThirdQuartile = @"thirdQuartile";
-NSString * const MPVASTTrackingEventTypeComplete = @"complete";
-NSString * const MPVASTTrackingEventTypeMute = @"mute";
-NSString * const MPVASTTrackingEventTypeUnmute = @"unmute";
-NSString * const MPVASTTrackingEventTypePause = @"pause";
-NSString * const MPVASTTrackingEventTypeRewind = @"rewind";
-NSString * const MPVASTTrackingEventTypeResume = @"resume";
-NSString * const MPVASTTrackingEventTypeFullscreen = @"fullscreen";
-NSString * const MPVASTTrackingEventTypeExitFullscreen = @"exitFullscreen";
-NSString * const MPVASTTrackingEventTypeExpand = @"expand";
-NSString * const MPVASTTrackingEventTypeCollapse = @"collapse";
-NSString * const MPVASTTrackingEventTypeAcceptInvitationLinear = @"acceptInvitationLinear";
-NSString * const MPVASTTrackingEventTypeCloseLinear = @"closeLinear";
-NSString * const MPVASTTrackingEventTypeSkip = @"skip";
-NSString * const MPVASTTrackingEventTypeProgress = @"progress";
+#pragma mark - MPVideoEvent
+
+// keep this list sorted alphabetically
+MPVideoEvent const MPVideoEventClick = @"click";
+MPVideoEvent const MPVideoEventCloseLinear = @"closeLinear";
+MPVideoEvent const MPVideoEventCollapse = @"collapse";
+MPVideoEvent const MPVideoEventComplete = @"complete";
+MPVideoEvent const MPVideoEventCreativeView = @"creativeView";
+MPVideoEvent const MPVideoEventError = @"error";
+MPVideoEvent const MPVideoEventExitFullScreen = @"exitFullscreen";
+MPVideoEvent const MPVideoEventExpand = @"expand";
+MPVideoEvent const MPVideoEventFirstQuartile = @"firstQuartile";
+MPVideoEvent const MPVideoEventFullScreen = @"fullscreen";
+MPVideoEvent const MPVideoEventImpression = @"impression";
+MPVideoEvent const MPVideoEventMidpoint = @"midpoint";
+MPVideoEvent const MPVideoEventMute = @"mute";
+MPVideoEvent const MPVideoEventPause = @"pause";
+MPVideoEvent const MPVideoEventProgress = @"progress";
+MPVideoEvent const MPVideoEventResume = @"resume";
+MPVideoEvent const MPVideoEventSkip = @"skip";
+MPVideoEvent const MPVideoEventStart = @"start";
+MPVideoEvent const MPVideoEventThirdQuartile = @"thirdQuartile";
+MPVideoEvent const MPVideoEventUnmute = @"unmute";
 
 @implementation MPVASTTrackingEvent
 
@@ -50,6 +54,18 @@ NSString * const MPVASTTrackingEventTypeProgress = @"progress";
                                                    modelProvider:^id(NSDictionary *dictionary) {
                                                        return [[MPVASTDurationOffset alloc] initWithDictionary:dictionary];
                                                    }];
+    }
+    return self;
+}
+
+- (instancetype)initWithEventType:(MPVideoEvent)eventType
+                              url:(NSURL *)url
+                   progressOffset:(MPVASTDurationOffset *)progressOffset {
+    self = [super init];
+    if (self) {
+        _eventType = eventType;
+        _URL = url;
+        _progressOffset = progressOffset;
     }
     return self;
 }

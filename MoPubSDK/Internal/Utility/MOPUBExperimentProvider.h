@@ -10,8 +10,10 @@
 
 @interface MOPUBExperimentProvider : NSObject
 
-+ (void)setDisplayAgentType:(MOPUBDisplayAgentType)displayAgentType;
-+ (void)setDisplayAgentFromAdServer:(MOPUBDisplayAgentType)displayAgentType;
-+ (MOPUBDisplayAgentType)displayAgentType;
+@property (nonatomic, assign) MOPUBDisplayAgentType displayAgentType;
+
++ (instancetype)sharedInstance;
+
+- (void)setDisplayAgentFromAdServer:(MOPUBDisplayAgentType)displayAgentType;
 
 @end

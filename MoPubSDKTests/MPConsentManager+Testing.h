@@ -9,6 +9,7 @@
 #import "MPConsentManager.h"
 
 extern NSString * _Nonnull const kIfaForConsentStorageKey;
+extern NSString * _Nonnull const kAdUnitIdUsedForConsentStorageKey;
 
 @interface MPConsentManager (Testing)
 - (BOOL)setCurrentStatus:(MPConsentStatus)currentStatus
@@ -18,7 +19,8 @@ extern NSString * _Nonnull const kIfaForConsentStorageKey;
 - (NSURL * _Nullable)urlWithFormat:(NSString * _Nullable)urlFormat isoLanguageCode:(NSString * _Nullable)isoLanguageCode;
 - (void)setIsGDPRApplicable:(MPBool)isGDPRApplicable;
 @property (nonatomic, readonly) MPBool rawIsGDPRApplicable;
-
+- (void)didFinishSynchronizationWithData:(NSData * _Nonnull)data synchronizedStatus:(NSString * _Nonnull)synchronizedStatus completion:(void (^ _Nonnull)(NSError * _Nullable error))completion;
+- (void)didFailSynchronizationWithError:(NSError * _Nullable)error completion:(void (^ _Nonnull)(NSError * _Nullable error))completion;
 // Reset consent manager state for testing
 - (void)setUpConsentManagerForTesting;
 @end

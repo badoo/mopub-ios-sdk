@@ -11,12 +11,11 @@
 
 typedef void (^MPWebViewTestsDelegate)(void);
 typedef void (^MPWebViewTestsDidFailLoad)(NSError *error);
-typedef BOOL (^MPWebViewTestsShouldStartLoad)(NSURLRequest *, UIWebViewNavigationType);
+typedef BOOL (^MPWebViewTestsShouldStartLoad)(NSURLRequest *, WKNavigationType);
 
 @interface MPWebViewTests : XCTestCase <MPWebViewDelegate>
 
 @property (nonatomic) MPWebView *wkWebView;
-@property (nonatomic) MPWebView *uiWebView;
 
 @property MPWebViewTestsDelegate didStartLoadBlock;
 @property MPWebViewTestsDelegate didFinishLoadBlock;
@@ -32,14 +31,10 @@ typedef BOOL (^MPWebViewTestsShouldStartLoad)(NSURLRequest *, UIWebViewNavigatio
 
     self.wkWebView = [[MPWebView alloc] initWithFrame:CGRectZero];
     self.wkWebView.delegate = self;
-
-    self.uiWebView = [[MPWebView alloc] initWithFrame:CGRectZero forceUIWebView:YES];
-    self.uiWebView.delegate = self;
 }
 
 - (void)tearDown {
     self.wkWebView = nil;
-    self.uiWebView = nil;
 
     self.didStartLoadBlock = nil;
     self.didFinishLoadBlock = nil;
@@ -49,29 +44,25 @@ typedef BOOL (^MPWebViewTestsShouldStartLoad)(NSURLRequest *, UIWebViewNavigatio
     [super tearDown];
 }
 
-// Often for testing, we will need to verify some information that comes to us through MPWebViewDelegate.
-// Currently, any bridging between web view and native comes through this delegate. For convenience,
-// MPWebViewTests holds a set of blocks (one for each delegate method) that get called as the delegates fire.
-// You can set these blocks from within your test method to verify information that comes in through the delegate
-// methods. Use them in combination with XCTestExpectations. They are nil'd in `tearDown`.
+/**
+ Often for testing, we will need to verify some information that comes to us through MPWebViewDelegate.
+ Currently, any bridging between web view and native comes through this delegate. For convenience,
+ MPWebViewTests holds a set of blocks (one for each delegate method) that get called as the delegates fire.
+ You can set these blocks from within your test method to verify information that comes in through the delegate
+ methods. Use them in combination with XCTestExpectations. They are nil'd in `tearDown`.
 
-// Note on test structure: to be aware of any differences between UIWebView and WKWebView, each test gets run twice --
-// once with the OS default (WKWebView on anything at all modern) and once with UIWebView forced. Each test is packaged
-// into a non-test function with a web view parameter, and to each non-test function there are two tests that each call
-// the non-test function with one of the two web view properties. I separate the test methods so it can be seen
-// immediately which web view type is being problematic.
+ Each test is packaged into a non-test function with a web view parameter, and to each non-test function there are
+ two tests that each call the non-test function with one of the two web view properties. I separate the test methods
+ so it can be seen immediately which web view type is being problematic.
 
-// In building MPWebView, we had a lot of issues with javascript not completely getting executed, and, in particular,
-// redirects getting ignored. Make sure redirects always work.
+ In building MPWebView, we had a lot of issues with javascript not completely getting executed, and, in particular,
+ redirects getting ignored. Make sure redirects always work.
+*/
 static NSString *const gTestMopubSchemeRedirectURL = @"mopub://testredirect";
 
 // (via `evaluateJavaScript:completionHandler:`)
 - (void)testJavaScriptMoPubURLRedirectViaEvaluateWKWebView {
     [self javaScriptMoPubURLRedirectViaEvaluateTestWithWebView:self.wkWebView];
-}
-
-- (void)testJavaScriptMoPubURLRedirectViaEvaluateUIWebView {
-    [self javaScriptMoPubURLRedirectViaEvaluateTestWithWebView:self.uiWebView];
 }
 
 - (void)javaScriptMoPubURLRedirectViaEvaluateTestWithWebView:(MPWebView *)webView {
@@ -87,7 +78,7 @@ static NSString *const gTestMopubSchemeRedirectURL = @"mopub://testredirect";
     dispatch_group_t group = dispatch_group_create();
 
     dispatch_group_enter(group);
-    self.shouldStartLoadBlock = ^(NSURLRequest *request, UIWebViewNavigationType type) {
+    self.shouldStartLoadBlock = ^(NSURLRequest *request, WKNavigationType type) {
         shouldStartLoadURL = request.URL.absoluteString;
         dispatch_group_leave(group);
 
@@ -114,10 +105,6 @@ static NSString *const gTestMopubSchemeRedirectURL = @"mopub://testredirect";
     [self javaScriptMoPubURLRedirectViaLoadHTMLStringTestWithWebView:self.wkWebView];
 }
 
-- (void)testJavaScriptMoPubURLRedirectViaLoadHTMLStringUIWebView {
-    [self javaScriptMoPubURLRedirectViaLoadHTMLStringTestWithWebView:self.uiWebView];
-}
-
 - (void)javaScriptMoPubURLRedirectViaLoadHTMLStringTestWithWebView:(MPWebView *)webView {
     NSString *htmlSnippet = [NSString stringWithFormat:@"<html><script type=\"text/javascript\">window.location=\"%@\"</script></html>",
                              gTestMopubSchemeRedirectURL];
@@ -138,7 +125,7 @@ static NSString *const gTestMopubSchemeRedirectURL = @"mopub://testredirect";
     dispatch_group_enter(group);
     // Note: this block gets called twice -- once for the initial load and once to redirect. Wait on the
     // redirect rather than the initial load.
-    self.shouldStartLoadBlock = ^(NSURLRequest *request, UIWebViewNavigationType type) {
+    self.shouldStartLoadBlock = ^(NSURLRequest *request, WKNavigationType type) {
         if ([request.URL.scheme isEqualToString:@"mopub"]) {
             shouldStartLoadURL = request.URL.absoluteString;
             dispatch_group_leave(group);
@@ -168,10 +155,6 @@ static NSString *const gTestMopubSchemeRedirectURL = @"mopub://testredirect";
     [self propertiesTestWithWebView:self.wkWebView];
 }
 
-- (void)testPropertiesUIWebView {
-    [self propertiesTestWithWebView:self.uiWebView];
-}
-
 - (void)propertiesTestWithWebView:(MPWebView *)webView {
     // Default values
     XCTAssertTrue(webView.allowsInlineMediaPlayback);
@@ -199,7 +182,7 @@ static NSString *const gTestMopubSchemeRedirectURL = @"mopub://testredirect";
 
 #pragma mark - MPWebViewDelegate
 
-- (BOOL)webView:(MPWebView *)webView shouldStartLoadWithRequest:(NSURLRequest *)request navigationType:(UIWebViewNavigationType)navigationType {
+- (BOOL)webView:(MPWebView *)webView shouldStartLoadWithRequest:(NSURLRequest *)request navigationType:(WKNavigationType)navigationType {
     if (self.shouldStartLoadBlock) {
         return self.shouldStartLoadBlock(request, navigationType);
     }

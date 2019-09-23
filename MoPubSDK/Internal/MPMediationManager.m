@@ -221,7 +221,7 @@ static NSString const * kTokenKey             = @"token";
  there are no parameters, @c nil is returned.
  */
 - (NSDictionary<NSString *, id> *)parametersForAdapter:(id<MPAdapterConfiguration>)adapter
-                                 overrideConfiguration:(NSDictionary<NSString *, id> *)configuration {
+                                 overrideConfiguration:(NSDictionary<NSString *, id> * _Nullable)configuration {
     // Retrieve the adapter's cached initialization parameters and inputted initialization parameters.
     // Combine the two dictionaries, giving preference to the publisher-inputted parameters.
     NSDictionary * cachedParameters = [self cachedInitializationParametersForNetwork:adapter.class];
@@ -264,15 +264,10 @@ static NSString const * kTokenKey             = @"token";
         return nil;
     }
 
-    NSDictionary * networkParameters = nil;
     @synchronized (self) {
-        NSDictionary * cachedParameters = [[NSUserDefaults standardUserDefaults] objectForKey:kNetworkSDKInitializationParametersKey];
-        if (cachedParameters != nil) {
-            networkParameters = [cachedParameters objectForKey:network];
-        }
+        NSDictionary *cachedParameters = [[NSUserDefaults standardUserDefaults] objectForKey:kNetworkSDKInitializationParametersKey];
+        return [cachedParameters objectForKey:network];
     }
-
-    return networkParameters;
 }
 
 - (void)clearCache {

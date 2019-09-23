@@ -7,6 +7,7 @@
 //
 
 #import <Foundation/Foundation.h>
+#import "MPMediaFileCache.h"
 
 @interface MPDiskLRUCache : NSObject
 
@@ -20,4 +21,7 @@
 - (void)storeData:(NSData *)data forKey:(NSString *)key;
 - (void)removeAllCachedFiles;
 
+@end
+
+@interface MPDiskLRUCache (MPMediaFileCache) <MPMediaFileCache>
 @end

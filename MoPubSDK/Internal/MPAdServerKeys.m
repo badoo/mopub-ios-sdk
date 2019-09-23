@@ -13,9 +13,12 @@ NSString * const kAdServerIDKey                       = @"id";
 NSString * const kServerAPIVersionKey                 = @"v";
 NSString * const kApplicationVersionKey               = @"av";
 NSString * const kIdfaKey                             = @"udid";
+NSString * const kMoPubIDKey                          = @"mid";
 NSString * const kBundleKey                           = @"bundle";
 NSString * const kDoNotTrackIdKey                     = @"dnt";
 NSString * const kSDKVersionKey                       = @"nv";
+NSString * const kSDKEngineNameKey                    = @"e_name";
+NSString * const kSDKEngineVersionKey                 = @"e_ver";
 
 #pragma mark - Ad Server Ad Request Endpoint Keys
 NSString * const kOrientationKey                      = @"o";
@@ -44,6 +47,8 @@ NSString * const kLocationIsFromSDK                   = @"llsdk";
 NSString * const kLocationLastUpdatedMilliseconds     = @"llf";
 NSString * const kBackoffMsKey                        = @"backoff_ms";
 NSString * const kBackoffReasonKey                    = @"backoff_reason";
+NSString * const kCreativeSafeWidthKey                = @"cw";
+NSString * const kCreativeSafeHeightKey               = @"ch";
 
 #pragma mark - Ad Server Response Keys
 NSString * const kEnableDebugLogging                  = @"enable_debug_logging";

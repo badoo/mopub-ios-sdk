@@ -7,10 +7,15 @@
 //
 
 #import "MoPub.h"
+#import "MOPUBExperimentProvider+Testing.h"
 
 NS_ASSUME_NONNULL_BEGIN
 
 @interface MoPub (Testing)
+
+- (instancetype)initWithExperimentProvider:(MOPUBExperimentProvider *)experimentProvider;
+
+- (void)commonInitWithExperimentProvider:(MOPUBExperimentProvider *)experimentProvider;
 
 // This method is called by `initializeSdkWithConfiguration:completion:` in a dispatch_once block,
 // and is exposed here for unit testing.
@@ -23,6 +28,8 @@ NS_ASSUME_NONNULL_BEGIN
  @return The managed adapter configuration instance if successful; otherwise @c nil.
  */
 - (id<MPAdapterConfiguration> _Nullable)adapterConfigurationNamed:(NSString *)className;
+
+- (MOPUBExperimentProvider *)experimentProvider;
 
 @end
 

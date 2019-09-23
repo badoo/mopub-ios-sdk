@@ -21,7 +21,6 @@
 #import "MPTimer.h"
 #import "NSHTTPURLResponse+MPAdditions.h"
 #import "NSURL+MPAdditions.h"
-#import "UIWebView+MPAdditions.h"
 #import "MPForceableOrientationProtocol.h"
 #import "MPAPIEndPoints.h"
 #import "MoPub.h"
@@ -53,7 +52,6 @@ static NSString *const kMRAIDCommandResize = @"resize";
 @property (nonatomic, assign) NSUInteger modalViewCount;
 @property (nonatomic, assign) BOOL isAppSuspended;
 @property (nonatomic, assign) MRAdViewState currentState;
-@property (nonatomic, assign) BOOL shouldUseUIWebView;
 // Track the original super view for when we move the ad view to the key window for a 1-part expand.
 @property (nonatomic, weak) UIView *originalSuperview;
 @property (nonatomic, assign) BOOL isViewable;
@@ -114,11 +112,11 @@ static NSString *const kMRAIDCommandResize = @"resize";
 
         _mraidDefaultAdFrame = adViewFrame;
 
-        _adPropertyUpdateTimer = [[MPCoreInstanceProvider sharedProvider] buildMPTimerWithTimeInterval:kAdPropertyUpdateTimerInterval
-                                                                                                target:self
-                                                                                              selector:@selector(updateMRAIDProperties)
-                                                                                               repeats:YES];
-        _adPropertyUpdateTimer.runLoopMode = NSRunLoopCommonModes;
+        _adPropertyUpdateTimer = [MPTimer timerWithTimeInterval:kAdPropertyUpdateTimerInterval
+                                                         target:self
+                                                       selector:@selector(updateMRAIDProperties)
+                                                        repeats:YES
+                                                    runLoopMode:NSRunLoopCommonModes];
 
         [[NSNotificationCenter defaultCenter] addObserver:self
                                                  selector:@selector(viewEnteredBackground)
@@ -165,10 +163,8 @@ static NSString *const kMRAIDCommandResize = @"resize";
     self.isAdLoading = YES;
     self.adRequiresPrecaching = configuration.precacheRequired;
     self.isAdVastVideoPlayer = configuration.isVastVideoPlayer;
-    self.shouldUseUIWebView = self.isAdVastVideoPlayer;
 
-    self.mraidWebView = [self buildMRAIDWebViewWithFrame:self.mraidDefaultAdFrame
-                                          forceUIWebView:self.shouldUseUIWebView];
+    self.mraidWebView = [self buildMRAIDWebViewWithFrame:self.mraidDefaultAdFrame];
     self.mraidWebView.shouldConformToSafeArea = [self isInterstitialAd];
 
     self.mraidBridge = [[MRBridge alloc] initWithWebView:self.mraidWebView delegate:self];
@@ -346,9 +342,9 @@ static NSString *const kMRAIDCommandResize = @"resize";
     return bridge;
 }
 
-- (MPWebView *)buildMRAIDWebViewWithFrame:(CGRect)frame forceUIWebView:(BOOL)forceUIWebView
+- (MPWebView *)buildMRAIDWebViewWithFrame:(CGRect)frame
 {
-    MPWebView *webView = [[MPWebView alloc] initWithFrame:frame forceUIWebView:forceUIWebView];
+    MPWebView *webView = [[MPWebView alloc] initWithFrame:frame];
     webView.autoresizingMask = UIViewAutoresizingFlexibleWidth | UIViewAutoresizingFlexibleHeight;
     webView.backgroundColor = [UIColor clearColor];
     webView.clipsToBounds = YES;
@@ -533,7 +529,6 @@ static NSString *const kMRAIDCommandResize = @"resize";
     view.frame = self.expandModalViewController.view.bounds;
     view.autoresizingMask = UIViewAutoresizingFlexibleWidth | UIViewAutoresizingFlexibleHeight;
     self.expandModalViewController.modalTransitionStyle = UIModalTransitionStyleCrossDissolve;
-    [self.expandModalViewController hideStatusBar];
 
     [[self.delegate viewControllerForPresentingModalView] presentViewController:self.expandModalViewController
                                                                        animated:animated
@@ -605,8 +600,6 @@ static NSString *const kMRAIDCommandResize = @"resize";
     // they're in a transitional state.
     [self willBeginAnimatingAdSize];
 
-    // Tell the modal view controller to restore the state of the status bar back to what the application had it set to.
-    [self.expandModalViewController restoreStatusBarVisibility];
     __weak __typeof__(self) weakSelf = self;
     [self.expandModalViewController dismissViewControllerAnimated:YES completion:^{
         __typeof__(self) strongSelf = weakSelf;
@@ -852,12 +845,6 @@ static NSString *const kMRAIDCommandResize = @"resize";
     if (inSameOrientation) {
         fullScreenAdViewController.supportedOrientationMask = forceOrientationMask;
     } else {
-        // It doesn't seem possible to force orientation in iOS 7+. So we dismiss the current view controller and re-present it with the forced orientation.
-        // If it's an expanded ad, we need to restore the status bar visibility before we dismiss the current VC since we don't show the status bar in expanded state.
-        if (inExpandedState) {
-            [self.expandModalViewController restoreStatusBarVisibility];
-        }
-
         // Block our timer from updating properties while we force orientation on the view controller.
         [self willBeginAnimatingAdSize];
 
@@ -909,7 +896,7 @@ static NSString *const kMRAIDCommandResize = @"resize";
         // It doesn't matter what frame we use for the two-part expand. We'll overwrite it with a new frame when presenting the modal.
         CGRect twoPartFrame = self.mraidAdView.frame;
 
-        MPWebView *twoPartWebView = [self buildMRAIDWebViewWithFrame:twoPartFrame forceUIWebView:self.shouldUseUIWebView];
+        MPWebView *twoPartWebView = [self buildMRAIDWebViewWithFrame:twoPartFrame];
         self.mraidBridgeTwoPart = [[MRBridge alloc] initWithWebView:twoPartWebView delegate:self];
         self.mraidAdViewTwoPart = [[MPClosableView alloc] initWithFrame:twoPartFrame
                                                                 webView:twoPartWebView

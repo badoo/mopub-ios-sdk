@@ -10,10 +10,8 @@
 #import "XCTestCase+MPAddition.h"
 #import "MPVASTManager.h"
 #import "MPVASTResponse.h"
+#import "MPVASTTracking.h"
 #import "MPVideoConfig.h"
-#import "MPVASTTrackingEvent.h"
-
-static const NSTimeInterval kDefaultTimeout   = 1;
 
 static NSString * const kTrackerEventDictionaryKey = @"event";
 static NSString * const kTrackerTextDictionaryKey = @"text";
@@ -49,146 +47,112 @@ static NSString * const kSecondAdditionalCompleteTrackerUrl = @"mopub.com/comple
 - (void)testEmptyVastEmptyAdditionalTrackers {
     // vast response is nil
     MPVideoConfig *videoConfig = [[MPVideoConfig alloc] initWithVASTResponse:nil additionalTrackers:nil];
-    XCTAssertEqual(videoConfig.startTrackers.count, 0);
-    XCTAssertEqual(videoConfig.firstQuartileTrackers.count, 0);
-    XCTAssertEqual(videoConfig.midpointTrackers.count, 0);
-    XCTAssertEqual(videoConfig.thirdQuartileTrackers.count, 0);
-    XCTAssertEqual(videoConfig.completionTrackers.count, 0);
+    XCTAssertEqual([videoConfig trackingEventsForKey:MPVideoEventStart].count, 0);
+    XCTAssertEqual([videoConfig trackingEventsForKey:MPVideoEventFirstQuartile].count, 0);
+    XCTAssertEqual([videoConfig trackingEventsForKey:MPVideoEventMidpoint].count, 0);
+    XCTAssertEqual([videoConfig trackingEventsForKey:MPVideoEventThirdQuartile].count, 0);
+    XCTAssertEqual([videoConfig trackingEventsForKey:MPVideoEventComplete].count, 0);
 
     // vast response is not nil, but it doesn't have trackers.
     MPVideoConfig *videoConfig2 = [[MPVideoConfig alloc] initWithVASTResponse:[MPVASTResponse new] additionalTrackers:nil];
-    XCTAssertEqual(videoConfig2.startTrackers.count, 0);
-    XCTAssertEqual(videoConfig2.firstQuartileTrackers.count, 0);
-    XCTAssertEqual(videoConfig2.midpointTrackers.count, 0);
-    XCTAssertEqual(videoConfig2.thirdQuartileTrackers.count, 0);
-    XCTAssertEqual(videoConfig2.completionTrackers.count, 0);
+    XCTAssertEqual([videoConfig2 trackingEventsForKey:MPVideoEventStart].count, 0);
+    XCTAssertEqual([videoConfig2 trackingEventsForKey:MPVideoEventFirstQuartile].count, 0);
+    XCTAssertEqual([videoConfig2 trackingEventsForKey:MPVideoEventMidpoint].count, 0);
+    XCTAssertEqual([videoConfig2 trackingEventsForKey:MPVideoEventThirdQuartile].count, 0);
+    XCTAssertEqual([videoConfig2 trackingEventsForKey:MPVideoEventComplete].count, 0);
 }
 
 // Test when there are trackers in vast but no trackers in additonalTrackers. This test also ensures that trackers with no URLs are not included in the video config
 - (void)testNonEmptyVastEmptyAdditionalTrackers {
-    XCTestExpectation *expectation = [self expectationWithDescription:@"Wait for fetching data from xml."];
-
-    __block NSData *vastData = [self dataFromXMLFileNamed:@"linear-tracking" class:[self class]];
-    __block MPVASTResponse *vastResponse;
-    [MPVASTManager fetchVASTWithData:vastData completion:^(MPVASTResponse *response, NSError *error) {
-        XCTAssertNil(error);
-        vastResponse = response;
-        [expectation fulfill];
-    }];
-
-    [self waitForExpectationsWithTimeout:kDefaultTimeout handler:^(NSError * _Nullable error) {
-        XCTAssertNil(error);
-    }];
+    MPVASTResponse *vastResponse = [self vastResponseFromXMLFile:@"linear-tracking"];
 
     // linear-tracking.xml has 1 for each of the following trackers: start, firstQuartile, midpoint, thirdQuartile, and complete.
     MPVideoConfig *videoConfig = [[MPVideoConfig alloc] initWithVASTResponse:vastResponse additionalTrackers:nil];
-    XCTAssertEqual(videoConfig.creativeViewTrackers.count, 1);
-    XCTAssertEqual(videoConfig.startTrackers.count, 1);
-    XCTAssertEqual(videoConfig.firstQuartileTrackers.count, 1);
-    XCTAssertEqual(videoConfig.midpointTrackers.count, 1);
-    XCTAssertEqual(videoConfig.thirdQuartileTrackers.count, 1);
-    XCTAssertEqual(videoConfig.completionTrackers.count, 1);
+    XCTAssertEqual([videoConfig trackingEventsForKey:MPVideoEventCreativeView].count, 1);
+    XCTAssertEqual([videoConfig trackingEventsForKey:MPVideoEventStart].count, 1);
+    XCTAssertEqual([videoConfig trackingEventsForKey:MPVideoEventFirstQuartile].count, 1);
+    XCTAssertEqual([videoConfig trackingEventsForKey:MPVideoEventMidpoint].count, 1);
+    XCTAssertEqual([videoConfig trackingEventsForKey:MPVideoEventThirdQuartile].count, 1);
+    XCTAssertEqual([videoConfig trackingEventsForKey:MPVideoEventComplete].count, 1);
 
     // additionalTrackers are not nil but there is nothing inside
     MPVideoConfig *videoConfig2 = [[MPVideoConfig alloc] initWithVASTResponse:vastResponse additionalTrackers:[NSDictionary new]];
-    XCTAssertEqual(videoConfig.creativeViewTrackers.count, 1);
-    XCTAssertEqual(videoConfig2.startTrackers.count, 1);
-    XCTAssertEqual(videoConfig2.firstQuartileTrackers.count, 1);
-    XCTAssertEqual(videoConfig2.midpointTrackers.count, 1);
-    XCTAssertEqual(videoConfig2.thirdQuartileTrackers.count, 1);
-    XCTAssertEqual(videoConfig2.completionTrackers.count, 1);
+    XCTAssertEqual([videoConfig2 trackingEventsForKey:MPVideoEventCreativeView].count, 1);
+    XCTAssertEqual([videoConfig2 trackingEventsForKey:MPVideoEventStart].count, 1);
+    XCTAssertEqual([videoConfig2 trackingEventsForKey:MPVideoEventFirstQuartile].count, 1);
+    XCTAssertEqual([videoConfig2 trackingEventsForKey:MPVideoEventMidpoint].count, 1);
+    XCTAssertEqual([videoConfig2 trackingEventsForKey:MPVideoEventThirdQuartile].count, 1);
+    XCTAssertEqual([videoConfig2 trackingEventsForKey:MPVideoEventComplete].count, 1);
 }
 
 // Test when VAST doesn't have any trackers and there is exactly one entry for each event type
 - (void)testSingleTrackeForEachEventInAdditionalTrackers {
-    // set up VAST response
-    XCTestExpectation *expectation = [self expectationWithDescription:@"Wait for fetching data from xml."];
-    __block NSData *vastData = [self dataFromXMLFileNamed:@"linear-tracking-no-event" class:[self class]];
-    __block MPVASTResponse *vastResponse;
-    [MPVASTManager fetchVASTWithData:vastData completion:^(MPVASTResponse *response, NSError *error) {
-        XCTAssertNil(error);
-        vastResponse = response;
-        [expectation fulfill];
-    }];
-
-    [self waitForExpectationsWithTimeout:kDefaultTimeout handler:^(NSError * _Nullable error) {
-        XCTAssertNil(error);
-    }];
-
-
+    MPVASTResponse *vastResponse = [self vastResponseFromXMLFile:@"linear-tracking-no-event"];
     NSDictionary *additonalTrackersDict = [self getAdditionalTrackersWithOneEntryForEachEvent];
     MPVideoConfig *videoConfig = [[MPVideoConfig alloc] initWithVASTResponse:vastResponse additionalTrackers:additonalTrackersDict];
-    XCTAssertEqual(videoConfig.startTrackers.count, 1);
-    XCTAssertEqual(videoConfig.firstQuartileTrackers.count, 1);
-    XCTAssertEqual(videoConfig.midpointTrackers.count, 1);
-    XCTAssertEqual(videoConfig.thirdQuartileTrackers.count, 1);
-    XCTAssertEqual(videoConfig.completionTrackers.count, 1);
+    XCTAssertEqual([videoConfig trackingEventsForKey:MPVideoEventStart].count, 1);
+    XCTAssertEqual([videoConfig trackingEventsForKey:MPVideoEventFirstQuartile].count, 1);
+    XCTAssertEqual([videoConfig trackingEventsForKey:MPVideoEventMidpoint].count, 1);
+    XCTAssertEqual([videoConfig trackingEventsForKey:MPVideoEventThirdQuartile].count, 1);
+    XCTAssertEqual([videoConfig trackingEventsForKey:MPVideoEventComplete].count, 1);
 
     // verify type and url
-    XCTAssertEqual(((MPVASTTrackingEvent *)videoConfig.startTrackers.firstObject).eventType, MPVASTTrackingEventTypeStart);
-    XCTAssertEqualObjects(((MPVASTTrackingEvent *)videoConfig.startTrackers.firstObject).URL, [NSURL URLWithString:kFirstAdditionalStartTrackerUrl]);
+    MPVASTTrackingEvent *event = [videoConfig trackingEventsForKey:MPVideoEventStart].firstObject;
+    XCTAssertEqual(event.eventType, MPVideoEventStart);
+    XCTAssertEqualObjects(event.URL, [NSURL URLWithString:kFirstAdditionalStartTrackerUrl]);
 
-    XCTAssertEqual(((MPVASTTrackingEvent *)videoConfig.firstQuartileTrackers.firstObject).eventType, MPVASTTrackingEventTypeFirstQuartile);
-    XCTAssertEqualObjects(((MPVASTTrackingEvent *)videoConfig.firstQuartileTrackers.firstObject).URL, [NSURL URLWithString:kFirstAdditionalFirstQuartileTrackerUrl]);
+    event = [videoConfig trackingEventsForKey:MPVideoEventFirstQuartile].firstObject;
+    XCTAssertEqual(event.eventType, MPVideoEventFirstQuartile);
+    XCTAssertEqualObjects(event.URL, [NSURL URLWithString:kFirstAdditionalFirstQuartileTrackerUrl]);
 
-    XCTAssertEqual(((MPVASTTrackingEvent *)videoConfig.midpointTrackers.firstObject).eventType, MPVASTTrackingEventTypeMidpoint);
-    XCTAssertEqualObjects(((MPVASTTrackingEvent *)videoConfig.midpointTrackers.firstObject).URL, [NSURL URLWithString:kFirstAdditionalMidpointTrackerUrl]);
+    event = [videoConfig trackingEventsForKey:MPVideoEventMidpoint].firstObject;
+    XCTAssertEqual(event.eventType, MPVideoEventMidpoint);
+    XCTAssertEqualObjects(event.URL, [NSURL URLWithString:kFirstAdditionalMidpointTrackerUrl]);
 
-    XCTAssertEqual(((MPVASTTrackingEvent *)videoConfig.thirdQuartileTrackers.firstObject).eventType, MPVASTTrackingEventTypeThirdQuartile);
-    XCTAssertEqualObjects(((MPVASTTrackingEvent *)videoConfig.thirdQuartileTrackers.firstObject).URL, [NSURL URLWithString:kFirstAdditionalThirdQuartileTrackerUrl]);
+    event = [videoConfig trackingEventsForKey:MPVideoEventThirdQuartile].firstObject;
+    XCTAssertEqual(event.eventType, MPVideoEventThirdQuartile);
+    XCTAssertEqualObjects(event.URL, [NSURL URLWithString:kFirstAdditionalThirdQuartileTrackerUrl]);
 
-    XCTAssertEqual(((MPVASTTrackingEvent *)videoConfig.completionTrackers.firstObject).eventType, MPVASTTrackingEventTypeComplete);
-    XCTAssertEqualObjects(((MPVASTTrackingEvent *)videoConfig.completionTrackers.firstObject).URL, [NSURL URLWithString:kFirstAdditionalCompleteTrackerUrl]);
+    event = [videoConfig trackingEventsForKey:MPVideoEventComplete].firstObject;
+    XCTAssertEqual(event.eventType, MPVideoEventComplete);
+    XCTAssertEqualObjects(event.URL, [NSURL URLWithString:kFirstAdditionalCompleteTrackerUrl]);
 }
 
 - (void)testMergeTrackers {
-    XCTestExpectation *expectation = [self expectationWithDescription:@"Wait for fetching data from xml."];
-
-    __block NSData *vastData = [self dataFromXMLFileNamed:@"linear-tracking" class:[self class]];
-    __block MPVASTResponse *vastResponse;
-    [MPVASTManager fetchVASTWithData:vastData completion:^(MPVASTResponse *response, NSError *error) {
-        XCTAssertNil(error);
-        vastResponse = response;
-        [expectation fulfill];
-    }];
-
-    [self waitForExpectationsWithTimeout:kDefaultTimeout handler:^(NSError * _Nullable error) {
-        XCTAssertNil(error);
-    }];
-
+    MPVASTResponse *vastResponse = [self vastResponseFromXMLFile:@"linear-tracking"];
     NSDictionary *additonalTrackersDict = [self getAdditionalTrackersWithTwoEntriesForEachEvent];
     MPVideoConfig *videoConfig = [[MPVideoConfig alloc] initWithVASTResponse:vastResponse additionalTrackers:additonalTrackersDict];
     // one tracker from vast, two from additonalTrackers
-    XCTAssertEqual(videoConfig.startTrackers.count, 3);
-    XCTAssertEqual(videoConfig.firstQuartileTrackers.count, 3);
-    XCTAssertEqual(videoConfig.midpointTrackers.count, 3);
-    XCTAssertEqual(videoConfig.thirdQuartileTrackers.count, 3);
-    XCTAssertEqual(videoConfig.completionTrackers.count, 3);
+    XCTAssertEqual([videoConfig trackingEventsForKey:MPVideoEventStart].count, 3);
+    XCTAssertEqual([videoConfig trackingEventsForKey:MPVideoEventFirstQuartile].count, 3);
+    XCTAssertEqual([videoConfig trackingEventsForKey:MPVideoEventMidpoint].count, 3);
+    XCTAssertEqual([videoConfig trackingEventsForKey:MPVideoEventThirdQuartile].count, 3);
+    XCTAssertEqual([videoConfig trackingEventsForKey:MPVideoEventComplete].count, 3);
 }
 
 - (NSDictionary *)getAdditionalTrackersWithOneEntryForEachEvent
 {
     NSMutableDictionary *addtionalTrackersDict = [NSMutableDictionary new];
-    NSDictionary *startTrackerDict = @{kTrackerEventDictionaryKey:MPVASTTrackingEventTypeStart, kTrackerTextDictionaryKey:kFirstAdditionalStartTrackerUrl};
+    NSDictionary *startTrackerDict = @{kTrackerEventDictionaryKey:MPVideoEventStart, kTrackerTextDictionaryKey:kFirstAdditionalStartTrackerUrl};
     MPVASTTrackingEvent *startTracker = [[MPVASTTrackingEvent alloc] initWithDictionary:startTrackerDict];
 
-    NSDictionary *firstQuartileTrackerDict = @{kTrackerEventDictionaryKey:MPVASTTrackingEventTypeFirstQuartile, kTrackerTextDictionaryKey:kFirstAdditionalFirstQuartileTrackerUrl};
+    NSDictionary *firstQuartileTrackerDict = @{kTrackerEventDictionaryKey:MPVideoEventFirstQuartile, kTrackerTextDictionaryKey:kFirstAdditionalFirstQuartileTrackerUrl};
     MPVASTTrackingEvent *firstQuartileTracker = [[MPVASTTrackingEvent alloc] initWithDictionary:firstQuartileTrackerDict];
 
-    NSDictionary *midpointTrackerDict = @{kTrackerEventDictionaryKey:MPVASTTrackingEventTypeMidpoint, kTrackerTextDictionaryKey:kFirstAdditionalMidpointTrackerUrl};
+    NSDictionary *midpointTrackerDict = @{kTrackerEventDictionaryKey:MPVideoEventMidpoint, kTrackerTextDictionaryKey:kFirstAdditionalMidpointTrackerUrl};
     MPVASTTrackingEvent *midpointTracker = [[MPVASTTrackingEvent alloc] initWithDictionary:midpointTrackerDict];
 
-    NSDictionary *thirdQuartileTrackerDict = @{kTrackerEventDictionaryKey:MPVASTTrackingEventTypeThirdQuartile, kTrackerTextDictionaryKey:kFirstAdditionalThirdQuartileTrackerUrl};
+    NSDictionary *thirdQuartileTrackerDict = @{kTrackerEventDictionaryKey:MPVideoEventThirdQuartile, kTrackerTextDictionaryKey:kFirstAdditionalThirdQuartileTrackerUrl};
     MPVASTTrackingEvent *thirdQuartileTracker = [[MPVASTTrackingEvent alloc] initWithDictionary:thirdQuartileTrackerDict];
 
-    NSDictionary *completeTrackerDict = @{kTrackerEventDictionaryKey:MPVASTTrackingEventTypeComplete, kTrackerTextDictionaryKey:kFirstAdditionalCompleteTrackerUrl};
+    NSDictionary *completeTrackerDict = @{kTrackerEventDictionaryKey:MPVideoEventComplete, kTrackerTextDictionaryKey:kFirstAdditionalCompleteTrackerUrl};
     MPVASTTrackingEvent *completeTracker = [[MPVASTTrackingEvent alloc] initWithDictionary:completeTrackerDict];
 
-    addtionalTrackersDict[MPVASTTrackingEventTypeStart] = @[startTracker];
-    addtionalTrackersDict[MPVASTTrackingEventTypeFirstQuartile] = @[firstQuartileTracker];
-    addtionalTrackersDict[MPVASTTrackingEventTypeMidpoint] = @[midpointTracker];
-    addtionalTrackersDict[MPVASTTrackingEventTypeThirdQuartile] = @[thirdQuartileTracker];
-    addtionalTrackersDict[MPVASTTrackingEventTypeComplete] = @[completeTracker];
+    addtionalTrackersDict[MPVideoEventStart] = @[startTracker];
+    addtionalTrackersDict[MPVideoEventFirstQuartile] = @[firstQuartileTracker];
+    addtionalTrackersDict[MPVideoEventMidpoint] = @[midpointTracker];
+    addtionalTrackersDict[MPVideoEventThirdQuartile] = @[thirdQuartileTracker];
+    addtionalTrackersDict[MPVideoEventComplete] = @[completeTracker];
 
     return addtionalTrackersDict;
 }
@@ -198,49 +162,48 @@ static NSString * const kSecondAdditionalCompleteTrackerUrl = @"mopub.com/comple
     NSMutableDictionary *addtionalTrackersDict = [NSMutableDictionary new];
 
     // start trackers
-    NSDictionary *startTrackerDict1 = @{kTrackerEventDictionaryKey:MPVASTTrackingEventTypeStart, kTrackerTextDictionaryKey:kFirstAdditionalStartTrackerUrl};
+    NSDictionary *startTrackerDict1 = @{kTrackerEventDictionaryKey:MPVideoEventStart, kTrackerTextDictionaryKey:kFirstAdditionalStartTrackerUrl};
     MPVASTTrackingEvent *startTracker1 = [[MPVASTTrackingEvent alloc] initWithDictionary:startTrackerDict1];
 
-    NSDictionary *startTrackerDict2 = @{kTrackerEventDictionaryKey:MPVASTTrackingEventTypeStart, kTrackerTextDictionaryKey:kSecondAdditionalStartTrackerUrl};
+    NSDictionary *startTrackerDict2 = @{kTrackerEventDictionaryKey:MPVideoEventStart, kTrackerTextDictionaryKey:kSecondAdditionalStartTrackerUrl};
     MPVASTTrackingEvent *startTracker2 = [[MPVASTTrackingEvent alloc] initWithDictionary:startTrackerDict2];
 
     // firstQuartile trackers
-    NSDictionary *firstQuartileTrackerDict1 = @{kTrackerEventDictionaryKey:MPVASTTrackingEventTypeFirstQuartile, kTrackerTextDictionaryKey:kSecondAdditionalFirstQuartileTrackerUrl};
+    NSDictionary *firstQuartileTrackerDict1 = @{kTrackerEventDictionaryKey:MPVideoEventFirstQuartile, kTrackerTextDictionaryKey:kSecondAdditionalFirstQuartileTrackerUrl};
     MPVASTTrackingEvent *firstQuartileTracker1 = [[MPVASTTrackingEvent alloc] initWithDictionary:firstQuartileTrackerDict1];
 
-    NSDictionary *firstQuartileTrackerDict2 = @{kTrackerEventDictionaryKey:MPVASTTrackingEventTypeFirstQuartile, kTrackerTextDictionaryKey:kSecondAdditionalFirstQuartileTrackerUrl};
+    NSDictionary *firstQuartileTrackerDict2 = @{kTrackerEventDictionaryKey:MPVideoEventFirstQuartile, kTrackerTextDictionaryKey:kSecondAdditionalFirstQuartileTrackerUrl};
     MPVASTTrackingEvent *firstQuartileTracker2 = [[MPVASTTrackingEvent alloc] initWithDictionary:firstQuartileTrackerDict2];
 
     // midpoint trackers
-    NSDictionary *midpointTrackerDict1 = @{kTrackerEventDictionaryKey:MPVASTTrackingEventTypeMidpoint, kTrackerTextDictionaryKey:kFirstAdditionalMidpointTrackerUrl};
+    NSDictionary *midpointTrackerDict1 = @{kTrackerEventDictionaryKey:MPVideoEventMidpoint, kTrackerTextDictionaryKey:kFirstAdditionalMidpointTrackerUrl};
     MPVASTTrackingEvent *midpointTracker1 = [[MPVASTTrackingEvent alloc] initWithDictionary:midpointTrackerDict1];
 
-    NSDictionary *midpointTrackerDict2 = @{kTrackerEventDictionaryKey:MPVASTTrackingEventTypeMidpoint, kTrackerTextDictionaryKey:kSecondAdditionalMidpointTrackerUrl};
+    NSDictionary *midpointTrackerDict2 = @{kTrackerEventDictionaryKey:MPVideoEventMidpoint, kTrackerTextDictionaryKey:kSecondAdditionalMidpointTrackerUrl};
     MPVASTTrackingEvent *midpointTracker2 = [[MPVASTTrackingEvent alloc] initWithDictionary:midpointTrackerDict2];
 
 
     // thirdQuartile trackers
-    NSDictionary *thirdQuartileTrackerDict1 = @{kTrackerEventDictionaryKey:MPVASTTrackingEventTypeThirdQuartile, kTrackerTextDictionaryKey:kFirstAdditionalThirdQuartileTrackerUrl};
+    NSDictionary *thirdQuartileTrackerDict1 = @{kTrackerEventDictionaryKey:MPVideoEventThirdQuartile, kTrackerTextDictionaryKey:kFirstAdditionalThirdQuartileTrackerUrl};
     MPVASTTrackingEvent *thirdQuartileTracker1 = [[MPVASTTrackingEvent alloc] initWithDictionary:thirdQuartileTrackerDict1];
 
-    NSDictionary *thirdQuartileTrackerDict2 = @{kTrackerEventDictionaryKey:MPVASTTrackingEventTypeThirdQuartile, kTrackerTextDictionaryKey:kSecondAdditionalThirdQuartileTrackerUrl};
+    NSDictionary *thirdQuartileTrackerDict2 = @{kTrackerEventDictionaryKey:MPVideoEventThirdQuartile, kTrackerTextDictionaryKey:kSecondAdditionalThirdQuartileTrackerUrl};
     MPVASTTrackingEvent *thirdQuartileTracker2 = [[MPVASTTrackingEvent alloc] initWithDictionary:thirdQuartileTrackerDict2];
 
     // complete trackers
-    NSDictionary *completeTrackerDict1 = @{kTrackerEventDictionaryKey:MPVASTTrackingEventTypeComplete, kTrackerTextDictionaryKey:kFirstAdditionalCompleteTrackerUrl};
+    NSDictionary *completeTrackerDict1 = @{kTrackerEventDictionaryKey:MPVideoEventComplete, kTrackerTextDictionaryKey:kFirstAdditionalCompleteTrackerUrl};
     MPVASTTrackingEvent *completeTracker1 = [[MPVASTTrackingEvent alloc] initWithDictionary:completeTrackerDict1];
 
-    NSDictionary *completeTrackerDict2 = @{kTrackerEventDictionaryKey:MPVASTTrackingEventTypeComplete, kTrackerTextDictionaryKey:kSecondAdditionalCompleteTrackerUrl};
+    NSDictionary *completeTrackerDict2 = @{kTrackerEventDictionaryKey:MPVideoEventComplete, kTrackerTextDictionaryKey:kSecondAdditionalCompleteTrackerUrl};
     MPVASTTrackingEvent *completeTracker2 = [[MPVASTTrackingEvent alloc] initWithDictionary:completeTrackerDict2];
 
-    addtionalTrackersDict[MPVASTTrackingEventTypeStart] = @[startTracker1, startTracker2];
-    addtionalTrackersDict[MPVASTTrackingEventTypeFirstQuartile] = @[firstQuartileTracker1, firstQuartileTracker2];
-    addtionalTrackersDict[MPVASTTrackingEventTypeMidpoint] = @[midpointTracker1, midpointTracker2];
-    addtionalTrackersDict[MPVASTTrackingEventTypeThirdQuartile] = @[thirdQuartileTracker1, thirdQuartileTracker2];
-    addtionalTrackersDict[MPVASTTrackingEventTypeComplete] = @[completeTracker1, completeTracker2];
+    addtionalTrackersDict[MPVideoEventStart] = @[startTracker1, startTracker2];
+    addtionalTrackersDict[MPVideoEventFirstQuartile] = @[firstQuartileTracker1, firstQuartileTracker2];
+    addtionalTrackersDict[MPVideoEventMidpoint] = @[midpointTracker1, midpointTracker2];
+    addtionalTrackersDict[MPVideoEventThirdQuartile] = @[thirdQuartileTracker1, thirdQuartileTracker2];
+    addtionalTrackersDict[MPVideoEventComplete] = @[completeTracker1, completeTracker2];
 
     return addtionalTrackersDict;
 }
-
 
 @end

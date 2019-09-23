@@ -10,5 +10,4 @@
 
 @implementation MPWebView (Testing)
 @dynamic wkWebView;
-@dynamic uiWebView;
 @end

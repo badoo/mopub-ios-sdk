@@ -43,6 +43,12 @@ class AdUnitTableViewController: UIViewController {
         AdUnitTableViewHeader.register(with: tableView)
         tableView.dataSource = self
         tableView.delegate = self
+        
+        // Set up background color for Dark Mode
+        if #available(iOS 13.0, *) {
+            tableView.dragDelegate = self
+            view.backgroundColor = .systemBackground
+        }
     }
     
     // MARK: - Ad Loading
@@ -159,5 +165,27 @@ extension AdUnitTableViewController: UITableViewDelegate {
     
     func tableView(_ tableView: UITableView, heightForHeaderInSection section: Int) -> CGFloat {
         return UITableView.automaticDimension
+    }
+}
+
+// MARK: - UITableViewDragDelegate
+
+@available(iOS 11, *)
+extension AdUnitTableViewController: UITableViewDragDelegate {
+    func tableView(_ tableView: UITableView, itemsForBeginning session: UIDragSession, at indexPath: IndexPath) -> [UIDragItem] {
+        // Drag & Drop is available since iOS 11, but multi-scene is available since iOS 13.
+        guard
+            #available(iOS 13, *),
+            let adUnit: AdUnit = dataSource?.item(at: indexPath)else {
+            return []
+        }
+        
+        let itemProvider = NSItemProvider()
+        itemProvider.registerObject(adUnit.openAdViewActivity , visibility: .all)
+
+        let dragItem = UIDragItem(itemProvider: itemProvider)
+        dragItem.localObject = adUnit
+        
+        return [dragItem]
     }
 }

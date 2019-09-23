@@ -53,6 +53,25 @@ static NSTimeInterval const kTestTimeout = 0.5;
     XCTAssertTrue([viewabilityValue isEqualToString:@"1"]);
 }
 
+#pragma mark - Ad Sizing
+
+- (void)testFullscreenCreativeSizeSent {
+    [self.interstitial loadAd];
+
+    XCTAssertNotNil(self.mockAdServerCommunicator);
+    XCTAssertNotNil(self.mockAdServerCommunicator.lastUrlLoaded);
+
+    MPURL * url = [self.mockAdServerCommunicator.lastUrlLoaded isKindOfClass:[MPURL class]] ? (MPURL *)self.mockAdServerCommunicator.lastUrlLoaded : nil;
+    XCTAssertNotNil(url);
+
+    NSNumber * sc = [url numberForPOSTDataKey:kScaleFactorKey];
+    NSNumber * cw = [url numberForPOSTDataKey:kCreativeSafeWidthKey];
+    NSNumber * ch = [url numberForPOSTDataKey:kCreativeSafeHeightKey];
+    CGRect frame = MPApplicationFrame(YES);
+    XCTAssert(cw.floatValue == frame.size.width * sc.floatValue);
+    XCTAssert(ch.floatValue == frame.size.height * sc.floatValue);
+}
+
 # pragma mark - Impression Level Revenue Data
 
 - (void)testImpressionNotificationWithImpressionData {

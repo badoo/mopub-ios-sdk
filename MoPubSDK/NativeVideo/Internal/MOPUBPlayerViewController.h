@@ -8,6 +8,7 @@
 
 #import <Foundation/Foundation.h>
 #import "MOPUBPlayerView.h"
+#import "MPVASTTracking.h"
 
 @class AVPlayerItem;
 @class MOPUBAVPlayer;
@@ -35,19 +36,16 @@
 
 @interface MOPUBPlayerViewController : UIViewController
 
-@property (nonatomic, readonly) NSURL *mediaURL;
-
 @property (nonatomic, readonly) MOPUBPlayerView *playerView;
 @property (nonatomic, readonly) AVPlayerItem *playerItem;
 @property (nonatomic, readonly) MOPUBAVPlayer *avPlayer;
-@property (nonatomic) MPVASTTracking *vastTracking;
+@property (nonatomic, readonly) MPVASTTracking *vastTracking;
 @property (nonatomic, readonly) CGFloat videoAspectRatio;
 @property (nonatomic, readonly) MOPUBNativeVideoAdConfigValues *nativeVideoAdConfig;
 
 #pragma mark - Configurations/States
 @property (nonatomic) MOPUBPlayerDisplayMode displayMode;
 @property (nonatomic) BOOL muted;
-@property (nonatomic) BOOL startedLoading;
 @property (nonatomic) BOOL playing;
 @property (nonatomic) BOOL paused;
 @property (nonatomic) BOOL isReadyToPlay;

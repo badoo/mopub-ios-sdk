@@ -183,4 +183,19 @@ static NSTimeInterval const kTimeoutTime = 0.7;
     XCTAssertNil([manager lastRateLimitReasonForAdUnitId:adUnitId]);
 }
 
+- (void)testNilAdUnitDoesNotCrash {
+    MPRateLimitManager * manager = [MPRateLimitManager sharedInstance];
+
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wnonnull"
+    // Intentially set the explicitly marked `nonnull` property to `nil`
+    [manager setRateLimitTimerWithAdUnitId:nil milliseconds:5.0 reason:@"hi"];
+    XCTAssertFalse([manager isRateLimitedForAdUnitId:nil]);
+    XCTAssertNil([manager lastRateLimitReasonForAdUnitId:nil]);
+    XCTAssert([manager lastRateLimitMillisecondsForAdUnitId:nil] == 0.0);
+#pragma clang diagnostic pop
+
+
+}
+
 @end

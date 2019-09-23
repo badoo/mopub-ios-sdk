@@ -16,4 +16,14 @@
              @"staticCreativeType": @"creativeType"};
 }
 
+- (BOOL)isStaticCreativeTypeImage {
+    return ([self.staticCreativeType.lowercaseString isEqualToString:@"image/gif"]
+            || [self.staticCreativeType.lowercaseString isEqualToString:@"image/jpeg"]
+            || [self.staticCreativeType.lowercaseString isEqualToString:@"image/png"]);
+}
+
+- (BOOL)isStaticCreativeTypeJavaScript {
+    return [self.staticCreativeType.lowercaseString isEqualToString:@"application/x-javascript"];
+}
+
 @end

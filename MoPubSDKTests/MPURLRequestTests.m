@@ -140,52 +140,6 @@
     XCTAssert([json[@"query2"] intValue] == 77);
 }
 
-- (void)testUserAgentCanBeObtainedOnNonMainThread {
-    // reset user agent so MPURLRequest has to reobtain it
-    gUserAgent = nil;
-
-    dispatch_queue_t nonMainQueue = dispatch_queue_create("test queue", NULL);
-
-    XCTestExpectation * expectation = [self expectationWithDescription:@"Wait for user agent to fill on background thread"];
-
-    // This will crash if the user agent isn't obtained via the main thread.
-    __block NSString * userAgent = nil;
-    dispatch_async(nonMainQueue, ^{
-        userAgent = [MPURLRequest userAgent];
-        [expectation fulfill];
-    });
-
-    [self waitForExpectations:@[expectation] timeout:5.0];
-
-    XCTAssertNotNil(userAgent);
-}
-
-- (void)testUserAgentCanBeObtainedOnMainThread {
-    // reset user agent so MPURLRequest has to reobtain it
-    gUserAgent = nil;
-
-    NSString * userAgent = [MPURLRequest userAgent];
-
-    XCTAssertNotNil(userAgent);
-}
-
-- (void)testUserAgentCanBeObtainedOnMainQueue {
-    // reset user agent so MPURLRequest has to reobtain it
-    gUserAgent = nil;
-
-    XCTestExpectation * expectation = [self expectationWithDescription:@"Wait for user agent to fill on background thread"];
-
-    __block NSString * userAgent = nil;
-    dispatch_async(dispatch_get_main_queue(), ^{
-        userAgent = [MPURLRequest userAgent];
-        [expectation fulfill];
-    });
-
-    [self waitForExpectations:@[expectation] timeout:5.0];
-
-    XCTAssertNotNil(userAgent);
-}
-
 - (void)testJSONNotPrettyPrinted {
     NSDictionary * postData = @{ @"string": @"1" };
     NSString * const exptectedJSON = @"{\"string\":\"1\"}";

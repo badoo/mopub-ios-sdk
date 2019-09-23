@@ -29,6 +29,10 @@ NSString * const kNSErrorDomain = @"com.mopub.iossdk";
 
 @implementation NSError (Initialization)
 
++ (instancetype)sdkMinimumOsVersion:(int)osVersion {
+    return [NSError errorWithCode:MOPUBErrorSDKNotInitialized localizedDescription:[NSString stringWithFormat:@"MoPub SDK requires iOS %d and up", osVersion]];
+}
+
 + (instancetype)sdkInitializationInProgress {
     return [NSError errorWithCode:MOPUBErrorSDKInitializationInProgress localizedDescription:@"Attempted to initialize the SDK while a prior SDK initialization is in progress."];
 }
@@ -74,6 +78,14 @@ NSString * const kNSErrorDomain = @"com.mopub.iossdk";
 
 + (instancetype)fullscreenAdAlreadyOnScreen {
     return [NSError errorWithCode:MOPUBErrorFullScreenAdAlreadyOnScreen localizedDescription:@"Cannot present a full screen ad that is already on-screen."];
+}
+
++ (instancetype)frameWidthNotSetForFlexibleSize {
+    return [NSError errorWithCode:MOPUBErrorFrameWidthNotSetForFlexibleSize localizedDescription:@"Cannot determine a size for flexible width because the frame width is not set."];
+}
+
++ (instancetype)frameHeightNotSetForFlexibleSize {
+    return [NSError errorWithCode:MOPUBErrorFrameHeightNotSetForFlexibleSize localizedDescription:@"Cannot determine a size for flexible height because the frame height is not set."];
 }
 
 @end

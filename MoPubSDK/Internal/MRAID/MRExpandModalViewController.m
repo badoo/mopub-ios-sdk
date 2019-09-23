@@ -11,8 +11,6 @@
 
 @interface MRExpandModalViewController ()
 
-@property (nonatomic, assign) BOOL statusBarHidden;
-@property (nonatomic, assign) BOOL applicationHidesStatusBar;
 @property (nonatomic, assign) UIInterfaceOrientationMask supportedOrientationMask;
 
 @end
@@ -23,6 +21,7 @@
 {
     if (self = [super init]) {
         _supportedOrientationMask = orientationMask;
+        self.modalPresentationStyle = UIModalPresentationFullScreen;
     }
 
     return self;
@@ -35,40 +34,9 @@
     self.view.backgroundColor = [UIColor blackColor];
 }
 
-- (void)hideStatusBar
-{
-    if (!self.statusBarHidden) {
-        self.statusBarHidden = YES;
-        self.applicationHidesStatusBar = [UIApplication sharedApplication].statusBarHidden;
-
-        // pre-ios 7 hiding status bar
-        [[UIApplication sharedApplication] mp_preIOS7setApplicationStatusBarHidden:YES];
-
-        // In the event we come back to this view controller from another modal, we need to update the status bar's
-        // visibility again in ios 7/8.
-        if ([self respondsToSelector:@selector(setNeedsStatusBarAppearanceUpdate)]) {
-            [self setNeedsStatusBarAppearanceUpdate];
-        }
-    }
-}
-
-- (void)restoreStatusBarVisibility
-{
-    self.statusBarHidden = self.applicationHidesStatusBar;
-
-    // pre-ios 7 restoring the status bar
-    [[UIApplication sharedApplication] mp_preIOS7setApplicationStatusBarHidden:self.applicationHidesStatusBar];
-
-    // ios 7/8 restoring status bar
-    if ([self respondsToSelector:@selector(setNeedsStatusBarAppearanceUpdate)]) {
-        [self setNeedsStatusBarAppearanceUpdate];
-    }
-}
-
 - (BOOL)prefersStatusBarHidden
 {
-    // ios 7 hiding status bar
-    return self.statusBarHidden;
+    return YES;
 }
 
 - (void)setSupportedOrientationMask:(UIInterfaceOrientationMask)supportedOrientationMask

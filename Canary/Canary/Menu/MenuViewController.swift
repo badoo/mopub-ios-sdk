@@ -99,11 +99,11 @@ extension MenuViewController: UITableViewDelegate {
         }
         
         // If the menu item was successfully selected, close the menu after presentation
-        if let container = (UIApplication.shared.delegate as? AppDelegate)?.containerViewController,
-            let presentingController = container.mainTabBarController {
+        if let containerViewController = containerViewController,
+            let presentingController = containerViewController.mainTabBarController {
             let shouldCloseMenu: Bool = dataSource.didSelect(itemAtIndexPath: indexPath, inTableView: tableView, presentingFrom: presentingController)
             if shouldCloseMenu {
-                container.closeMenu()
+                containerViewController.closeMenu()
             }
         }
     }

@@ -49,6 +49,7 @@ if Dir.exists?(mediation_path) && !use_production_mediation
     pod 'MoPub-Chartboost-Adapters', :path => mediation_path
     pod 'MoPub-FacebookAudienceNetwork-Adapters', :path => mediation_path
     pod 'MoPub-Flurry-Adapters', :path => mediation_path
+    pod 'MoPub-IronSource-Adapters', :path => mediation_path
     pod 'MoPub-TapJoy-Adapters', :path => mediation_path
     pod 'MoPub-UnityAds-Adapters', :path => mediation_path
     pod 'MoPub-Verizon-Adapters', :path => mediation_path
@@ -60,6 +61,7 @@ else
     pod 'MoPub-Chartboost-Adapters'
     pod 'MoPub-FacebookAudienceNetwork-Adapters'
     pod 'MoPub-Flurry-Adapters'
+    pod 'MoPub-IronSource-Adapters'
     pod 'MoPub-TapJoy-Adapters'
     pod 'MoPub-UnityAds-Adapters'
     pod 'MoPub-Verizon-Adapters'

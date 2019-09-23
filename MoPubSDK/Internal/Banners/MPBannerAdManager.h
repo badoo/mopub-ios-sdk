@@ -17,6 +17,7 @@
 @interface MPBannerAdManager : NSObject <MPAdServerCommunicatorDelegate, MPBannerAdapterDelegate>
 
 @property (nonatomic, weak) id<MPBannerAdManagerDelegate> delegate;
+@property (nonatomic, readonly) BOOL isMraidAd;
 
 - (id)initWithDelegate:(id<MPBannerAdManagerDelegate>)delegate;
 

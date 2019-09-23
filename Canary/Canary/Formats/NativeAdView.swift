@@ -56,6 +56,9 @@ class NativeAdView: UIView {
         
         // Size the nib's view to the container and add it as a subview.
         view.frame = bounds
+        if #available(iOS 13.0, *) {
+            view.backgroundColor = .systemBackground
+        }
         addSubview(view)
         contentView = view
         

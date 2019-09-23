@@ -16,15 +16,15 @@ NS_ASSUME_NONNULL_BEGIN
 @interface MPTimer : NSObject
 
 /**
- * The default run loop mode is @c NSDefaultRunLoopMode. If a new mode is assigned, it will be effective
- * for the subsequent @c isScheduled or @c resume calls.
- */
-@property (nonatomic, copy) NSString *runLoopMode;
-
-/**
  * Return NO is the timer is paused, and return YES otherwise.
  */
 @property (nonatomic, readonly) BOOL isCountdownActive;
+
++ (MPTimer *)timerWithTimeInterval:(NSTimeInterval)seconds
+                            target:(id)target
+                          selector:(SEL)aSelector
+                           repeats:(BOOL)repeats
+                       runLoopMode:(NSString *)runLoopMode;
 
 + (MPTimer *)timerWithTimeInterval:(NSTimeInterval)seconds
                             target:(id)target
@@ -33,7 +33,6 @@ NS_ASSUME_NONNULL_BEGIN
 
 - (BOOL)isValid;
 - (void)invalidate;
-- (BOOL)isScheduled;
 - (void)scheduleNow;
 - (void)pause;
 - (void)resume;

@@ -48,7 +48,11 @@ static NSString * const kTestURL = @"https://www.mopub.com";
 
     // Fake network completion
     [session setSessionData:taskData forTask:task];
+
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wnonnull" // intentional nil test
     [session URLSession:nil task:task didCompleteWithError:nil];
+#pragma clang diagnostic push
 
     XCTAssertFalse(didError);
 }
@@ -80,7 +84,11 @@ static NSString * const kTestURL = @"https://www.mopub.com";
 
     // Fake network completion
     [session setSessionData:taskData forTask:task];
+
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wnonnull" // intentional nil test
     [session URLSession:nil task:task didCompleteWithError:nil];
+#pragma clang diagnostic pop
 
     XCTAssertFalse(didError);
 }
@@ -112,7 +120,11 @@ static NSString * const kTestURL = @"https://www.mopub.com";
 
     // Fake network completion
     [session setSessionData:taskData forTask:task];
+
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wnonnull" // intentional nil test
     [session URLSession:nil task:task didCompleteWithError:nil];
+#pragma clang diagnostic pop
 
     XCTAssertTrue(didError);
 }
@@ -144,7 +156,11 @@ static NSString * const kTestURL = @"https://www.mopub.com";
 
     // Fake network completion
     [session setSessionData:taskData forTask:task];
+
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wnonnull" // intentional nil test
     [session URLSession:nil task:task didCompleteWithError:nil];
+#pragma clang diagnostic pop
 
     XCTAssertTrue(didError);
 }

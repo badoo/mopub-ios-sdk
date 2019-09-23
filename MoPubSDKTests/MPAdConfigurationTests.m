@@ -9,10 +9,10 @@
 #import <XCTest/XCTest.h>
 #import "MPAdConfiguration.h"
 #import "MPAdConfigurationFactory.h"
-#import "MPVASTTrackingEvent.h"
 #import "MPRewardedVideoReward.h"
 #import "MOPUBExperimentProvider.h"
 #import "MPAdConfiguration+Testing.h"
+#import "MPVASTTracking.h"
 #import "MPViewabilityTracker.h"
 #import "MPAdServerKeys.h"
 
@@ -162,40 +162,11 @@ extern NSString * const kNativeImpressionMinVisiblePixelsMetadataKey;
     MPAdConfiguration *config = [MPAdConfigurationFactory defaultNativeVideoConfigurationWithVideoTrackers];
     XCTAssertNotNil(config.nativeVideoTrackers);
     XCTAssertEqual(config.nativeVideoTrackers.count, 5);
-    XCTAssertEqual(((NSArray *)config.nativeVideoTrackers[MPVASTTrackingEventTypeStart]).count, 2);
-    XCTAssertEqual(((NSArray *)config.nativeVideoTrackers[MPVASTTrackingEventTypeFirstQuartile]).count, 2);
-    XCTAssertEqual(((NSArray *)config.nativeVideoTrackers[MPVASTTrackingEventTypeMidpoint]).count, 2);
-    XCTAssertEqual(((NSArray *)config.nativeVideoTrackers[MPVASTTrackingEventTypeThirdQuartile]).count, 2);
-    XCTAssertEqual(((NSArray *)config.nativeVideoTrackers[MPVASTTrackingEventTypeComplete]).count, 2);
-}
-
-#pragma mark - Clickthrough experiments test
-
-- (void)testClickthroughExperimentDefault {
-    MPAdConfiguration * config = [[MPAdConfiguration alloc] initWithMetadata:nil data:nil adType:MPAdTypeFullscreen];
-    XCTAssertEqual(config.clickthroughExperimentBrowserAgent, MOPUBDisplayAgentTypeInApp);
-    XCTAssertEqual([MOPUBExperimentProvider displayAgentType], MOPUBDisplayAgentTypeInApp);
-}
-
-- (void)testClickthroughExperimentInApp {
-    NSDictionary * headers = @{ kClickthroughExperimentBrowserAgent: @"0"};
-    MPAdConfiguration * config = [[MPAdConfiguration alloc] initWithMetadata:headers data:nil adType:MPAdTypeFullscreen];
-    XCTAssertEqual(config.clickthroughExperimentBrowserAgent, MOPUBDisplayAgentTypeInApp);
-    XCTAssertEqual([MOPUBExperimentProvider displayAgentType], MOPUBDisplayAgentTypeInApp);
-}
-
-- (void)testClickthroughExperimentNativeBrowser {
-    NSDictionary * headers = @{ kClickthroughExperimentBrowserAgent: @"1"};
-    MPAdConfiguration * config = [[MPAdConfiguration alloc] initWithMetadata:headers data:nil adType:MPAdTypeFullscreen];
-    XCTAssertEqual(config.clickthroughExperimentBrowserAgent, MOPUBDisplayAgentTypeNativeSafari);
-    XCTAssertEqual([MOPUBExperimentProvider displayAgentType], MOPUBDisplayAgentTypeNativeSafari);
-}
-
-- (void)testClickthroughExperimentSafariViewController {
-    NSDictionary * headers = @{ kClickthroughExperimentBrowserAgent: @"2"};
-    MPAdConfiguration * config = [[MPAdConfiguration alloc] initWithMetadata:headers data:nil adType:MPAdTypeFullscreen];
-    XCTAssertEqual(config.clickthroughExperimentBrowserAgent, MOPUBDisplayAgentTypeSafariViewController);
-    XCTAssertEqual([MOPUBExperimentProvider displayAgentType], MOPUBDisplayAgentTypeSafariViewController);
+    XCTAssertEqual(((NSArray *)config.nativeVideoTrackers[MPVideoEventStart]).count, 2);
+    XCTAssertEqual(((NSArray *)config.nativeVideoTrackers[MPVideoEventFirstQuartile]).count, 2);
+    XCTAssertEqual(((NSArray *)config.nativeVideoTrackers[MPVideoEventMidpoint]).count, 2);
+    XCTAssertEqual(((NSArray *)config.nativeVideoTrackers[MPVideoEventThirdQuartile]).count, 2);
+    XCTAssertEqual(((NSArray *)config.nativeVideoTrackers[MPVideoEventComplete]).count, 2);
 }
 
 #pragma mark - Viewability

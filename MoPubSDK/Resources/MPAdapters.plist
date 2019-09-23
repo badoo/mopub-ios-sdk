@@ -9,6 +9,7 @@
 	<string>FlurryAdapterConfiguration</string>
 	<string>GoogleAdMobAdapterConfiguration</string>
 	<string>IronSourceAdapterConfiguration</string>
+	<string>SnapAdAdapterConfiguration</string>
 	<string>TapjoyAdapterConfiguration</string>
 	<string>UnityAdsAdapterConfiguration</string>
 	<string>VerizonAdapterConfiguration</string>

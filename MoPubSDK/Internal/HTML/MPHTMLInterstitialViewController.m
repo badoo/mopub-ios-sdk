@@ -72,11 +72,6 @@
     [self.backingViewAgent enableRequestHandling];
     [self.backingViewAgent invokeJavaScriptForEvent:MPAdWebViewEventAdDidAppear];
 
-    // XXX: In certain cases, UIWebView's content appears off-center due to rotation / auto-
-    // resizing while off-screen. -forceRedraw corrects this issue, but there is always a brief
-    // instant when the old content is visible. We mask this using a short fade animation.
-    [self.backingViewAgent forceRedraw];
-
     [UIView beginAnimations:nil context:nil];
     [UIView setAnimationDuration:0.3];
     self.backingView.alpha = 1.0;
@@ -95,18 +90,6 @@
 {
     [self.backingViewAgent invokeJavaScriptForEvent:MPAdWebViewEventAdDidDisappear];
     [self.delegate interstitialDidDisappear:self];
-}
-
-#pragma mark - Autorotation
-
-- (void)viewWillTransitionToSize:(CGSize)size withTransitionCoordinator:(id<UIViewControllerTransitionCoordinator>)coordinator
-{
-    [coordinator animateAlongsideTransition:^(id<UIViewControllerTransitionCoordinatorContext> context) {
-        UIInterfaceOrientation orientation = [[UIApplication sharedApplication] statusBarOrientation];
-        [self.backingViewAgent rotateToOrientation:orientation];
-     } completion:nil];
-
-    [super viewWillTransitionToSize:size withTransitionCoordinator:coordinator];
 }
 
 #pragma mark - MPAdWebViewAgentDelegate

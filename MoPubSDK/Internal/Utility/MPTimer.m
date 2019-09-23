@@ -14,6 +14,7 @@
 
 @property (nonatomic, assign) NSTimeInterval timeInterval;
 @property (nonatomic, strong) NSTimer *timer;
+@property (nonatomic, assign) BOOL isRepeatingTimer;
 @property (nonatomic, assign) BOOL isCountdownActive;
 
 @property (nonatomic, weak) id target;
@@ -27,19 +28,44 @@
                             target:(id)target
                           selector:(SEL)aSelector
                            repeats:(BOOL)repeats
+                       runLoopMode:(NSString *)runLoopMode
 {
     MPTimer *timer = [[MPTimer alloc] init];
     timer.target = target;
     timer.selector = aSelector;
-    timer.timer = [NSTimer timerWithTimeInterval:seconds
-                                          target:timer
-                                        selector:@selector(timerDidFire)
-                                        userInfo:nil
-                                         repeats:repeats];
     timer.isCountdownActive = NO;
+    timer.isRepeatingTimer = repeats;
     timer.timeInterval = seconds;
-    timer.runLoopMode = NSDefaultRunLoopMode;
+
+    // Use the main thread run loop to keep the timer alive.
+    // Note: `NSRunLoop` is not thread safe, so we have to access it from main thread only.
+    void (^mainThreadOperation)(void) = ^void(void) {
+        timer.timer = [NSTimer timerWithTimeInterval:seconds
+                                              target:timer
+                                            selector:@selector(timerDidFire)
+                                            userInfo:nil
+                                             repeats:repeats];
+        [timer.timer setFireDate:[NSDate distantFuture]]; // do not fire until `scheduleNow` is called
+        [[NSRunLoop mainRunLoop] addTimer:timer.timer forMode:runLoopMode];
+    };
+    if ([NSThread isMainThread]) {
+        mainThreadOperation();
+    } else {
+        dispatch_sync(dispatch_get_main_queue(), mainThreadOperation);
+    }
+
     return timer;
+}
+
++ (MPTimer *)timerWithTimeInterval:(NSTimeInterval)seconds
+                            target:(id)target
+                          selector:(SEL)aSelector
+                           repeats:(BOOL)repeats {
+    return [self timerWithTimeInterval:seconds
+                                target:target
+                              selector:aSelector
+                               repeats:repeats
+                           runLoopMode:NSDefaultRunLoopMode];
 }
 
 - (void)dealloc
@@ -47,17 +73,13 @@
     [self.timer invalidate];
 }
 
-/**
- This is the designated run loop that the timer should attach to.
- */
-- (NSRunLoop *)runloop
-{
-    return [NSRunLoop mainRunLoop]; // use the main run loop to make sure the timer stays alive
-}
-
 - (void)timerDidFire
 {
     @synchronized (self) {
+        if (!self.isRepeatingTimer) {
+            self.isCountdownActive = NO; // this is the last firing
+        }
+
         if (self.selector == nil) {
             MPLogDebug(@"%s `selector` is unexpectedly nil. Return early to avoid crash.", __FUNCTION__);
             return;
@@ -86,52 +108,29 @@
     }
 }
 
-- (BOOL)isScheduled
-{
-    @synchronized (self) {
-        if (!self.timer) {
-            return NO;
-        }
-        CFRunLoopRef runLoopRef = [self.runloop getCFRunLoop];
-        CFArrayRef arrayRef = CFRunLoopCopyAllModes(runLoopRef);
-        CFIndex count = CFArrayGetCount(arrayRef);
-
-        for (CFIndex i = 0; i < count; ++i) {
-            CFStringRef runLoopMode = CFArrayGetValueAtIndex(arrayRef, i);
-            if (CFRunLoopContainsTimer(runLoopRef, (__bridge CFRunLoopTimerRef)self.timer, runLoopMode)) {
-                CFRelease(arrayRef);
-                return YES;
-            }
-        }
-
-        CFRelease(arrayRef);
-        return NO;
-    }
-}
-
 - (void)scheduleNow
 {
+    /*
+     Note: `MPLog` statements are commented out because during SDK init, the chain of calls
+     `MPConsentManager.sharedManager` -> `newNextUpdateTimer` -> `MPTimer.scheduleNow` ->
+     `MPLogDebug` -> `MPIdentityProvider.identifier` -> `MPConsentManager.sharedManager` will cause
+     a crash with EXC_BAD_INSTRUCTION: the same `dispatch_once` is called twice for
+     `MPConsentManager.sharedManager` in the same call stack. Uncomment the logs after
+     `MPIdentityProvider` is refactored.
+     */
     @synchronized (self) {
         if (![self.timer isValid]) {
-            MPLogDebug(@"Could not schedule invalidated MPTimer (%p).", self);
+//            MPLogDebug(@"Could not schedule invalidated MPTimer (%p).", self);
             return;
         }
 
         if (self.isCountdownActive) {
-            MPLogDebug(@"Tried to schedule an MPTimer (%p) that is already ticking.",self);
+//            MPLogDebug(@"Tried to schedule an MPTimer (%p) that is already ticking.",self);
             return;
         }
 
         NSDate *newFireDate = [NSDate dateWithTimeInterval:self.timeInterval sinceDate:[NSDate date]];
         [self.timer setFireDate:newFireDate];
-
-        if ([self isScheduled]) {
-            MPLogDebug(@"MPTimer is already scheduled (%p).", self);
-        } else {
-            MPLogDebug(@"Start MPTimer (%p), should fire in %.1f seconds.", self, self.timeInterval);
-            [self.runloop addTimer:self.timer forMode:self.runLoopMode];
-        }
-
         self.isCountdownActive = YES;
     }
 }
@@ -146,11 +145,6 @@
 
         if (![self.timer isValid]) {
             MPLogDebug(@"Cannot pause invalidated MPTimer (%p).", self);
-            return;
-        }
-
-        if (![self isScheduled]) {
-            MPLogDebug(@"No-op: tried to pause an MPTimer (%p) that was never scheduled.", self);
             return;
         }
 

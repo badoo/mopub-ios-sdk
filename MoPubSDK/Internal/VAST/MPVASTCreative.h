@@ -10,13 +10,14 @@
 #import "MPVASTModel.h"
 
 @class MPVASTLinearAd;
+@class MPVASTCompanionAd;
 
 @interface MPVASTCreative : MPVASTModel
 
 @property (nonatomic, copy, readonly) NSString *identifier;
 @property (nonatomic, copy, readonly) NSString *sequence;
 @property (nonatomic, copy, readonly) NSString *adID;
-@property (nonatomic, readonly) MPVASTLinearAd *linearAd;
-@property (nonatomic, readonly) NSArray *companionAds;
+@property (nonatomic, strong, readonly) MPVASTLinearAd *linearAd;
+@property (nonatomic, strong, readonly) NSArray<MPVASTCompanionAd *> *companionAds;
 
 @end

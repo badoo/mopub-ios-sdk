@@ -13,12 +13,13 @@
 #import "NSURL+MPAdditions.h"
 #import "MPGlobal.h"
 #import "MRBundleManager.h"
-#import "UIWebView+MPAdditions.h"
 #import "MRError.h"
 #import "MRProperty.h"
 #import "MRNativeCommandHandler.h"
 
 static NSString * const kMraidURLScheme = @"mraid";
+static NSString * const kSMSURLScheme   = @"sms";
+static NSString * const kTelURLScheme   = @"tel";
 
 @interface MRBridge () <MPWebViewDelegate, MRNativeCommandHandlerDelegate>
 
@@ -60,7 +61,6 @@ static NSString * const kMraidURLScheme = @"mraid";
         // Execute the javascript in the web view directly.
         dispatch_async(dispatch_get_main_queue(), ^{
             [self.webView evaluateJavaScript:[[MPCoreInstanceProvider sharedProvider] mraidJavascript] completionHandler:^(id result, NSError *error){
-                [self.webView disableJavaScriptDialogs];
                 [self.webView loadHTMLString:HTML baseURL:baseURL];
             }];
         });
@@ -137,7 +137,7 @@ static NSString * const kMraidURLScheme = @"mraid";
 
 #pragma mark - <MPWebViewDelegate>
 
-- (BOOL)webView:(MPWebView *)webView shouldStartLoadWithRequest:(NSURLRequest *)request navigationType:(UIWebViewNavigationType)navigationType
+- (BOOL)webView:(MPWebView *)webView shouldStartLoadWithRequest:(NSURLRequest *)request navigationType:(WKNavigationType)navigationType
 {
     NSURL *url = [request URL];
     NSMutableString *urlString = [NSMutableString stringWithString:[url absoluteString]];
@@ -167,21 +167,16 @@ static NSString * const kMraidURLScheme = @"mraid";
         return NO;
     }
 
-    if ([url mp_hasTelephoneScheme] || [url mp_hasTelephonePromptScheme]) {
-        [self.delegate bridge:self handleDisplayForDestinationURL:url];
-        return NO;
-    }
-
     BOOL isLoading = [self.delegate isLoadingAd];
     BOOL userInteractedWithWebView = [self.delegate hasUserInteractedWithWebViewForBridge:self];
-    BOOL safeToAutoloadLink = navigationType == UIWebViewNavigationTypeLinkClicked || userInteractedWithWebView || [url mp_isSafeForLoadingWithoutUserAction];
+    BOOL safeToAutoloadLink = navigationType == WKNavigationTypeLinkActivated || userInteractedWithWebView || [url mp_isSafeForLoadingWithoutUserAction];
 
-    if (!isLoading && (navigationType == UIWebViewNavigationTypeOther || navigationType == UIWebViewNavigationTypeLinkClicked)) {
+    if (!isLoading && (navigationType == WKNavigationTypeOther || navigationType == WKNavigationTypeLinkActivated)) {
         BOOL iframe = ![request.URL isEqual:request.mainDocumentURL];
 
         // If we load a URL from an iFrame that did not originate from a click or
         // is a deep link, handle normally and return safeToAutoloadLink.
-        if (iframe && !((navigationType == UIWebViewNavigationTypeLinkClicked) && ([scheme isEqualToString:@"https"] || [scheme isEqualToString:@"http"]))) {
+        if (iframe && !((navigationType == WKNavigationTypeLinkActivated) && ([scheme isEqualToString:@"https"] || [scheme isEqualToString:@"http"]))) {
             return safeToAutoloadLink;
         }
 
@@ -195,7 +190,7 @@ static NSString * const kMraidURLScheme = @"mraid";
 
 - (void)webViewDidStartLoad:(MPWebView *)webView
 {
-    [webView disableJavaScriptDialogs];
+    // no op
 }
 
 - (void)webViewDidFinishLoad:(MPWebView *)webView
@@ -248,6 +243,16 @@ static NSString * const kMraidURLScheme = @"mraid";
 
 - (void)handleMRAIDOpenCallForURL:(NSURL *)URL
 {
+    // sms:// and tel:// schemes are not supported by MoPub's MRAID system.
+    // The calls to these schemes via MRAID will be logged, but not allowed
+    // to execute. sms:// and tel:// schemes opened via normal HTML links
+    // will be handled by the OS per its default operating mode.
+    NSString *lowercasedScheme = URL.scheme.lowercaseString;
+    if ([lowercasedScheme isEqualToString:kSMSURLScheme] || [lowercasedScheme isEqualToString:kTelURLScheme]) {
+        MPLogDebug(@"mraidbridge.open() disallowed: %@ scheme is not supported", URL.scheme);
+        return;
+    }
+
     [self.delegate bridge:self handleDisplayForDestinationURL:URL];
 }
 

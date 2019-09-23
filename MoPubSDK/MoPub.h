@@ -23,6 +23,7 @@
 #import "MPConsentChangedReason.h"
 #import "MPConsentError.h"
 #import "MPConsentStatus.h"
+#import "MPEngineInfo.h"
 #import "MPError.h"
 #import "MPGlobal.h"
 #import "MPIdentityProvider.h"
@@ -134,9 +135,11 @@ NS_ASSUME_NONNULL_BEGIN
 @property (nonatomic) BOOL frequencyCappingIdUsageEnabled;
 
 /**
- * Forces the usage of WKWebView (if able).
+ * Forces the usage of @c WKWebView.
+ *
+ * Deprecated: @c WKWebView is always used. No need to force it any more. Calling this method will have no effect.
  */
-@property (nonatomic, assign) BOOL forceWKWebView;
+@property (nonatomic, assign) BOOL forceWKWebView __attribute((deprecated("WKWebView is always used. No need to force it any more.")));
 
 /**
  * SDK log level. The default value is `MPBLogLevelNone`.
@@ -186,6 +189,12 @@ NS_ASSUME_NONNULL_BEGIN
  * @param vendors The viewability vendor(s) to be disabled. This is a bitmask value; ORing vendors together is okay.
  */
 - (void)disableViewability:(MPViewabilityOption)vendors;
+
+/**
+ Sets the engine that is using this MoPub SDK.
+ @param info Engine information.
+ */
+- (void)setEngineInformation:(MPEngineInfo *)info;
 
 @end
 

@@ -49,6 +49,9 @@ MoPubSwiftSampleApp/
 /Pods
 AdNetworkSupport/InMobi/
 Jenkinsfile
+MoPubSampleApp/
+Gemfile
+Gemfile.lock
 
 # Canary app
 # Should not publicly distribute the interal folder (containing the internal testing files)

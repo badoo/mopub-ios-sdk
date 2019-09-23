@@ -218,9 +218,11 @@ static CGFloat const kGradientViewHeight = 25.0f;
 - (void)layoutReplayView
 {
     if (self.replayView) {
-        CGSize screenSize = MPScreenBounds().size;
-        if (UIInterfaceOrientationIsLandscape([[UIApplication sharedApplication] statusBarOrientation]) && self.displayMode == MOPUBPlayerDisplayModeFullscreen) {
-            self.replayView.frame = CGRectMake(0, 0, screenSize.width, screenSize.height);
+        CGSize appFrameSize = MPApplicationFrame(YES).size;
+        BOOL isLandscapeOrientation = appFrameSize.width > appFrameSize.height;
+
+        if (isLandscapeOrientation && self.displayMode == MOPUBPlayerDisplayModeFullscreen) {
+            self.replayView.frame = CGRectMake(0, 0, appFrameSize.width, appFrameSize.height);
         } else {
             self.replayView.frame = self.avView.frame;
         }

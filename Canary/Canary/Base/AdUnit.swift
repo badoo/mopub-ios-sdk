@@ -146,3 +146,67 @@ extension AdUnit {
         return nameContainsFilterTerm || idContainsFilterTerm
     }
 }
+
+// MARK: - Drag and Drop
+
+@available(iOS 13, *)
+extension AdUnit {
+    enum OpenAdViewActivity {
+        fileprivate enum UserInfoKey {
+            /**
+             `NSUserActivity.userInfo` does not allow `AdUnit` value, thus we need to encode `AdUnit` into `Data`.
+             See https://developer.apple.com/documentation/foundation/nsuseractivity/1411706-userinfo
+             */
+            static let jsonEncodedAdUnitData = "data"
+        }
+        
+        // Note: The `activityType` string must be included in the plist file under the `NSUserActivityTypes` array.
+        static let activityType = "com.mopub.canary.openAdView"
+    }
+    
+    /**
+     This is the user activity for enabling Drag & Drop to open a new scene.
+     `NSUserActivity.userInfo` does not allow `AdUnit` value, thus we need to encode `AdUnit` into `Data`.
+     See https://developer.apple.com/documentation/foundation/nsuseractivity/1411706-userinfo
+    */
+    var openAdViewActivity: NSUserActivity {
+        guard let data = try? JSONEncoder().encode(self) else {
+            fatalError()
+        }
+        
+        let userActivity = NSUserActivity(activityType: AdUnit.OpenAdViewActivity.activityType)
+        userActivity.title = name
+        userActivity.userInfo = [AdUnit.OpenAdViewActivity.UserInfoKey.jsonEncodedAdUnitData: data]
+        return userActivity
+    }
+    
+    /**
+     Return the `AdUnit` for the "open ad view" scene.
+    */
+    static func adUnitFromSceneConnectionOptions(_ options: UIScene.ConnectionOptions) -> AdUnit? {
+        guard let openAdViewActivity = options.userActivities.first(where: { $0.activityType == AdUnit.OpenAdViewActivity.activityType }),
+        let adUnitData = openAdViewActivity.userInfo?[AdUnit.OpenAdViewActivity.UserInfoKey.jsonEncodedAdUnitData] as? Data,
+        let adUnit = try? JSONDecoder().decode(AdUnit.self, from: adUnitData) else {
+            return nil
+        }
+        return adUnit
+    }
+    
+    /**
+     Return the root view controller for the "open ad view" scene window.
+     */
+    static func adViewControllerForSceneConnectionOptions(_ options: UIScene.ConnectionOptions) -> UIViewController? {
+        guard
+            let adUnit = adUnitFromSceneConnectionOptions(options),
+            let viewControllerClass = NSClassFromString(adUnit.viewControllerClassName) as? AdViewController.Type,
+            let viewController = viewControllerClass.instantiateFromNib(adUnit: adUnit) as? UIViewController else {
+                return nil
+        }
+        viewController.loadViewIfNeeded() // has to load view first to add the Done button
+        viewController.navigationItem.leftBarButtonItem = UIBarButtonItem(title: "Done",
+                                                                          style: .done,
+                                                                          target: viewController,
+                                                                          action: #selector(UIViewController.destroySceneSession))
+        return UINavigationController(rootViewController: viewController)
+    }
+}

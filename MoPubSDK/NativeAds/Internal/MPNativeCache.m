@@ -32,7 +32,7 @@ typedef enum {
 
 @implementation MPNativeCache
 
-+ (instancetype)sharedCache;
++ (instancetype)sharedCache
 {
     static dispatch_once_t once;
     static MPNativeCache *sharedCache;

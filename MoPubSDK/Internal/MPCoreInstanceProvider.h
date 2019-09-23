@@ -60,6 +60,4 @@ typedef NS_OPTIONS(NSUInteger, MPATSSetting) {
 
 - (MPNetworkStatus)currentRadioAccessTechnology;
 
-- (MPTimer *)buildMPTimerWithTimeInterval:(NSTimeInterval)seconds target:(id)target selector:(SEL)selector repeats:(BOOL)repeats;
-
 @end

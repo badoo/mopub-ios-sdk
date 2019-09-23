@@ -30,6 +30,7 @@
 @property (nonatomic, strong) MPAdTargeting *targeting;
 @property (nonatomic, strong) NSMutableArray<MPAdConfiguration *> *remainingConfigurations;
 @property (nonatomic, strong) MPTimer *refreshTimer;
+@property (nonatomic, strong) NSURL *mostRecentlyLoadedURL; // ADF-4286: avoid infinite ad reloads
 @property (nonatomic, assign) BOOL adActionInProgress;
 @property (nonatomic, assign) BOOL automaticallyRefreshesContents;
 @property (nonatomic, assign) BOOL hasRequestedAtLeastOneAd;
@@ -166,10 +167,9 @@
 
     [self.communicator cancel];
 
-    URL = (URL) ? URL : [MPAdServerURLBuilder URLWithAdUnitID:[self.delegate adUnitId]
-                                                     keywords:self.targeting.keywords
-                                             userDataKeywords:self.targeting.userDataKeywords
-                                                     location:self.targeting.location];
+    URL = (URL) ? URL : [MPAdServerURLBuilder URLWithAdUnitID:[self.delegate adUnitId] targeting:self.targeting];
+
+    self.mostRecentlyLoadedURL = URL;
 
     [self.communicator loadURL:URL];
 }
@@ -181,6 +181,11 @@
     [self.onscreenAdapter rotateToOrientation:orientation];
 }
 
+- (BOOL)isMraidAd
+{
+    return self.requestingConfiguration.isMraidAd;
+}
+
 #pragma mark - Internal
 
 - (void)scheduleRefreshTimer
@@ -188,11 +193,11 @@
     [self.refreshTimer invalidate];
     NSTimeInterval timeInterval = self.requestingConfiguration ? self.requestingConfiguration.refreshInterval : DEFAULT_BANNER_REFRESH_INTERVAL;
 
-    if (timeInterval > 0) {
-        self.refreshTimer = [[MPCoreInstanceProvider sharedProvider] buildMPTimerWithTimeInterval:timeInterval
-                                                                                       target:self
-                                                                                     selector:@selector(refreshTimerDidFire)
-                                                                                      repeats:NO];
+    if (self.automaticallyRefreshesContents && timeInterval > 0) {
+        self.refreshTimer = [MPTimer timerWithTimeInterval:timeInterval
+                                                    target:self
+                                                  selector:@selector(refreshTimerDidFire)
+                                                   repeats:NO];
         [self.refreshTimer scheduleNow];
         MPLogDebug(@"Scheduled the autorefresh timer to fire in %.1f seconds (%p).", timeInterval, self.refreshTimer);
     }
@@ -200,8 +205,10 @@
 
 - (void)refreshTimerDidFire
 {
-    if (!self.loading && self.automaticallyRefreshesContents) {
-        [self loadAdWithTargeting:self.targeting];
+    if (!self.loading) {
+        // Instead of reusing the existing `MPAdTargeting` that is potentially outdated, ask the
+        // delegate to provide the `MPAdTargeting` so that it's the latest.
+        [self loadAdWithTargeting:self.delegate.adTargeting];
     }
 }
 
@@ -359,7 +366,8 @@
             [self fetchAdWithConfiguration:self.requestingConfiguration];
         }
         // No more configurations to try. Send new request to Ads server to get more Ads.
-        else if (self.requestingConfiguration.nextURL != nil) {
+        else if (self.requestingConfiguration.nextURL != nil
+                 && [self.requestingConfiguration.nextURL isEqual:self.mostRecentlyLoadedURL] == false) {
             [self loadAdWithURL:self.requestingConfiguration.nextURL];
         }
         // No more configurations to try and no more pages to load.

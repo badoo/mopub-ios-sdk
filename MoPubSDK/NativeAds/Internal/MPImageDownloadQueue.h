@@ -6,15 +6,17 @@
 //  http://www.mopub.com/legal/sdk-license-agreement/
 //
 
-#import <Foundation/Foundation.h>
+#import <UIKit/UIKit.h>
 
-typedef void (^MPImageDownloadQueueCompletionBlock)(NSArray *errors);
+typedef void (^MPImageDownloadQueueCompletionBlock)(NSDictionary <NSURL *, UIImage *> *result, NSArray *errors);
 
 @interface MPImageDownloadQueue : NSObject
 
-// pass useCachedImage:NO to force download of images. default is YES, cached images will not be re-downloaded
-- (void)addDownloadImageURLs:(NSArray *)imageURLs completionBlock:(MPImageDownloadQueueCompletionBlock)completionBlock;
-- (void)addDownloadImageURLs:(NSArray *)imageURLs completionBlock:(MPImageDownloadQueueCompletionBlock)completionBlock useCachedImage:(BOOL)useCachedImage;
+/**
+ Return cached image from @c MPNativeCache if available.
+ */
+- (void)addDownloadImageURLs:(NSArray<NSURL *> *)imageURLs
+             completionBlock:(MPImageDownloadQueueCompletionBlock)completionBlock;
 
 - (void)cancelAllDownloads;
 

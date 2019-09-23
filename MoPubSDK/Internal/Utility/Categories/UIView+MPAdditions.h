@@ -26,3 +26,21 @@
 - (UIImage *)mp_snapshot:(BOOL)usePresentationLayer;
 
 @end
+
+/**
+ This @c MPSafeArea category is for reducing boilerplate code for Safe Area handling.
+ */
+@interface UIView (MPSafeArea)
+
+@property(nonatomic,readonly) NSLayoutXAxisAnchor *mp_safeLeadingAnchor;
+@property(nonatomic,readonly) NSLayoutXAxisAnchor *mp_safeTrailingAnchor;
+@property(nonatomic,readonly) NSLayoutXAxisAnchor *mp_safeLeftAnchor;
+@property(nonatomic,readonly) NSLayoutXAxisAnchor *mp_safeRightAnchor;
+@property(nonatomic,readonly) NSLayoutYAxisAnchor *mp_safeTopAnchor;
+@property(nonatomic,readonly) NSLayoutYAxisAnchor *mp_safeBottomAnchor;
+@property(nonatomic,readonly) NSLayoutDimension *mp_safeWidthAnchor;
+@property(nonatomic,readonly) NSLayoutDimension *mp_safeHeightAnchor;
+@property(nonatomic,readonly) NSLayoutXAxisAnchor *mp_safeCenterXAnchor;
+@property(nonatomic,readonly) NSLayoutYAxisAnchor *mp_safeCenterYAnchor;
+
+@end

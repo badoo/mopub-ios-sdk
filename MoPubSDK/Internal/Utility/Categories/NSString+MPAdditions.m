@@ -11,12 +11,9 @@
 @implementation NSString (MPAdditions)
 
 - (NSString *)mp_URLEncodedString {
-    NSString *result = (NSString *)CFBridgingRelease(CFURLCreateStringByAddingPercentEscapes(NULL,
-                                                                                             (CFStringRef)self,
-                                                                                             NULL,
-                                                                                             (CFStringRef)@"!*'();:@&=+$,/?%#[]<>",
-                                                                                             kCFStringEncodingUTF8));
-    return result;
+    NSString *charactersToEscape = @"!*'();:@&=+$,/?%#[]<>";
+    NSCharacterSet *allowedCharacters = [[NSCharacterSet characterSetWithCharactersInString:charactersToEscape] invertedSet];
+    return [self stringByAddingPercentEncodingWithAllowedCharacters:allowedCharacters];
 }
 
 - (NSNumber *)safeIntegerValue {

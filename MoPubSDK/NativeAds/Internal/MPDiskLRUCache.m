@@ -30,17 +30,16 @@
 @end
 
 @implementation MPDiskLRUCacheFile
-
-
-@end
+@end // this data object should have empty implementation
 
 @interface MPDiskLRUCache ()
 
-#if !OS_OBJECT_USE_OBJC
-@property (nonatomic, assign) dispatch_queue_t diskIOQueue;
-#else
+/**
+ Note: Only use this @c diskIOQueue for direct operations to fileManager, and avoid nested access
+ to @c diskIOQueue to avoid crash.
+ */
 @property (nonatomic, strong) dispatch_queue_t diskIOQueue;
-#endif
+@property (nonatomic, strong) NSFileManager *fileManager;
 @property (nonatomic, copy) NSString *diskCachePath;
 @property (atomic, assign) uint64_t numBytesStoredForSizeCheck;
 
@@ -60,17 +59,25 @@
 
 - (id)init
 {
+    return [self initWithCachePath:@"com.mopub.diskCache"
+                       fileManager:[NSFileManager defaultManager]];
+}
+
+- (id)initWithCachePath:(NSString *)cachePath fileManager:(NSFileManager *)fileManager {
     self = [super init];
     if (self != nil) {
         _diskIOQueue = dispatch_queue_create("com.mopub.diskCacheIOQueue", DISPATCH_QUEUE_SERIAL);
 
         NSArray *paths = NSSearchPathForDirectoriesInDomains(NSCachesDirectory, NSUserDomainMask, YES);
         if (paths.count > 0) {
-            _diskCachePath = [[[paths objectAtIndex:0] stringByAppendingPathComponent:@"com.mopub.diskCache"] copy];
+            _diskCachePath = [[paths objectAtIndex:0] stringByAppendingPathComponent:cachePath];
+            _fileManager = fileManager;
 
-            NSFileManager *fileManager = [NSFileManager defaultManager];
-            if (![fileManager fileExistsAtPath:_diskCachePath]) {
-                [fileManager createDirectoryAtPath:_diskCachePath withIntermediateDirectories:YES attributes:nil error:nil];
+            if (![_fileManager fileExistsAtPath:_diskCachePath]) {
+                [_fileManager createDirectoryAtPath:_diskCachePath
+                        withIntermediateDirectories:YES
+                                         attributes:nil
+                                              error:nil];
             }
         }
 
@@ -81,23 +88,14 @@
     return self;
 }
 
-- (void)dealloc
-{
-#if !OS_OBJECT_USE_OBJC
-    dispatch_release(_diskIOQueue);
-#endif
-}
-
 #pragma mark Public
 
 - (void)removeAllCachedFiles
 {
     dispatch_sync(self.diskIOQueue, ^{
-        NSFileManager *fileManager = [NSFileManager defaultManager];
-
         NSArray *allFiles = [self cacheFilesSortedByModDate];
         for (MPDiskLRUCacheFile *file in allFiles) {
-            [fileManager removeItemAtPath:file.filePath error:nil];
+            [self.fileManager removeItemAtPath:file.filePath error:nil];
         }
     });
 }
@@ -107,8 +105,7 @@
     __block BOOL result = NO;
 
     dispatch_sync(self.diskIOQueue, ^{
-        NSFileManager *fileManager = [NSFileManager defaultManager];
-        result = [fileManager fileExistsAtPath:[self cacheFilePathForKey:key]];
+        result = [self.fileManager fileExistsAtPath:[self cacheFilePathForKey:key]];
     });
 
     return result;
@@ -118,30 +115,22 @@
 {
     __block NSData *data = nil;
 
-    dispatch_sync(self.diskIOQueue, ^{
-        NSString *cachedFilePath = [self cacheFilePathForKey:key];
-
-        NSFileManager *fileManager = [NSFileManager defaultManager];
-        BOOL isDirectory = NO;
-        if ([fileManager fileExistsAtPath:cachedFilePath isDirectory:&isDirectory]) {
-            data = [NSData dataWithContentsOfFile:cachedFilePath];
-
-            // "touch" file to mark access since NSFileManager doesn't return a last accessed date
-            [fileManager setAttributes:[NSDictionary dictionaryWithObject:[NSDate date] forKey:NSFileModificationDate] ofItemAtPath:cachedFilePath error:nil];
-        }
-    });
+    if ([self cachedDataExistsForKey:key]) {
+        NSString *cacheFilePath = [self cacheFilePathForKey:key];
+        data = [NSData dataWithContentsOfFile:cacheFilePath];
+        [self touchCacheFileAtPath:cacheFilePath];
+    }
 
     return data;
 }
 
 - (void)storeData:(NSData *)data forKey:(NSString *)key
 {
-    dispatch_sync(self.diskIOQueue, ^{
-        NSString *cacheFilePath = [self cacheFilePathForKey:key];
-        NSFileManager *fileManager = [NSFileManager defaultManager];
+    NSString *cacheFilePath = [self cacheFilePathForKey:key];
 
-        if (![fileManager fileExistsAtPath:cacheFilePath]) {
-            [fileManager createFileAtPath:cacheFilePath contents:data attributes:nil];
+    dispatch_sync(self.diskIOQueue, ^{
+        if (![self.fileManager fileExistsAtPath:cacheFilePath]) {
+            [self.fileManager createFileAtPath:cacheFilePath contents:data attributes:nil];
         } else {
             // overwrite existing file
             [data writeToFile:cacheFilePath atomically:YES];
@@ -163,8 +152,6 @@
     dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_BACKGROUND, 0), ^{
         MPLogDebug(@"Checking cache size...");
 
-        NSFileManager *fileManager = [NSFileManager defaultManager];
-
         NSMutableArray *cacheFilesSortedByModDate = [self cacheFilesSortedByModDate];
 
         dispatch_async(self.diskIOQueue, ^{
@@ -174,7 +161,7 @@
                 for (MPDiskLRUCacheFile *file in expiredFiles) {
                     MPLogDebug(@"Trying to remove %@ from cache due to expiration", file.filePath);
 
-                    [fileManager removeItemAtPath:file.filePath error:nil];
+                    [self.fileManager removeItemAtPath:file.filePath error:nil];
                     [cacheFilesSortedByModDate removeObject:file];
                 }
 
@@ -184,7 +171,7 @@
 
                     MPLogDebug(@"Trying to remove %@ from cache due to size", oldestFilePath);
 
-                    [fileManager removeItemAtPath:oldestFilePath error:nil];
+                    [self.fileManager removeItemAtPath:oldestFilePath error:nil];
                     [cacheFilesSortedByModDate removeObjectAtIndex:0];
                 }
             }
@@ -209,15 +196,13 @@
 
 - (NSMutableArray *)cacheFilesSortedByModDate
 {
-    NSFileManager *fileManager = [NSFileManager defaultManager];
-
-    NSArray *cachedFiles = [fileManager contentsOfDirectoryAtPath:self.diskCachePath error:nil];
+    NSArray *cachedFiles = [self.fileManager contentsOfDirectoryAtPath:self.diskCachePath error:nil];
     NSArray *sortedFiles = [cachedFiles sortedArrayUsingComparator:^NSComparisonResult(id obj1, id obj2) {
         NSString *fileName1 = [self.diskCachePath stringByAppendingPathComponent:(NSString *)obj1];
         NSString *fileName2 = [self.diskCachePath stringByAppendingPathComponent:(NSString *)obj2];
 
-        NSDictionary *fileAttrs1 = [fileManager attributesOfItemAtPath:fileName1 error:nil];
-        NSDictionary *fileAttrs2 = [fileManager attributesOfItemAtPath:fileName2 error:nil];
+        NSDictionary *fileAttrs1 = [self.fileManager attributesOfItemAtPath:fileName1 error:nil];
+        NSDictionary *fileAttrs2 = [self.fileManager attributesOfItemAtPath:fileName2 error:nil];
 
         NSDate *lastModDate1 = [fileAttrs1 fileModificationDate];
         NSDate *lastModDate2 = [fileAttrs2 fileModificationDate];
@@ -235,7 +220,7 @@
         MPDiskLRUCacheFile *cacheFile = [[MPDiskLRUCacheFile alloc] init];
         cacheFile.filePath = [self.diskCachePath stringByAppendingPathComponent:fileName];
 
-        NSDictionary *fileAttrs = [fileManager attributesOfItemAtPath:cacheFile.filePath error:nil];
+        NSDictionary *fileAttrs = [self.fileManager attributesOfItemAtPath:cacheFile.filePath error:nil];
         cacheFile.fileSize = [fileAttrs fileSize];
         cacheFile.lastModTimestamp = [[fileAttrs fileModificationDate] timeIntervalSinceReferenceDate];
 
@@ -263,6 +248,66 @@
     NSString *hashedKey = MPSHA1Digest(key);
     NSString *cachedFilePath = [self.diskCachePath stringByAppendingPathComponent:hashedKey];
     return cachedFilePath;
+}
+
+/**
+ "touch" @c NSFileModificationDate of the file for LRU tracking. @c NSFileModificationDate is used
+ because iOS does not provide a "last access date".
+ */
+- (void)touchCacheFileAtPath:(NSString *)cachedFilePath
+{
+    dispatch_sync(self.diskIOQueue, ^{
+        [self.fileManager setAttributes:@{NSFileModificationDate: [NSDate date]}
+                           ofItemAtPath:cachedFilePath
+                                  error:nil];
+    });
+}
+
+@end
+
+@implementation MPDiskLRUCache (MPMediaFileCache)
+
+- (NSString *)cacheKeyForRemoteMediaURL:(NSURL *)remoteFileURL {
+    return remoteFileURL.absoluteString;
+}
+
+/**
+ Obtain the expected local cache file URL provided the remote file URL.
+ Note: The cached file referenced by the returned URL may not exist. After the remote file is
+ downloaded, use `moveFileAtLocalURL:toCacheURL:` to move it to the returned cache file URL.
+ */
+- (NSURL *)cachedFileURLForRemoteFileURL:(NSURL *)remoteFileURL {
+    NSString *cacheKey = [self cacheKeyForRemoteMediaURL:remoteFileURL];
+    NSURL *pathWithoutExtension = [NSURL fileURLWithPath:[self cacheFilePathForKey:cacheKey]];
+    return [pathWithoutExtension URLByAppendingPathExtension:remoteFileURL.pathExtension];
+}
+
+- (BOOL)isRemoteFileCached:(NSURL *)remoteFileURL {
+    __block BOOL result = NO;
+    NSURL *localCacheFileURL = [self cachedFileURLForRemoteFileURL:remoteFileURL];
+    dispatch_sync(self.diskIOQueue, ^{
+        result = [self.fileManager fileExistsAtPath:localCacheFileURL.path];
+    });
+    return result;
+}
+
+- (NSError *)moveLocalFileToCache:(NSURL *)localFileURL remoteSourceFileURL:(NSURL *)remoteFileURL {
+    NSURL *localCacheFileURL = [self cachedFileURLForRemoteFileURL:remoteFileURL];
+    __block NSError *error;
+    dispatch_sync(self.diskIOQueue, ^{
+        [self.fileManager moveItemAtURL:localFileURL
+                                  toURL:localCacheFileURL
+                                  error:&error];
+    });
+    return error;
+}
+
+- (void)touchCachedFileForRemoteFile:(NSURL *)remoteFileURL {
+    NSString *cacheKey = [self cacheKeyForRemoteMediaURL:remoteFileURL];
+    NSURL *localCacheFileURL = [self cachedFileURLForRemoteFileURL:remoteFileURL];
+    if ([self cachedDataExistsForKey:cacheKey]) {
+        [self touchCacheFileAtPath:localCacheFileURL.path];
+    }
 }
 
 @end

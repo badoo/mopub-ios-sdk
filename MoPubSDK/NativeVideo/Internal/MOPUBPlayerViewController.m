@@ -13,6 +13,7 @@
 #import "MOPUBActivityIndicatorView.h"
 #import "MPAdDestinationDisplayAgent.h"
 #import "MPCoreInstanceProvider.h"
+#import "MPExtendedHitBoxButton.h"
 #import "MPGlobal.h"
 #import "MPLogging.h"
 #import "MOPUBNativeVideoAdConfigValues.h"
@@ -21,7 +22,6 @@
 #import "UIView+MPAdditions.h"
 #import "MOPUBNativeVideoAdConfigValues.h"
 #import "MPVideoConfig.h"
-#import "UIButton+MPAdditions.h"
 
 #define kDefaultVideoAspectRatio 16.0f/9.0f
 
@@ -55,7 +55,8 @@ static const double kVideoFinishedBufferingAllowedError = 0.1;
 
 @interface MOPUBPlayerViewController() <MOPUBAVPlayerDelegate, MOPUBPlayerViewDelegate, MPAdDestinationDisplayAgentDelegate>
 
-@property (nonatomic) UIButton *muteButton;
+@property (nonatomic, strong) MPVideoConfig *videoConfig;
+@property (nonatomic) MPExtendedHitBoxButton *muteButton;
 @property (nonatomic) UIActivityIndicatorView *loadingIndicator;
 @property (nonatomic) MPAdDestinationDisplayAgent *displayAgent;
 
@@ -64,6 +65,7 @@ static const double kVideoFinishedBufferingAllowedError = 0.1;
 @property (nonatomic) BOOL downloadFinishedEventFired;
 @property (nonatomic) BOOL alreadyCreatedPlayerView;
 @property (nonatomic) BOOL finishedPlaying;
+@property (nonatomic) BOOL startedLoading;
 
 @end
 
@@ -72,7 +74,7 @@ static const double kVideoFinishedBufferingAllowedError = 0.1;
 - (instancetype)initWithVideoConfig:(MPVideoConfig *)videoConfig nativeVideoAdConfig:(MOPUBNativeVideoAdConfigValues *)nativeVideoAdConfig
 {
     if (self = [super init]) {
-        _mediaURL = videoConfig.mediaURL;
+        _videoConfig = videoConfig;
         _playerView = [[MOPUBPlayerView alloc] initWithFrame:CGRectZero delegate:self];
         self.displayMode = MOPUBPlayerDisplayModeInline;
 
@@ -148,23 +150,35 @@ static const double kVideoFinishedBufferingAllowedError = 0.1;
 
 - (void)handleVideoInitError
 {
-    [self.vastTracking handleVideoEvent:MPVideoEventTypeError videoTimeOffset:self.avPlayer.currentPlaybackTime];
+    [self.vastTracking handleVideoEvent:MPVideoEventError
+                        videoTimeOffset:self.avPlayer.currentPlaybackTime];
     [self stopLoadingIndicator];
     [self.playerView handleVideoInitFailure];
 }
 
 - (void)loadAndPlayVideo
 {
-    self.startedLoading = YES;
+    MPVASTMediaFile *mediaFile = [MPVASTMediaFile bestMediaFileFromCandidates:self.videoConfig.mediaFiles
+                                                             forContainerSize:self.view.window.bounds.size
+                                                         containerScaleFactor:[UIScreen mainScreen].scale];
+    _vastTracking = [[MPVASTTracking alloc] initWithVideoConfig:self.videoConfig videoURL:mediaFile.URL];
 
-    AVURLAsset *asset = [[AVURLAsset alloc] initWithURL:self.mediaURL options:nil];
+    if (mediaFile == nil) {
+        MPLogError(@"failed to obtain media file");
+        [self handleVideoInitError];
+        return;
+    }
+
+    AVURLAsset *asset = [[AVURLAsset alloc] initWithURL:mediaFile.URL options:nil];
 
     if (asset == nil) {
-        MPLogInfo(@"failed to initialize video asset for URL %@", self.mediaURL);
+        MPLogError(@"failed to initialize video asset for URL %@", mediaFile.URL);
         [self handleVideoInitError];
 
         return;
     }
+
+    self.startedLoading = YES;
 
     NSArray *requestedKeys = @[kTracksKey, kPlayableKey];
     [asset loadValuesAsynchronouslyForKeys:requestedKeys completionHandler:^{
@@ -233,11 +247,11 @@ static const double kVideoFinishedBufferingAllowedError = 0.1;
 - (void)createMuteButton
 {
     if (!self.muteButton) {
-        self.muteButton = [UIButton buttonWithType:UIButtonTypeCustom];
+        self.muteButton = [MPExtendedHitBoxButton buttonWithType:UIButtonTypeCustom];
         [self.muteButton setImage:[UIImage imageNamed:MPResourcePathForResource(kMutedButtonImage)] forState:UIControlStateNormal];
         [self.muteButton setImage:[UIImage imageNamed:MPResourcePathForResource(kUnmutedButtonImage)] forState:UIControlStateSelected];
         [self.muteButton addTarget:self action:@selector(muteButtonTapped) forControlEvents:UIControlEventTouchUpInside];
-        self.muteButton.mp_TouchAreaInsets = UIEdgeInsetsMake(kMuteIconInlineModeTouchAreaInsets, kMuteIconInlineModeTouchAreaInsets, kMuteIconInlineModeTouchAreaInsets, kMuteIconInlineModeTouchAreaInsets);
+        self.muteButton.touchAreaInsets = UIEdgeInsetsMake(kMuteIconInlineModeTouchAreaInsets, kMuteIconInlineModeTouchAreaInsets, kMuteIconInlineModeTouchAreaInsets, kMuteIconInlineModeTouchAreaInsets);
         [self.muteButton sizeToFit];
         [self.view addSubview:self.muteButton];
         self.muteButton.frame = CGRectMake(kMuteIconInlineModeLeftMargin, CGRectGetMaxY(self.view.bounds) -  kMuteIconInlineModeBottomMargin - CGRectGetHeight(self.muteButton.bounds), CGRectGetWidth(self.muteButton.bounds), CGRectGetHeight(self.muteButton.bounds));
@@ -363,8 +377,8 @@ static const double kVideoFinishedBufferingAllowedError = 0.1;
     self.muteButton.selected = !self.muteButton.selected;
     self.muted = !self.muteButton.selected;
 
-    MPVideoEventType eventType = self.muted ? MPVideoEventTypeMuted : MPVideoEventTypeUnmuted;
-    [self.vastTracking handleVideoEvent:eventType videoTimeOffset:self.avPlayer.currentPlaybackTime];
+    NSString *event = self.muted ? MPVideoEventMute : MPVideoEventUnmute;
+    [self.vastTracking handleVideoEvent:event videoTimeOffset:self.avPlayer.currentPlaybackTime];
 }
 
 # pragma mark - KVO
@@ -374,7 +388,8 @@ static const double kVideoFinishedBufferingAllowedError = 0.1;
     if (object == self.avPlayer) {
         if (self.avPlayer.status == AVPlayerItemStatusFailed) {
             MPLogInfo(@"avPlayer status failed");
-            [self.vastTracking handleVideoEvent:MPVideoEventTypeError videoTimeOffset:self.avPlayer.currentPlaybackTime];
+            [self.vastTracking handleVideoEvent:MPVideoEventError
+                                videoTimeOffset:self.avPlayer.currentPlaybackTime];
         }
     } else if (object == self.playerItem) {
         if (context == AudioControllerBufferingObservationContext) {
@@ -392,7 +407,6 @@ static const double kVideoFinishedBufferingAllowedError = 0.1;
         if ([keyPath isEqualToString:kStatusKey]) {
             switch (self.playerItem.status) {
                 case AVPlayerItemStatusReadyToPlay:
-                    self.vastTracking.videoDuration = CMTimeGetSeconds(self.playerItem.duration);
                     if (!self.alreadyInitialized) {
                         self.alreadyInitialized = YES;
                         [self initOnVideoReady];
@@ -401,7 +415,8 @@ static const double kVideoFinishedBufferingAllowedError = 0.1;
                 case AVPlayerItemStatusFailed:
                 {
                     MPLogInfo(@"avPlayerItem status failed");
-                    [self.vastTracking handleVideoEvent:MPVideoEventTypeError videoTimeOffset:self.avPlayer.currentPlaybackTime];
+                    [self.vastTracking handleVideoEvent:MPVideoEventError
+                                        videoTimeOffset:self.avPlayer.currentPlaybackTime];
                     break;
                 }
                 default:
@@ -420,7 +435,8 @@ static const double kVideoFinishedBufferingAllowedError = 0.1;
     self.paused = YES;
     self.playing = NO;
     [self.avPlayer pause];
-    [self.vastTracking handleVideoEvent:MPVideoEventTypePause videoTimeOffset:self.avPlayer.currentPlaybackTime];
+    [self.vastTracking handleVideoEvent:MPVideoEventPause
+                        videoTimeOffset:self.avPlayer.currentPlaybackTime];
 }
 
 - (void)resume
@@ -428,7 +444,8 @@ static const double kVideoFinishedBufferingAllowedError = 0.1;
     self.paused = NO;
     self.playing = YES;
     [self.avPlayer play];
-    [self.vastTracking handleVideoEvent:MPVideoEventTypeResume videoTimeOffset:self.avPlayer.currentPlaybackTime];
+    [self.vastTracking handleVideoEvent:MPVideoEventResume
+                        videoTimeOffset:self.avPlayer.currentPlaybackTime];
 }
 
 - (void)seekToTime:(NSTimeInterval)time
@@ -469,15 +486,18 @@ static const double kVideoFinishedBufferingAllowedError = 0.1;
 - (void)willEnterFullscreen
 {
     self.displayMode = MOPUBPlayerDisplayModeFullscreen;
-    [self.vastTracking handleVideoEvent:MPVideoEventTypeFullScreen videoTimeOffset:self.avPlayer.currentPlaybackTime];
-    [self.vastTracking handleVideoEvent:MPVideoEventTypeExpand videoTimeOffset:self.avPlayer.currentPlaybackTime];
+    [self.vastTracking handleVideoEvent:MPVideoEventFullScreen videoTimeOffset:self.avPlayer.currentPlaybackTime];
+    [self.vastTracking handleVideoEvent:MPVideoEventExpand
+                        videoTimeOffset:self.avPlayer.currentPlaybackTime];
 }
 
 - (void)willExitFullscreen
 {
     self.displayMode = MOPUBPlayerDisplayModeInline;
-    [self.vastTracking handleVideoEvent:MPVideoEventTypeExitFullScreen videoTimeOffset:self.avPlayer.currentPlaybackTime];
-    [self.vastTracking handleVideoEvent:MPVideoEventTypeCollapse videoTimeOffset:self.avPlayer.currentPlaybackTime];
+    [self.vastTracking handleVideoEvent:MPVideoEventExitFullScreen
+                        videoTimeOffset:self.avPlayer.currentPlaybackTime];
+    [self.vastTracking handleVideoEvent:MPVideoEventCollapse
+                        videoTimeOffset:self.avPlayer.currentPlaybackTime];
 }
 
 #pragma mark - MOPUBAVPlayerDelegate
@@ -507,7 +527,8 @@ static const double kVideoFinishedBufferingAllowedError = 0.1;
 - (void)avPlayer:(MOPUBAVPlayer *)player didError:(NSError *)error withMessage:(NSString *)message
 {
     [self.avPlayer pause];
-    [self.vastTracking handleVideoEvent:MPVideoEventTypeError videoTimeOffset:self.avPlayer.currentPlaybackTime];
+    [self.vastTracking handleVideoEvent:MPVideoEventError
+                        videoTimeOffset:self.avPlayer.currentPlaybackTime];
 }
 
 - (void)avPlayerDidFinishPlayback:(MOPUBAVPlayer *)player
@@ -517,7 +538,8 @@ static const double kVideoFinishedBufferingAllowedError = 0.1;
     [self.avPlayer pause];
     // update view
     [self.playerView playbackDidFinish];
-    [self.vastTracking handleVideoEvent:MPVideoEventTypeCompleted videoTimeOffset:self.avPlayer.currentPlaybackTime];
+    [self.vastTracking handleVideoEvent:MPVideoEventComplete
+                        videoTimeOffset:self.avPlayer.currentPlaybackTime];
 }
 
 - (void)avPlayerDidRecoverFromStall:(MOPUBAVPlayer *)player

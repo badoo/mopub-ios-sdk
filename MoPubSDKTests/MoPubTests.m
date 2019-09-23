@@ -30,8 +30,6 @@ static NSTimeInterval const kTestTimeout = 2;
 - (void)setUp {
     [super setUp];
     [MPMediationManager.sharedManager clearCache];
-
-    [MoPub sharedInstance].forceWKWebView = NO;
     MPLogging.consoleLogLevel = MPBLogLevelInfo;
 }
 
@@ -190,47 +188,6 @@ static NSTimeInterval const kTestTimeout = 2;
 
     // Verify legitimate interest is not set by default
     XCTAssertFalse(MoPub.sharedInstance.allowLegitimateInterest);
-}
-
-
-#pragma mark - WKWebView
-
-- (void)testNoForceWKWebView {
-    // Normal WKWebView behavior
-    [MoPub sharedInstance].forceWKWebView = NO;
-
-    // Verify that UIWebView was used instead of WKWebView for video ads
-    NSDictionary * headers = @{ kAdTypeMetadataKey: @"rewarded_video",
-                                kIsVastVideoPlayerKey: @(1),
-                                kRewardedCurrenciesMetadataKey: @{ @"rewards": @[ @{ @"name": @"Coins", @"amount": @(8) }, @{ @"name": @"Diamonds", @"amount": @(1) }, @{ @"name": @"Energy", @"amount": @(20) } ] }
-                                };
-
-    MPAdConfiguration * config = [[MPAdConfiguration alloc] initWithMetadata:headers data:nil adType:MPAdTypeFullscreen];
-
-    MRController * controller = [[MRController alloc] initWithAdViewFrame:CGRectZero supportedOrientations:MPInterstitialOrientationTypeAll adPlacementType:MRAdViewPlacementTypeInterstitial delegate:nil];
-    [controller loadAdWithConfiguration:config];
-
-    XCTAssertNil(controller.mraidWebView.wkWebView);
-    XCTAssertNotNil(controller.mraidWebView.uiWebView);
-}
-
-- (void)testForceWKWebView {
-    // Force WKWebView
-    [MoPub sharedInstance].forceWKWebView = YES;
-
-    // Verify that WKWebView was used instead of UIWebView for video ads
-    NSDictionary * headers = @{ kAdTypeMetadataKey: @"rewarded_video",
-                                kIsVastVideoPlayerKey: @(1),
-                                kRewardedCurrenciesMetadataKey: @{ @"rewards": @[ @{ @"name": @"Coins", @"amount": @(8) }, @{ @"name": @"Diamonds", @"amount": @(1) }, @{ @"name": @"Energy", @"amount": @(20) } ] }
-                                };
-
-    MPAdConfiguration * config = [[MPAdConfiguration alloc] initWithMetadata:headers data:nil adType:MPAdTypeFullscreen];
-
-    MRController * controller = [[MRController alloc] initWithAdViewFrame:CGRectZero supportedOrientations:MPInterstitialOrientationTypeAll adPlacementType:MRAdViewPlacementTypeInterstitial delegate:nil];
-    [controller loadAdWithConfiguration:config];
-
-    XCTAssertNotNil(controller.mraidWebView.wkWebView);
-    XCTAssertNil(controller.mraidWebView.uiWebView);
 }
 
 #pragma mark - Logging

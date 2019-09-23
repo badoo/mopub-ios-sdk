@@ -8,7 +8,11 @@
 
 #import "MPBannerAdManagerDelegateHandler.h"
 
+// Warning: Class 'MPBannerAdManagerDelegateHandler' does not conform to protocol 'MPBannerAdManagerDelegate'
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wprotocol"
 @implementation MPBannerAdManagerDelegateHandler
+#pragma clang diagnostic pop
 
 #pragma mark - MPBannerAdManagerDelegate
 

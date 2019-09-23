@@ -21,7 +21,7 @@ extension UIView {
     
     func sizeFitting(view: UIView) -> CGSize {
         var fittingSize: CGSize = .zero
-        if #available(iOS 11.0, *) {
+        if #available(iOS 11, *) {
             fittingSize = CGSize(width: view.bounds.width - (view.safeAreaInsets.left + view.safeAreaInsets.right), height: 0)
         }
         else {

@@ -63,7 +63,7 @@ Registers a logging destination.
  @param source Optional source of the event. This will generally be ad unit ID for ad-related events.
  @param aClass Class that generated the event.
  */
-+ (void)logEvent:(MPLogEvent *)event source:(NSString * _Nullable)source fromClass:(Class)aClass;
++ (void)logEvent:(MPLogEvent *)event source:(NSString * _Nullable)source fromClass:(Class _Nullable)aClass;
 
 @end
 

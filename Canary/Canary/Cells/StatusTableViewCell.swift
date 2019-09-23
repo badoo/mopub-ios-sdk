@@ -29,7 +29,11 @@ final class StatusTableViewCell: UITableViewCell, TableViewCellRegisterable {
         messageLabel.text = error
         
         // Update text highlighted state
-        nameLabel.textColor = isHighlighted ? .black : .lightGray
+        if #available(iOS 13.0, *) {
+            nameLabel.textColor = isHighlighted ? .label : .secondaryLabel
+        } else {
+            nameLabel.textColor = isHighlighted ? .black : .lightGray
+        }
         accessoryType = isHighlighted ? .checkmark : .none
 
         // Update the visible state of the message label

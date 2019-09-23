@@ -7,32 +7,28 @@
 //
 
 #import <Foundation/Foundation.h>
-
-@class MPVideoConfig;
-
-typedef NS_ENUM(NSUInteger, MPVideoEventType) {
-    MPVideoEventTypeTimeUpdate = 0,
-    MPVideoEventTypeMuted,
-    MPVideoEventTypeUnmuted,
-    MPVideoEventTypePause,
-    MPVideoEventTypeResume,
-    MPVideoEventTypeFullScreen,
-    MPVideoEventTypeExitFullScreen,
-    MPVideoEventTypeExpand,
-    MPVideoEventTypeCollapse,
-    MPVideoEventTypeCompleted,
-    MPVideoEventTypeImpression,
-    MPVideoEventTypeClick,
-    MPVideoEventTypeError
-};
+#import "MPVideoConfig.h"
 
 @interface MPVASTTracking : NSObject
 
-@property (nonatomic, readonly) MPVideoConfig *videoConfig;
-@property (nonatomic) NSTimeInterval videoDuration;
+- (instancetype)initWithVideoConfig:(MPVideoConfig *)videoConfig videoURL:(NSURL *)videoURL;
 
-- (instancetype)initWithMPVideoConfig:(MPVideoConfig *)videoConfig videoView:(UIView *)videoView;
-- (void)handleVideoEvent:(MPVideoEventType)videoEventType videoTimeOffset:(NSTimeInterval)timeOffset;
-- (void)handleNewVideoView:(UIView *)videoView;
+/**
+ Call this when a new video event (@c MPVideoEvent) happens.
+
+ @note Some events allows repetition, and some don't.
+ @note For @c MPVideoEventProgress, call @c handleVideoProgressEvent:videoDuration: instead.
+ */
+- (void)handleVideoEvent:(NSString *)videoEvent videoTimeOffset:(NSTimeInterval)videoTimeOffset;
+
+/**
+ Call this when the video play progress is updated.
+
+ @note Do not call this for video complete event. Use @c MPVideoEventComplete instead. Neither
+ custom timer nor iOS video player time observer manages the video complete event very well (with a
+ high chance of not firing at all due to timing issue), and iOS provides a specific notification for
+ the video complete event.
+ */
+- (void)handleVideoProgressEvent:(NSTimeInterval)videoTimeOffset videoDuration:(NSTimeInterval)videoDuration;
 
 @end

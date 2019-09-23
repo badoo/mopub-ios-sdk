@@ -217,7 +217,7 @@ CGRect MPClosableViewCustomCloseButtonFrame(CGSize adSize, MPClosableViewCloseBu
 
 #pragma mark - <UIGestureRecognizerDelegate>
 
-- (BOOL)gestureRecognizer:(UIGestureRecognizer *)gestureRecognizer shouldRecognizeSimultaneouslyWithGestureRecognizer:(UIGestureRecognizer *)otherGestureRecognizer;
+- (BOOL)gestureRecognizer:(UIGestureRecognizer *)gestureRecognizer shouldRecognizeSimultaneouslyWithGestureRecognizer:(UIGestureRecognizer *)otherGestureRecognizer
 {
     return YES;
 }

@@ -15,6 +15,7 @@
 #define MOPUB_IDENTIFIER_LAST_SET_TIME_KEY @"com.mopub.identifiertime"
 #define MOPUB_DAY_IN_SECONDS 24 * 60 * 60
 #define MOPUB_ALL_ZERO_UUID @"00000000-0000-0000-0000-000000000000"
+NSString *const mopubPrefix = @"mopub:";
 
 static BOOL gFrequencyCappingIdUsageEnabled = YES;
 
@@ -46,6 +47,14 @@ static BOOL gFrequencyCappingIdUsageEnabled = YES;
 + (NSString *)obfuscatedIdentifier
 {
     return [self _identifier:YES];
+}
+
++ (NSString *)unobfuscatedMoPubIdentifier {
+    NSString *value = [self mopubIdentifier:NO];
+    if ([value hasPrefix:mopubPrefix]) {
+        value = [value substringFromIndex:[mopubPrefix length]];
+    }
+    return value;
 }
 
 + (NSString *)_identifier:(BOOL)obfuscate
@@ -108,7 +117,7 @@ static BOOL gFrequencyCappingIdUsageEnabled = YES;
         NSString *uuidStr = (NSString *)CFBridgingRelease(CFUUIDCreateString(kCFAllocatorDefault, uuidObject));
         CFRelease(uuidObject);
 
-        identifier = [NSString stringWithFormat:@"mopub:%@", [uuidStr uppercaseString]];
+        identifier = [mopubPrefix stringByAppendingString:[uuidStr uppercaseString]];
         [[NSUserDefaults standardUserDefaults] setObject:identifier forKey:MOPUB_IDENTIFIER_DEFAULTS_KEY];
         [[NSUserDefaults standardUserDefaults] synchronize];
     }

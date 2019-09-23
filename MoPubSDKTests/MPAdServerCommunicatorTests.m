@@ -8,7 +8,7 @@
 
 #import <XCTest/XCTest.h>
 #import "MPAdServerCommunicator.h"
-#import "MPAdserverCommunicatorDelegateHandler.h"
+#import "MPAdServerCommunicatorDelegateHandler.h"
 #import "MPAdServerCommunicator+Testing.h"
 #import "MPAdServerKeys.h"
 #import "MPConsentManager+Testing.h"
@@ -29,7 +29,7 @@ static NSString * const kIsWhitelistedUserDefaultsKey = @"com.mopub.mopub-ios-sd
 @interface MPAdServerCommunicatorTests : XCTestCase
 
 @property (nonatomic, strong) MPAdServerCommunicator *communicator;
-@property (nonatomic, strong) MPAdserverCommunicatorDelegateHandler *communicatorDelegateHandler;
+@property (nonatomic, strong) MPAdServerCommunicatorDelegateHandler *communicatorDelegateHandler;
 
 @end
 
@@ -40,7 +40,7 @@ static NSString * const kIsWhitelistedUserDefaultsKey = @"com.mopub.mopub-ios-sd
 
     [[MPConsentManager sharedManager] setUpConsentManagerForTesting];
 
-    self.communicatorDelegateHandler = [[MPAdserverCommunicatorDelegateHandler alloc] init];
+    self.communicatorDelegateHandler = [[MPAdServerCommunicatorDelegateHandler alloc] init];
     self.communicator = [[MPAdServerCommunicator alloc] initWithDelegate:self.communicatorDelegateHandler];
     self.communicator.loading = YES;
 }
@@ -619,6 +619,131 @@ static NSString * const kIsWhitelistedUserDefaultsKey = @"com.mopub.mopub-ios-sd
 
     // Verify that consent has not changed
     XCTAssert(MPConsentManager.sharedManager.currentStatus == MPConsentStatusConsented);
+}
+
+- (void)testAutomaticAdUnitIdPopulation {
+    // Garbage response data
+    NSDictionary * responseDataDict = @{
+                                         kAdResponsesKey: @[ @{
+                                                                 kAdResonsesMetadataKey: @{
+                                                                         @"x-adtype": @"clear",
+                                                                         @"x-backfill": @"clear",
+                                                                         @"x-refreshtime": @(30),
+                                                                         },
+                                                                 kAdResonsesContentKey: @""
+                                                                 }, ]
+                                         };
+    NSData * garbageResponseData = [NSJSONSerialization dataWithJSONObject:responseDataDict
+                                                        options:0
+                                                          error:nil];
+
+    MPConsentManager * manager = MPConsentManager.sharedManager;
+    // Clear out any cached adunit state
+    [manager setUpConsentManagerForTesting];
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wnonnull"
+    // Intentially set the explicitly marked `nonnull` property to `nil` to
+    // simulate an uninitialized state.
+    manager.adUnitIdUsedForConsent = nil;
+#pragma clang diagnostic pop
+    XCTAssertNil(manager.adUnitIdUsedForConsent);
+
+    // Simulate a successful ad load
+    NSString * adunitID = @"extremely not an actual adunit ID";
+
+    self.communicatorDelegateHandler.adUnitIdForAdServerCommunicator = ^NSString *(MPAdServerCommunicator *adServerCommunicator) {
+        return adunitID;
+    };
+
+    [self.communicator didFinishLoadingWithData:garbageResponseData];
+
+    // Check to make sure the adunit ID populated
+    XCTAssert([manager.adUnitIdUsedForConsent isEqualToString:adunitID]);
+    // Check to make sure the adunit ID is cached
+    NSString * cachedString = [NSUserDefaults.standardUserDefaults stringForKey:kAdUnitIdUsedForConsentStorageKey];
+    XCTAssert([cachedString isEqualToString:adunitID]);
+}
+
+- (void)testAutomaticAdUnitIdPopulationDoesNotOverwrite {
+    // Garbage response data
+    NSDictionary * responseDataDict = @{
+                                        kAdResponsesKey: @[ @{
+                                                                kAdResonsesMetadataKey: @{
+                                                                        @"x-adtype": @"clear",
+                                                                        @"x-backfill": @"clear",
+                                                                        @"x-refreshtime": @(30),
+                                                                        },
+                                                                kAdResonsesContentKey: @""
+                                                                }, ]
+                                        };
+    NSData * garbageResponseData = [NSJSONSerialization dataWithJSONObject:responseDataDict
+                                                                   options:0
+                                                                     error:nil];
+
+    MPConsentManager * manager = MPConsentManager.sharedManager;
+    // Clear out any cached adunit state
+    [manager setUpConsentManagerForTesting];
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wnonnull"
+    // Intentially set the explicitly marked `nonnull` property to `nil` to
+    // simulate an uninitialized state.
+    manager.adUnitIdUsedForConsent = nil;
+#pragma clang diagnostic pop
+    XCTAssertNil(manager.adUnitIdUsedForConsent);
+
+    // Simulate a successful ad load
+    NSString * adunitID = @"extremely not an actual adunit ID";
+
+    self.communicatorDelegateHandler.adUnitIdForAdServerCommunicator = ^NSString *(MPAdServerCommunicator *adServerCommunicator) {
+        return adunitID;
+    };
+
+    [self.communicator didFinishLoadingWithData:garbageResponseData];
+
+    // Check to make sure the adunit ID populated
+    XCTAssert([manager.adUnitIdUsedForConsent isEqualToString:adunitID]);
+    // Check to make sure the adunit ID is cached
+    NSString * cachedString = [NSUserDefaults.standardUserDefaults stringForKey:kAdUnitIdUsedForConsentStorageKey];
+    XCTAssert([cachedString isEqualToString:adunitID]);
+
+
+    // Make a new adunit ID and see if that gets set
+    NSString * newAdunitID = @"still not an adunit ID";
+    self.communicatorDelegateHandler.adUnitIdForAdServerCommunicator = ^NSString *(MPAdServerCommunicator *adServerCommunicator) {
+        return newAdunitID;
+    };
+    [self.communicator didFinishLoadingWithData:garbageResponseData];
+
+    // Check state
+    XCTAssertFalse([manager.adUnitIdUsedForConsent isEqualToString:newAdunitID]);
+    XCTAssert([manager.adUnitIdUsedForConsent isEqualToString:adunitID]);
+    XCTAssert([cachedString isEqualToString:adunitID]);
+}
+
+- (void)testAutomaticAdUnitIDPopulationDoesNotOccurOnFailure {
+    MPConsentManager * manager = MPConsentManager.sharedManager;
+    // Clear out any cached adunit state
+    [manager setUpConsentManagerForTesting];
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wnonnull"
+    // Intentially set the explicitly marked `nonnull` property to `nil` to
+    // simulate an uninitialized state.
+    manager.adUnitIdUsedForConsent = nil;
+#pragma clang diagnostic pop
+    XCTAssertNil(manager.adUnitIdUsedForConsent);
+
+    // Simulate an unsuccessful ad load
+    NSString * adunitID = @"extremely not an actual adunit ID";
+    self.communicatorDelegateHandler.adUnitIdForAdServerCommunicator = ^NSString *(MPAdServerCommunicator *adServerCommunicator) {
+        return adunitID;
+    };
+    [self.communicator didFailWithError:nil];
+
+    // Check to make sure the adunit ID is not populated
+    XCTAssertNil(manager.adUnitIdUsedForConsent);
+    // Check to make sure the adunit ID is cached
+    NSString * cachedString = [NSUserDefaults.standardUserDefaults stringForKey:kAdUnitIdUsedForConsentStorageKey];
+    XCTAssertNil(cachedString);
 }
 
 #pragma mark - Rate Limiting Tests

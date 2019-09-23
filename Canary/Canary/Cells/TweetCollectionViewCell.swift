@@ -29,6 +29,11 @@ class TweetCollectionViewCell: UICollectionViewCell {
         // Initially set the width constraint to be 300px.
         contentView.translatesAutoresizingMaskIntoConstraints = false
         widthConstraint = contentView.widthAnchor.constraint(equalToConstant: 300)
+        
+        // Set up background color for Dark Mode
+        if #available(iOS 13.0, *) {
+            backgroundColor = .systemBackground
+        }
     }
     
     // MARK: - Cell Registration

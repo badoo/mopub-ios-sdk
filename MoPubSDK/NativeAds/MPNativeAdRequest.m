@@ -50,6 +50,7 @@ static NSString * const kNativeAdErrorDomain = @"com.mopub.NativeAd";
 @property (nonatomic, assign) BOOL loading;
 @property (nonatomic, strong) MPTimer *timeoutTimer;
 @property (nonatomic, assign) NSTimeInterval adapterLoadStartTimestamp;
+@property (nonatomic, strong) NSURL *mostRecentlyLoadedURL;  // ADF-4286: avoid infinite ad reloads
 
 @end
 
@@ -84,9 +85,7 @@ static NSString * const kNativeAdErrorDomain = @"com.mopub.NativeAd";
 {
     if (handler) {
         self.URL = [MPAdServerURLBuilder URLWithAdUnitID:self.adUnitIdentifier
-                                                keywords:self.targeting.keywords
-                                        userDataKeywords:self.targeting.userDataKeywords
-                                                location:self.targeting.location
+                                               targeting:self.targeting
                                            desiredAssets:[self.targeting.desiredAssets allObjects]
                                              viewability:NO];
 
@@ -102,9 +101,7 @@ static NSString * const kNativeAdErrorDomain = @"com.mopub.NativeAd";
 {
     if (handler) {
         self.URL = [MPAdServerURLBuilder URLWithAdUnitID:self.adUnitIdentifier
-                                                keywords:self.targeting.keywords
-                                        userDataKeywords:self.targeting.userDataKeywords
-                                                location:self.targeting.location
+                                               targeting:self.targeting
                                            desiredAssets:[self.targeting.desiredAssets allObjects]
                                               adSequence:adSequence
                                              viewability:NO];
@@ -143,6 +140,7 @@ static NSString * const kNativeAdErrorDomain = @"com.mopub.NativeAd";
     }
 
     self.loading = YES;
+    self.mostRecentlyLoadedURL = URL;
     [self.communicator loadURL:URL];
 }
 
@@ -358,7 +356,8 @@ static NSString * const kNativeAdErrorDomain = @"com.mopub.NativeAd";
         [self fetchAdWithConfiguration:self.adConfiguration];
     }
     // No more configurations to try. Fail over and let Ad Server get more ads
-    else if (self.adConfiguration.nextURL != nil) {
+    else if (self.adConfiguration.nextURL != nil
+             && [self.adConfiguration.nextURL isEqual:self.mostRecentlyLoadedURL] == false) {
         self.loading = NO;
         [self loadAdWithURL:self.adConfiguration.nextURL];
     }
@@ -376,11 +375,10 @@ static NSString * const kNativeAdErrorDomain = @"com.mopub.NativeAd";
     NSTimeInterval timeInterval = (self.adConfiguration && self.adConfiguration.adTimeoutInterval >= 0) ? self.adConfiguration.adTimeoutInterval : NATIVE_TIMEOUT_INTERVAL;
 
     if (timeInterval > 0) {
-        self.timeoutTimer = [[MPCoreInstanceProvider sharedProvider] buildMPTimerWithTimeInterval:timeInterval
-                                                                                           target:self
-                                                                                         selector:@selector(timeout)
-                                                                                          repeats:NO];
-
+        self.timeoutTimer = [MPTimer timerWithTimeInterval:timeInterval
+                                                    target:self
+                                                  selector:@selector(timeout)
+                                                   repeats:NO];
         [self.timeoutTimer scheduleNow];
     }
 }

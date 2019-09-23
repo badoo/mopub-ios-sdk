@@ -104,9 +104,8 @@ static NSString *const kMOATSendAdStoppedJavascript = @"MoTracker.sendMoatAdStop
                                completionHandler:^(id result, NSError *error){
                                    moatEndTrackingBlock();
                                }];
-            } else if ([self.webView isKindOfClass:[UIWebView class]]) {
-                UIWebView *typedWebView = (UIWebView *)self.webView;
-                [typedWebView stringByEvaluatingJavaScriptFromString:kMOATSendAdStoppedJavascript];
+            } else {
+                MPLogInfo(@"Unexpected web view class: %@", self.webView.class);
                 moatEndTrackingBlock();
             }
         } else {

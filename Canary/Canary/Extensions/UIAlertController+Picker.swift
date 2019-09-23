@@ -39,8 +39,10 @@ extension UIAlertController {
         // We need to constrain the edges of the pickerView to the UIAlertController
         // view so that the pickerView is aligned properly.
         let constraints: [NSLayoutConstraint] = [
-            pickerView.leadingAnchor.constraint(equalTo: view.leadingAnchor, constant: 0),
-            pickerView.trailingAnchor.constraint(equalTo: view.trailingAnchor, constant: 0),
+            pickerView.leftAnchor.constraint(equalTo: container.view.leftAnchor),
+            pickerView.rightAnchor.constraint(equalTo: container.view.rightAnchor),
+            pickerView.topAnchor.constraint(equalTo: container.view.topAnchor),
+            pickerView.bottomAnchor.constraint(equalTo: container.view.bottomAnchor),
             ]
         NSLayoutConstraint.activate(constraints)
         

@@ -64,7 +64,7 @@ static NSString * const kAdResonsesContentKey = @"content";
     self = [super init];
     if (self) {
         _delegate = delegate;
-        _topLevelJsonKeys = @[kNextUrlMetadataKey];
+        _topLevelJsonKeys = @[kNextUrlMetadataKey, kFormatMetadataKey];
     }
     return self;
 }
@@ -105,7 +105,6 @@ static NSString * const kAdResonsesContentKey = @"content";
 
         // Handle the response.
         [strongSelf didFinishLoadingWithData:data];
-
     } errorHandler:^(NSError * error) {
         // Capture strong self for the duration of this block.
         __typeof__(self) strongSelf = weakSelf;
@@ -171,6 +170,13 @@ static NSString * const kAdResonsesContentKey = @"content";
 }
 
 - (void)didFinishLoadingWithData:(NSData *)data {
+    // In the event that the @c adUnitIdUsedForConsent from @c MPConsentManager is @c nil or malformed,
+    // we should populate it with this known good adunit ID. This is to cover any edge case where the
+    // publisher manages to initialize with no adunit ID or a malformed adunit ID.
+    // It is known good since this is the success callback from the ad request.
+    NSString * adunitID = [self.delegate adUnitIDForAdServerCommunicator:self];
+    [MPConsentManager.sharedManager setAdUnitIdUsedForConsent:adunitID isKnownGood:YES];
+
     // Headers from the original HTTP response are intentionally ignored as laid out
     // by the Client Side Waterfall design doc.
     //

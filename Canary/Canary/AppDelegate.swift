@@ -7,123 +7,125 @@
 //
 
 import UIKit
-import MoPub
-
-let kAppId = "112358"
-let kAdUnitId = "0ac59b0996d947309c33f59d6676399f"
 
 @UIApplicationMain
-class AppDelegate: UIResponder, UIApplicationDelegate {
-    /**
-     Main application window.
-     */
-    var window: UIWindow?
+class AppDelegate: UIResponder {
+    static var shared: AppDelegate {
+        guard let appDelegate = UIApplication.shared.delegate as? AppDelegate else {
+            fatalError()
+        }
+        return appDelegate
+    }
     
     /**
-     Main application's container controller.
+     This default `SceneDelegate` is created for pre-iOS 13 backward compatibility as a single scene app.
+    */
+    private lazy var _sceneDelegate = SceneDelegate()
+    private var sceneDelegate: SceneDelegate {
+        get {
+            if #available(iOS 13, *) {
+                fatalError("Handle multi-scene in `SceneDelegate` for iOS 13+")
+            } else {
+                return _sceneDelegate
+            }
+        }
+    }
+    
+    /**
+     Application window.
      */
-    var containerViewController: ContainerViewController!
+    var window: UIWindow? {
+        get {
+            if #available(iOS 13, *) {
+                // Handle multi-scene in `SceneDelegate` for iOS 13+. Return `nil` instead of
+                // `fatalError` because iOS 13 UIKit calls this getter regardlessly.
+                return nil
+            } else {
+                return sceneDelegate.window
+            }
+        }
+        set {
+            if #available(iOS 13, *) {
+                fatalError("Handle multi-scene in `SceneDelegate` for iOS 13+")
+            } else {
+                sceneDelegate.window = newValue
+            }
+        }
+    }
+    
+    /**
+     Application container controller.
+     */
+    var containerViewController: ContainerViewController? {
+        if #available(iOS 13, *) {
+            fatalError("Handle multi-scene in `SceneDelegate` for iOS 13+")
+        } else {
+            switch sceneDelegate.mode {
+            case .adViewScene, .unknown:
+                print("`containerViewController` is only available for the main scene")
+                return nil
+            case .mainScene(let mainSceneState):
+                return mainSceneState.containerViewController
+            }
+        }
+    }
     
     /**
      Saved ads split view controller.
      */
-    var savedAdSplitViewController: UISplitViewController?
+    var savedAdSplitViewController: UISplitViewController? {
+        if #available(iOS 13, *) {
+            fatalError("Handle multi-scene in `SceneDelegate` for iOS 13+")
+        } else {
+            switch sceneDelegate.mode {
+            case .adViewScene, .unknown:
+                print("`savedAdSplitViewController` is only available for the main scene")
+                return nil
+            case .mainScene(let mainSceneState):
+                return mainSceneState.savedAdSplitViewController
+            }
+        }
+    }
+}
 
-    // MARK: - UIApplicationDelegate
+// MARK: - UIApplicationDelegate
 
+/*
+For future `UIApplicationDelegate` implementation, if there is a `UIWindowSceneDelegate` counterpart,
+we should share the implementation in `SceneDelegate` for both `UIWindowSceneDelegate` and
+`UIApplicationDelegate`.
+*/
+extension AppDelegate: UIApplicationDelegate {
     func application(_ application: UIApplication, didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey: Any]?) -> Bool {
-        if UserDefaults.standard.shouldClearCachedNetworks {
-            MoPub.sharedInstance().clearCachedNetworks() // do this before initializing the MoPub SDK
-            print("\(#function) cached networks are cleared")
+        if #available(iOS 13, *) {
+            // Do nothing here. App launch will be handled by `SceneDelegate.scene(_:willConnectTo:options:)`
+        } else {
+            sceneDelegate.handleMainSceneStart()
         }
-        
-        // Extract the UI elements for easier manipulation later.
-        // Calls to `loadViewIfNeeded()` are needed to load any children view controllers
-        // before `viewDidLoad()` occurs.
-        containerViewController = (window?.rootViewController as! ContainerViewController)
-        containerViewController.loadViewIfNeeded()
-        savedAdSplitViewController = containerViewController.mainTabBarController?.viewControllers?[1] as? UISplitViewController
-        
-        // Additional configuration for internal target.
-        #if INTERNAL
-        Internal.sharedInstance.initialize(with: containerViewController)
-        #endif
-
-        // MoPub SDK initialization
-        let sdkConfig = MPMoPubConfiguration(adUnitIdForAppInitialization: kAdUnitId)
-        sdkConfig.globalMediationSettings = []
-        sdkConfig.loggingLevel = .info
-        
-        MoPub.sharedInstance().initializeSdk(with: sdkConfig) {
-            // Update the state of the menu now that the SDK has completed initialization.
-            if let menuController = self.containerViewController.menuViewController {
-                menuController.updateIfNeeded()
-            }
-            
-            // Request user consent to collect personally identifiable information
-            // used for targeted ads
-            if let tabBarController = self.containerViewController.mainTabBarController {
-                self.displayConsentDialog(from: tabBarController)
-            }
-        }
-
-        // Conversion tracking
-        MPAdConversionTracker.shared().reportApplicationOpen(forApplicationID: kAppId)
-        
         return true
     }
 
     func application(_ app: UIApplication, open url: URL, options: [UIApplication.OpenURLOptionsKey : Any] = [:]) -> Bool {
-        if url.scheme == "mopub" && url.host == "load" {
-            return openMoPubUrl(url: url, onto: savedAdSplitViewController, shouldSave: true)
+        if #available(iOS 13, *) {
+            fatalError("Handle multi-scene in `SceneDelegate` for iOS 13+")
+        } else {
+            return sceneDelegate.openURL(url)
         }
-        return true
     }
-    
-    // MARK: - Deep Links
+}
 
-    /**
-     Attempts to open a valid `mopub://` scheme deep link URL
-     - Parameter url: MoPub deep link URL
-     - Parameter splitViewController: Split view controller that will present the opened deep link
-     - Parameter shouldSave: Flag indicating that the ad unit that was opened should be saved
-     - Returns: true if successfully shown, false if not
-     */
-    func openMoPubUrl(url: URL, onto splitViewController: UISplitViewController?, shouldSave: Bool) -> Bool {
-        // Get adUnit object from the URL. If an adUnit is not obtainable from the URL, return false.
-        guard let adUnit = AdUnit(url: url) else {
-            return false
+// MARK: - UISceneSession Lifecycle
+
+@available(iOS 13, *)
+extension AppDelegate {
+    func application(_ application: UIApplication, configurationForConnecting connectingSceneSession: UISceneSession, options: UIScene.ConnectionOptions) -> UISceneConfiguration {
+        // Called when a new scene session is being created.
+        // Use this method to select a configuration to create the new scene with.
+        if let adUnit = AdUnit.adUnitFromSceneConnectionOptions(options) {
+            print("\(#function) open ad unit [\(adUnit.name): \(adUnit.id)]")
+            return UISceneConfiguration(name: "Open Ad View", sessionRole: connectingSceneSession.role)
+        } else {
+            return UISceneConfiguration(name: "Default Configuration", sessionRole: connectingSceneSession.role)
         }
-        
-        return openMoPubAdUnit(adUnit: adUnit, onto: splitViewController, shouldSave: shouldSave)
-    }
-    
-    
-    /**
-     Attempts to open a valid `AdUnit` object instance
-     - Parameter adUnit: MoPub `AdUnit` object instance
-     - Parameter splitViewController: Split view controller that will present the opened deep link
-     - Parameter shouldSave: Flag indicating that the ad unit that was opened should be saved
-     - Returns: true if successfully shown, false if not
-     */
-    func openMoPubAdUnit(adUnit: AdUnit, onto splitViewController: UISplitViewController?, shouldSave: Bool) -> Bool {
-        // Generate the destinate view controller and attempt to push the destination to the
-        // Saved Ads navigation controller.
-        guard let vcClass = NSClassFromString(adUnit.viewControllerClassName) as? AdViewController.Type,
-            let destination: UIViewController = vcClass.instantiateFromNib(adUnit: adUnit) as? UIViewController else {
-                return false
-        }
-        
-        DispatchQueue.main.async {
-            // If the ad unit should be saved, we will switch the tab to the saved ads
-            // tab and then push the view controller on that navigation stack.
-            self.containerViewController.mainTabBarController?.selectedIndex = 1
-            if shouldSave {
-                SavedAdsManager.sharedInstance.addSavedAd(adUnit: adUnit)
-            }
-            
-            splitViewController?.showDetailViewController(destination, sender: splitViewController)
-        }
-        return true
     }
 }

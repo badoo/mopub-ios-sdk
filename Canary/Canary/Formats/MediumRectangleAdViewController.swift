@@ -19,10 +19,17 @@ class MediumRectangleAdViewController: AdTableViewController {
         }
         set {
             // Create a new medium rectangle specific data source with the new ad unit.
-            let bannerDataSource: BannerAdDataSource = BannerAdDataSource(adUnit: newValue, bannerSize: MOPUB_MEDIUM_RECT_SIZE)
+            // We are requesting the maximum desired medium rectangle size.
+            let bannerDataSource: BannerAdDataSource = BannerAdDataSource(adUnit: newValue, bannerSize: kMPPresetMaxAdSize280Height)
             dataSource = bannerDataSource
         }
     }
+    
+    /**
+     Inline ad height constraint. This should only be set by `viewDidLoad()` and `viewDidLayoutSubviews()` if a
+     table header view exists.
+     */
+    private var heightConstraint: NSLayoutConstraint? = nil
     
     // MARK: - View Lifecycle
     
@@ -40,8 +47,40 @@ class MediumRectangleAdViewController: AdTableViewController {
         
         // Fix the medium rectangle height so that Auto Layout will correctly resize the table header.
         if let header = tableView.tableHeaderView {
-            header.heightAnchor.constraint(equalToConstant: MOPUB_MEDIUM_RECT_SIZE.height).isActive = true
+            // Initialize the height constraint to the minimum supported medium rectangle height
+            heightConstraint = header.heightAnchor.constraint(equalToConstant: kMPPresetMaxAdSize250Height.height)
+            
+            let constraints = [
+                header.widthAnchor.constraint(equalTo: tableView.widthAnchor),
+                header.leadingAnchor.constraint(equalTo: tableView.leadingAnchor),
+                header.trailingAnchor.constraint(equalTo: tableView.trailingAnchor),
+                header.topAnchor.constraint(equalTo: tableView.topAnchor),
+                heightConstraint!
+            ]
+            NSLayoutConstraint.activate(constraints)
+            tableView.layoutIfNeeded()
         }
+    }
+    
+    override func viewDidLayoutSubviews() {
+        super.viewDidLayoutSubviews()
+        
+        // No table header to update
+        guard let headerView = tableView.tableHeaderView else {
+            return
+        }
+        
+        // Update the height constraint to match the height of the inline ad
+        if let constraint = heightConstraint {
+            constraint.constant = headerView.frame.height
+        }
+        // Create a new height constraint
+        else {
+            heightConstraint = headerView.heightAnchor.constraint(equalToConstant: headerView.frame.height)
+            heightConstraint?.isActive = true
+        }
+        
+        tableView.layoutIfNeeded()
     }
 }
 

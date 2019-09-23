@@ -9,6 +9,8 @@
 #import <Foundation/Foundation.h>
 
 @class MPAdView;
+@class MPAdTargeting;
+
 @protocol MPAdViewDelegate;
 
 @protocol MPBannerAdManagerDelegate <NSObject>
@@ -19,6 +21,11 @@
 - (id<MPAdViewDelegate>)bannerDelegate;
 - (CGSize)containerSize;
 - (UIViewController *)viewControllerForPresentingModalView;
+
+/**
+ * The latest ad targeting information for ad refresh and other scenarios.
+ */
+- (MPAdTargeting *)adTargeting;
 
 - (void)invalidateContentView;
 

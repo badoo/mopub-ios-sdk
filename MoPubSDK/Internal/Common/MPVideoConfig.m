@@ -9,68 +9,42 @@
 #import "MPVideoConfig.h"
 #import "MPLogging.h"
 #import "MPVASTStringUtilities.h"
+#import "MPVASTTracking.h"
 
+/**
+ This is a private data object that represents an ad candidate for display.
+ */
 @interface MPVideoPlaybackCandidate : NSObject
 
-@property (nonatomic, readwrite) MPVASTLinearAd *linearAd;
-@property (nonatomic, readwrite) NSArray *errorURLs;
-@property (nonatomic, readwrite) NSArray *impressionURLs;
-@property (nonatomic, readwrite) NSTimeInterval minimumViewabilityTimeInterval;
-@property (nonatomic, readwrite) double minimumFractionOfVideoVisible;
-@property (nonatomic, readwrite) NSURL *viewabilityTrackingURL;
+@property (nonatomic, strong) MPVASTLinearAd *linearAd;
+@property (nonatomic, strong) NSArray<NSURL *> *errorURLs;
+@property (nonatomic, strong) NSArray<NSURL *> *impressionURLs;
 
 @end
 
+@implementation MPVideoPlaybackCandidate
+@end // this data object should have empty implementation
+
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 
-@implementation MPVideoPlaybackCandidate
+@interface MPVASTLinearAd (MPVideoConfig)
+
+@property (nonatomic, strong) NSArray *clickTrackingURLs;
+@property (nonatomic, strong) NSArray *customClickURLs;
+@property (nonatomic, strong) NSArray *industryIcons;
+@property (nonatomic, strong) NSDictionary *trackingEvents;
 
 @end
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 
 @interface MPVideoConfig ()
-
-@property (nonatomic, readwrite) NSURL *mediaURL;
-@property (nonatomic, readwrite) NSURL *clickThroughURL;
-@property (nonatomic, readwrite) NSArray *clickTrackingURLs;
-@property (nonatomic, readwrite) NSArray *errorURLs;
-@property (nonatomic, readwrite) NSArray *impressionURLs;
-@property (nonatomic, readwrite) NSArray *startTrackers;
-@property (nonatomic, readwrite) NSArray *firstQuartileTrackers;
-@property (nonatomic, readwrite) NSArray *midpointTrackers;
-@property (nonatomic, readwrite) NSArray *thirdQuartileTrackers;
-@property (nonatomic, readwrite) NSArray *completionTrackers;
-@property (nonatomic, readwrite) NSArray *muteTrackers;
-@property (nonatomic, readwrite) NSArray *unmuteTrackers;
-@property (nonatomic, readwrite) NSArray *pauseTrackers;
-@property (nonatomic, readwrite) NSArray *rewindTrackers;
-@property (nonatomic, readwrite) NSArray *resumeTrackers;
-@property (nonatomic, readwrite) NSArray *fullscreenTrackers;
-@property (nonatomic, readwrite) NSArray *exitFullscreenTrackers;
-@property (nonatomic, readwrite) NSArray *expandTrackers;
-@property (nonatomic, readwrite) NSArray *collapseTrackers;
-@property (nonatomic, readwrite) NSArray *acceptInvitationLinearTrackers;
-@property (nonatomic, readwrite) NSArray *closeLinearTrackers;
-@property (nonatomic, readwrite) NSArray *skipTrackers;
-@property (nonatomic, readwrite) NSArray *otherProgressTrackers;
-
+@property (nonatomic, strong) NSDictionary<MPVideoEvent, NSArray<MPVASTTrackingEvent *> *> *trackingEventTable;
 @end
-
-////////////////////////////////////////////////////////////////////////////////////////////////////
-
-@interface MPVASTLinearAd (MPVideoConfig)
-
-@property (nonatomic, readwrite) NSArray *clickTrackingURLs;
-@property (nonatomic, readwrite) NSArray *customClickURLs;
-@property (nonatomic, readwrite) NSArray *industryIcons;
-@property (nonatomic, readwrite) NSDictionary *trackingEvents;
-
-@end
-
-////////////////////////////////////////////////////////////////////////////////////////////////////
 
 @implementation MPVideoConfig
+
+#pragma mark - Public
 
 - (instancetype)initWithVASTResponse:(MPVASTResponse *)response additionalTrackers:(NSDictionary *)additionalTrackers
 {
@@ -81,52 +55,65 @@
     return self;
 }
 
+- (NSArray<MPVASTTrackingEvent *> *)trackingEventsForKey:(MPVideoEvent)key {
+    return self.trackingEventTable[key];
+}
+
+#pragma mark - Private
+
 - (void)commonInit:(MPVASTResponse *)response additionalTrackers:(NSDictionary *)additionalTrackers
 {
-    NSArray *candidates = [self playbackCandidatesFromVASTResponse:response];
+    NSArray<MPVideoPlaybackCandidate *> *candidates = [self playbackCandidatesFromVASTResponse:response];
 
     if (candidates.count == 0) {
         return;
     }
 
     MPVideoPlaybackCandidate *candidate = candidates[0];
-    MPVASTMediaFile *mediaFile = candidate.linearAd.highestBitrateMediaFile;
 
-    _mediaURL = mediaFile.URL;
+    _mediaFiles = candidate.linearAd.mediaFiles;
     _clickThroughURL = candidate.linearAd.clickThroughURL;
-    _clickTrackingURLs = candidate.linearAd.clickTrackingURLs;
-    _errorURLs = candidate.errorURLs;
-    _impressionURLs = candidate.impressionURLs;
 
-    NSDictionary *trackingEvents = candidate.linearAd.trackingEvents;
-    _creativeViewTrackers = trackingEvents[MPVASTTrackingEventTypeCreativeView];
-    _startTrackers = [self trackersByMergingOriginalTrackers:trackingEvents additionalTrackers:additionalTrackers name:MPVASTTrackingEventTypeStart];
-    _firstQuartileTrackers = [self trackersByMergingOriginalTrackers:trackingEvents additionalTrackers:additionalTrackers name:MPVASTTrackingEventTypeFirstQuartile];
-    _midpointTrackers = [self trackersByMergingOriginalTrackers:trackingEvents additionalTrackers:additionalTrackers name:MPVASTTrackingEventTypeMidpoint];
-    _thirdQuartileTrackers = [self trackersByMergingOriginalTrackers:trackingEvents additionalTrackers:additionalTrackers name:MPVASTTrackingEventTypeThirdQuartile];
-    _completionTrackers = [self trackersByMergingOriginalTrackers:trackingEvents additionalTrackers:additionalTrackers name:MPVASTTrackingEventTypeComplete];
-    _muteTrackers = trackingEvents[MPVASTTrackingEventTypeMute];
-    _unmuteTrackers = trackingEvents[MPVASTTrackingEventTypeUnmute];
-    _pauseTrackers = trackingEvents[MPVASTTrackingEventTypePause];
-    _rewindTrackers = trackingEvents[MPVASTTrackingEventTypeRewind];
-    _resumeTrackers = trackingEvents[MPVASTTrackingEventTypeResume];
-    _fullscreenTrackers = trackingEvents[MPVASTTrackingEventTypeFullscreen];
-    _exitFullscreenTrackers = trackingEvents[MPVASTTrackingEventTypeExitFullscreen];
-    _expandTrackers = trackingEvents[MPVASTTrackingEventTypeExpand];
-    _collapseTrackers = trackingEvents[MPVASTTrackingEventTypeCollapse];
-    _acceptInvitationLinearTrackers = trackingEvents[MPVASTTrackingEventTypeAcceptInvitationLinear];
-    _closeLinearTrackers = trackingEvents[MPVASTTrackingEventTypeCloseLinear];
-    _skipTrackers = trackingEvents[MPVASTTrackingEventTypeSkip];
-    _otherProgressTrackers = trackingEvents[MPVASTTrackingEventTypeProgress];
+    // set up the tracking event table
+    NSMutableDictionary<MPVideoEvent, NSArray<MPVASTTrackingEvent *> *> *table
+    = [NSMutableDictionary dictionaryWithDictionary:candidate.linearAd.trackingEvents];
+    for (MPVideoEvent name in @[MPVideoEventStart,
+                                MPVideoEventFirstQuartile,
+                                MPVideoEventMidpoint,
+                                MPVideoEventThirdQuartile,
+                                MPVideoEventComplete]) {
+        table[name] = [self mergeTrackersOfName:name
+                               originalTrackers:table
+                             additionalTrackers:additionalTrackers];
+    }
 
-    _minimumViewabilityTimeInterval = candidate.minimumViewabilityTimeInterval;
-    _minimumFractionOfVideoVisible = candidate.minimumFractionOfVideoVisible;
-    _viewabilityTrackingURL = candidate.viewabilityTrackingURL;
+    NSMutableDictionary<MPVideoEvent, NSArray<NSURL *> *> *eventVsURLs = [NSMutableDictionary new];
+    if (candidate.linearAd.clickTrackingURLs.count > 0) {
+        eventVsURLs[MPVideoEventClick] = candidate.linearAd.clickTrackingURLs;
+    }
+    if (candidate.errorURLs.count > 0) {
+        eventVsURLs[MPVideoEventError] = candidate.errorURLs;
+    }
+    if (candidate.impressionURLs.count > 0) {
+        eventVsURLs[MPVideoEventImpression] = candidate.impressionURLs;
+    }
+
+    for (MPVideoEvent event in eventVsURLs.allKeys) {
+        NSMutableArray<MPVASTTrackingEvent *> *trackingEvents = [NSMutableArray new];
+        for (NSURL *url in eventVsURLs[event]) {
+            [trackingEvents addObject:[[MPVASTTrackingEvent alloc] initWithEventType:event
+                                                                                 url:url
+                                                                      progressOffset:nil]];
+        }
+        table[event] = trackingEvents;
+    }
+
+    self.trackingEventTable = [NSDictionary dictionaryWithDictionary:table];
 }
 
-- (NSArray *)playbackCandidatesFromVASTResponse:(MPVASTResponse *)response
+- (NSArray<MPVideoPlaybackCandidate *> *)playbackCandidatesFromVASTResponse:(MPVASTResponse *)response
 {
-    NSMutableArray *candidates = [NSMutableArray array];
+    NSMutableArray<MPVideoPlaybackCandidate *> *candidates = [NSMutableArray array];
 
     for (MPVASTAd *ad in response.ads) {
         if (ad.inlineAd) {
@@ -138,26 +125,11 @@
                     candidate.linearAd = creative.linearAd;
                     candidate.errorURLs = inlineAd.errorURLs;
                     candidate.impressionURLs = inlineAd.impressionURLs;
-
-                    NSDictionary *viewabilityExt = [self extensionFromInlineAd:inlineAd forKey:@"MoPubViewabilityTracker"];
-                    if (viewabilityExt) {
-                        NSURL *viewabilityTrackingURL = [NSURL URLWithString:viewabilityExt[@"text"]];
-                        BOOL valid = [MPVASTStringUtilities stringRepresentsNonNegativeDuration:viewabilityExt[@"viewablePlaytime"]]&&
-                            [MPVASTStringUtilities stringRepresentsNonNegativePercentage:viewabilityExt[@"percentViewable"]] &&
-                            viewabilityTrackingURL;
-
-                        if (valid) {
-                            candidate.minimumViewabilityTimeInterval = [MPVASTStringUtilities timeIntervalFromString:viewabilityExt[@"viewablePlaytime"]];
-                            candidate.minimumFractionOfVideoVisible = [MPVASTStringUtilities percentageFromString:viewabilityExt[@"percentViewable"]] / 100.0;
-                            candidate.viewabilityTrackingURL = viewabilityTrackingURL;
-                        }
-                    }
-
                     [candidates addObject:candidate];
                 }
             }
         } else if (ad.wrapper) {
-            NSArray *candidatesFromWrapper = [self playbackCandidatesFromVASTResponse:ad.wrapper.wrappedVASTResponse];
+            NSArray<MPVideoPlaybackCandidate *> *candidatesFromWrapper = [self playbackCandidatesFromVASTResponse:ad.wrapper.wrappedVASTResponse];
 
             // Merge any wrapper-level tracking URLs into each of the candidates.
             for (MPVideoPlaybackCandidate *candidate in candidatesFromWrapper) {
@@ -263,18 +235,18 @@
     }
 }
 
-- (NSArray *)trackersByMergingOriginalTrackers:(NSDictionary *)originalTrackers additionalTrackers:(NSDictionary *)additionalTrackers name:(NSString *)trackerName
-{
-    if (![originalTrackers[trackerName] isKindOfClass:[NSArray class]]) {
-        return additionalTrackers[trackerName];
+- (NSArray<MPVASTTrackingEvent *> *)mergeTrackersOfName:(NSString *)trackerName
+                                       originalTrackers:(NSDictionary<NSString *, NSArray<MPVASTTrackingEvent *> *> *)originalTrackers
+                                     additionalTrackers:(NSDictionary<NSString *, NSArray<MPVASTTrackingEvent *> *> *)additionalTrackers {
+    NSArray<MPVASTTrackingEvent *> *original = originalTrackers[trackerName];
+    NSArray<MPVASTTrackingEvent *> *additional = additionalTrackers[trackerName];
+    if (original == nil || [original isKindOfClass:[NSArray class]] == false) {
+        original = @[];
     }
-    if (![additionalTrackers[trackerName] isKindOfClass:[NSArray class]]) {
-        return originalTrackers[trackerName];
+    if ([additional isKindOfClass:[NSArray class]] == false) {
+        return original;
     }
-    NSMutableArray *mergedTrackers = [NSMutableArray new];
-    [mergedTrackers addObjectsFromArray:originalTrackers[trackerName]];
-    [mergedTrackers addObjectsFromArray:additionalTrackers[trackerName]];
-    return mergedTrackers;
+    return [original arrayByAddingObjectsFromArray:additional];
 }
 
 - (NSDictionary *)dictionaryByMergingTrackingDictionaries:(NSArray *)dictionaries

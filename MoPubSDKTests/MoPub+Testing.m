@@ -13,6 +13,13 @@
 
 @implementation MoPub (Testing)
 
+- (instancetype)initWithExperimentProvider:(MOPUBExperimentProvider *)experimentProvider {
+    if (self = [super init]) {
+        [self commonInitWithExperimentProvider:experimentProvider];
+    }
+    return self;
+}
+
 @end
 
 #pragma clang diagnostic pop

@@ -6,9 +6,16 @@
 //  http://www.mopub.com/legal/sdk-license-agreement/
 //
 
-#import "MRVideoPlayerManager.h"
+#import <AVKit/AVKit.h>
 #import <MediaPlayer/MediaPlayer.h>
 #import "MPGlobal.h"
+#import "MRVideoPlayerManager.h"
+
+@interface MRVideoPlayerManager ()
+
+@property (nonatomic, strong) AVPlayerViewController *playerViewController;
+
+@end
 
 @implementation MRVideoPlayerManager
 
@@ -17,15 +24,17 @@
     self = [super init];
     if (self) {
         _delegate = delegate;
+        [[NSNotificationCenter defaultCenter] addObserver:self
+                                                 selector:@selector(moviePlayerPlaybackDidFinish:)
+                                                     name:AVPlayerItemDidPlayToEndTimeNotification
+                                                   object:nil];
     }
     return self;
 }
 
 - (void)dealloc
 {
-    [[NSNotificationCenter defaultCenter] removeObserver:self
-                                                    name:MPMoviePlayerPlaybackDidFinishNotification
-                                                  object:nil];
+    [[NSNotificationCenter defaultCenter] removeObserver:self];
 }
 
 - (void)playVideo:(NSURL *)url
@@ -35,25 +44,23 @@
         return;
     }
 
-    MPMoviePlayerViewController *controller = [[MPMoviePlayerViewController alloc] initWithContentURL:url];
-
+    AVPlayerViewController *viewController = [AVPlayerViewController new];
+    viewController.player = [AVPlayer playerWithURL:url];
+    viewController.showsPlaybackControls = NO;
+    self.playerViewController = viewController;
     [self.delegate videoPlayerManagerWillPresentVideo:self];
-    [[self.delegate viewControllerForPresentingVideoPlayer] presentViewController:controller animated:MP_ANIMATED completion:nil];
-
-    // Avoid subscribing to the notification multiple times in the event the user plays the video more than once.
-    [[NSNotificationCenter defaultCenter] removeObserver:self
-                                                    name:MPMoviePlayerPlaybackDidFinishNotification
-                                                  object:nil];
-
-    [[NSNotificationCenter defaultCenter] addObserver:self
-                                             selector:@selector(moviePlayerPlaybackDidFinish:)
-                                                 name:MPMoviePlayerPlaybackDidFinishNotification
-                                               object:nil];
+    [[self.delegate viewControllerForPresentingVideoPlayer] presentViewController:viewController
+                                                                         animated:MP_ANIMATED
+                                                                       completion:^{
+                                                                           [viewController.player play];
+                                                                       }];
 }
 
 - (void)moviePlayerPlaybackDidFinish:(NSNotification *)notification
 {
-    [self.delegate videoPlayerManagerDidDismissVideo:self];
+    [self.playerViewController dismissViewControllerAnimated:YES completion:^{
+        [self.delegate videoPlayerManagerDidDismissVideo:self];
+    }];
 }
 
 @end
