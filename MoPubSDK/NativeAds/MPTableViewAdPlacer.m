@@ -107,6 +107,12 @@ static NSString * const kTableViewAdPlacerReuseIdentifier = @"MPTableViewAdPlace
 
 - (void)adPlacer:(MPStreamAdPlacer *)adPlacer didLoadAdAtIndexPath:(NSIndexPath *)indexPath
 {
+    NSInteger sectionCount = [self.tableView.dataSource numberOfSectionsInTableView:self.tableView];
+    NSInteger rowCount = [self.tableView.dataSource tableView:self.tableView numberOfRowsInSection:indexPath.section];
+    if (indexPath.section >= sectionCount || indexPath.row >= rowCount) {
+        return; // ignore out-of-range index path that cannot be added to the collection view
+    }
+
     BOOL originalAnimationsEnabled = [UIView areAnimationsEnabled];
     //We only want to enable animations if the index path is before or within our visible cells
     BOOL animationsEnabled = ([(NSIndexPath *)[self.tableView.indexPathsForVisibleRows lastObject] compare:indexPath] != NSOrderedAscending) && originalAnimationsEnabled;
@@ -120,6 +126,21 @@ static NSString * const kTableViewAdPlacerReuseIdentifier = @"MPTableViewAdPlace
 
 - (void)adPlacer:(MPStreamAdPlacer *)adPlacer didRemoveAdsAtIndexPaths:(NSArray *)indexPaths
 {
+    NSMutableArray<NSIndexPath *> *validIndexPaths = [NSMutableArray new];
+    for (NSIndexPath *indexPath in indexPaths) {
+        NSInteger sectionCount = [self.tableView numberOfSections];
+        NSInteger rowCount = [self.tableView numberOfRowsInSection:indexPath.section];
+
+        // ignore out-of-range index path that cannot be removed from the table view
+        if (indexPath.section < sectionCount && indexPath.row < rowCount) {
+            [validIndexPaths addObject:indexPath];
+        }
+    }
+
+    if (validIndexPaths.count == 0) {
+        return;
+    }
+
     BOOL originalAnimationsEnabled = [UIView areAnimationsEnabled];
     [UIView setAnimationsEnabled:NO];
     [self.tableView mp_beginUpdates];

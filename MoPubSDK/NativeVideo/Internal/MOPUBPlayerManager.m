@@ -8,7 +8,6 @@
 
 #import "MOPUBPlayerManager.h"
 #import "MOPUBPlayerViewController.h"
-#import "MOPUBNativeVideoAdRenderer.h"
 #import "MPVideoConfig.h"
 #import "MOPUBNativeVideoAdConfigValues.h"
 

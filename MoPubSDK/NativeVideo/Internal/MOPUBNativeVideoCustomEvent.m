@@ -62,7 +62,7 @@
     }
 }
 
-- (void)requestAdWithCustomEventInfo:(NSDictionary *)info
+- (void)requestAdWithCustomEventInfo:(NSDictionary *)info adMarkup:(NSString *)adMarkup
 {
     NSString * adUnitId = info[kNativeAdUnitId];
     MPLogAdEvent([MPLogEvent adLoadAttemptForAdapter:NSStringFromClass(self.class) dspCreativeId:info[kNativeAdDspCreativeId] dspName:info[kNativeAdDspName]], adUnitId);

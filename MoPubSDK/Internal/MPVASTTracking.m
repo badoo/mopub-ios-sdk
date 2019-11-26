@@ -69,6 +69,11 @@ static NSSet<MPVideoEvent> *oneOffEventTypes;
         return; // do not fire more than once
     }
 
+    if (videoEvent == MPVideoEventError) {
+        [self handleVASTError:MPVASTErrorCannotPlayMedia videoTimeOffset:videoTimeOffset];
+        return;
+    }
+
     if (self.videoConfig == nil && [videoEvent isEqualToString:MPVideoEventError] == NO) {
         return; // only allow `videoConfig` to be nil for error event
     }
@@ -131,6 +136,14 @@ static NSSet<MPVideoEvent> *oneOffEventTypes;
         [self processAndSendURLs:urls videoTimeOffset:videoTimeOffset];
     }
     self.firedTable[MPVideoEventProgress] = firedProgressEvents;
+}
+
+- (void)handleVASTError:(MPVASTError)error videoTimeOffset:(NSTimeInterval)videoTimeOffset {
+    NSMutableSet<NSURL *> *urls = [NSMutableSet new];
+    for (MPVASTTrackingEvent *event in [self.videoConfig trackingEventsForKey:MPVideoEventError]) {
+        [urls addObject:event.URL];
+    }
+    [self processAndSendURLs:urls videoTimeOffset:videoTimeOffset];
 }
 
 #pragma mark - Private

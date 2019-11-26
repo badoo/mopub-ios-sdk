@@ -23,7 +23,7 @@ If you do not remove or disable IAS's and/or Moat’s technology in accordance w
 
 The MoPub SDK supports multiple methods for installing the library in a project.
 
-The current version of the SDK is 5.9.0
+The current version of the SDK is 5.10.0
 
 ### Installation with CocoaPods
 
@@ -56,7 +56,7 @@ $ pod install
 
 MoPub provides a prepackaged archive of the dynamic framework:
 
-- **[MoPub SDK Framework.zip](https://github.com/mopub/mopub-ios-sdk/releases/download/5.9.0/mopub-framework-5.9.0.zip)**
+- **[MoPub SDK Framework.zip](https://github.com/mopub/mopub-ios-sdk/releases/download/5.10.0/mopub-framework-5.10.0.zip)**
 
   Includes everything you need to serve HTML, MRAID, and Native MoPub advertisements.  Third party ad networks are not included.
 
@@ -66,11 +66,11 @@ Add the dynamic framework to the target's Embedded Binaries section of the Gener
 
 MoPub provides two prepackaged archives of source code:
 
-- **[MoPub Base SDK.zip](https://github.com/mopub/mopub-ios-sdk/releases/download/5.9.0/mopub-base-5.9.0.zip)**
+- **[MoPub Base SDK.zip](https://github.com/mopub/mopub-ios-sdk/releases/download/5.10.0/mopub-base-5.10.0.zip)**
 
   Includes everything you need to serve HTML, MRAID, and Native MoPub advertisements.  Third party ad networks are not included.
 
-- **[MoPub Base SDK Excluding Native.zip](https://github.com/mopub/mopub-ios-sdk/releases/download/5.9.0/mopub-nonnative-5.9.0.zip)**
+- **[MoPub Base SDK Excluding Native.zip](https://github.com/mopub/mopub-ios-sdk/releases/download/5.10.0/mopub-nonnative-5.10.0.zip)**
 
   Includes everything you need to serve HTML and MRAID advertisements.  Third party ad networks and Native MoPub advertisements are not included.
 
@@ -83,23 +83,14 @@ Integration instructions are available on the [wiki](https://github.com/mopub/mo
 Please view the [changelog](https://github.com/mopub/mopub-ios-sdk/blob/master/CHANGELOG.md) for details.
 
 - **Features**
-  - Add iOS 13 support to both SDK and MoPub Sample app. 
-  - Totally remove `UIWebView` implementation and comments in MoPub SDK and MoPub Sample app.
-  - Add multi-window support for MoPub Sample app in iPadOS 13. New window can be opened by Drag & Dropping an ad cell in the ad list.
-  - Remove support for `tel` and `sms` functions for MRAID ads.
-  - Add Dark Mode support for MoPub Sample app in iOS 13.
-  - Remove the Objective C sample app project.
-  - Adopt `XCFramework` and the new Xcode build system with fastlane script updates, and thus require Xcode 11 to build instead of Xcode 9.
-  - Remove deprecated VAST extension `MoPubViewabilityTracker`.
-  - Replace deprecated `MPMoviePlayerViewController` with `AVPlayerViewController`. This affects MRAID videos.
-  - Replace deprecated `UIAlertView` with `UIAlertViewController`.
+  - Added support for the Verizon native ad renderer.
+  - Deprecated base custom event `requestAd` calls without the `adMarkup` parameter.
 
 - **Bug Fixes**
-  - Update `MPRealTimeTimer` so that it can properly handle foreground notifications that aren't balanced with backgrounding notifications.
-  - Fix an assertion crash in GDPR Sync that only happens in debug builds.
-  - Present `SKStoreProductViewController` only in portrait mode, so that we can prevent a `SKStoreProductViewController` crash in landscape mode (as designed by Apple).
-  - Fix an infinite load ad bug that happens when the ad URL to retry is the same as the failed ad URL.
-  - Fix a bug where location information is not sent to Ad Server when location permission has been allowed, the app can collect PII, and no app-specified location is set.
+  - Fixed non-native SDK target compilation error.
+  - Fixed potential crash in `MPTableViewAdPlacer` and `MPCollectionViewAdPlacer`.
+  - Removed extraneous `NSLog` statements for Release build configuration.
+  - Fixed VAST error code macro replacement in tracking URLs.
 
 See the [Getting Started Guide](https://github.com/mopub/mopub-ios-sdk/wiki/Getting-Started#app-transport-security-settings) for instructions on setting up ATS in your app.
 

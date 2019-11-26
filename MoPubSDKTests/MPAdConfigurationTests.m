@@ -35,35 +35,35 @@ extern NSString * const kNativeImpressionMinVisiblePixelsMetadataKey;
 
 - (void)testRewardedPlayableDurationParseStringInputSuccess {
     NSDictionary * headers = @{ kRewardedPlayableDurationMetadataKey: @"30" };
-    MPAdConfiguration * config = [[MPAdConfiguration alloc] initWithMetadata:headers data:nil adType:MPAdTypeFullscreen];
+    MPAdConfiguration * config = [[MPAdConfiguration alloc] initWithMetadata:headers data:nil isFullscreenAd:YES];
 
     XCTAssertEqual(config.rewardedPlayableDuration, 30);
 }
 
 - (void)testRewardedPlayableDurationParseNumberInputSuccess {
     NSDictionary * headers = @{ kRewardedPlayableDurationMetadataKey: @(30) };
-    MPAdConfiguration * config = [[MPAdConfiguration alloc] initWithMetadata:headers data:nil adType:MPAdTypeFullscreen];
+    MPAdConfiguration * config = [[MPAdConfiguration alloc] initWithMetadata:headers data:nil isFullscreenAd:YES];
 
     XCTAssertEqual(config.rewardedPlayableDuration, 30);
 }
 
 - (void)testRewardedPlayableDurationParseNoHeader {
     NSDictionary * headers = @{ };
-    MPAdConfiguration * config = [[MPAdConfiguration alloc] initWithMetadata:headers data:nil adType:MPAdTypeFullscreen];
+    MPAdConfiguration * config = [[MPAdConfiguration alloc] initWithMetadata:headers data:nil isFullscreenAd:YES];
 
     XCTAssertEqual(config.rewardedPlayableDuration, -1);
 }
 
 - (void)testRewardedPlayableRewardOnClickParseSuccess {
     NSDictionary * headers = @{ kRewardedPlayableRewardOnClickMetadataKey: @"true" };
-    MPAdConfiguration * config = [[MPAdConfiguration alloc] initWithMetadata:headers data:nil adType:MPAdTypeFullscreen];
+    MPAdConfiguration * config = [[MPAdConfiguration alloc] initWithMetadata:headers data:nil isFullscreenAd:YES];
 
     XCTAssertEqual(config.rewardedPlayableShouldRewardOnClick, true);
 }
 
 - (void)testRewardedPlayableRewardOnClickParseNoHeader {
     NSDictionary * headers = @{ };
-    MPAdConfiguration * config = [[MPAdConfiguration alloc] initWithMetadata:headers data:nil adType:MPAdTypeFullscreen];
+    MPAdConfiguration * config = [[MPAdConfiguration alloc] initWithMetadata:headers data:nil isFullscreenAd:YES];
 
     XCTAssertEqual(config.rewardedPlayableShouldRewardOnClick, false);
 }
@@ -72,7 +72,7 @@ extern NSString * const kNativeImpressionMinVisiblePixelsMetadataKey;
     NSDictionary * headers = @{ kRewardedVideoCurrencyNameMetadataKey: @"Diamonds",
                                 kRewardedVideoCurrencyAmountMetadataKey: @"3",
                                };
-    MPAdConfiguration * config = [[MPAdConfiguration alloc] initWithMetadata:headers data:nil adType:MPAdTypeFullscreen];
+    MPAdConfiguration * config = [[MPAdConfiguration alloc] initWithMetadata:headers data:nil isFullscreenAd:YES];
 
     XCTAssertNotNil(config.availableRewards);
     XCTAssertNotNil(config.selectedReward);
@@ -91,7 +91,7 @@ extern NSString * const kNativeImpressionMinVisiblePixelsMetadataKey;
     //   ]
     // }
     NSDictionary * headers = @{ kRewardedCurrenciesMetadataKey: @{ @"rewards": @[ @{ @"name": @"Coins", @"amount": @(8) }, @{ @"name": @"Diamonds", @"amount": @(1) }, @{ @"name@": @"Energy", @"amount": @(20) } ] } };
-    MPAdConfiguration * config = [[MPAdConfiguration alloc] initWithMetadata:headers data:nil adType:MPAdTypeFullscreen];
+    MPAdConfiguration * config = [[MPAdConfiguration alloc] initWithMetadata:headers data:nil isFullscreenAd:YES];
 
     XCTAssertNotNil(config.availableRewards);
     XCTAssertNotNil(config.selectedReward);
@@ -106,7 +106,7 @@ extern NSString * const kNativeImpressionMinVisiblePixelsMetadataKey;
     //   "rewards": []
     // }
     NSDictionary * headers = @{ kRewardedCurrenciesMetadataKey: @{ @"rewards": @[] } };
-    MPAdConfiguration * config = [[MPAdConfiguration alloc] initWithMetadata:headers data:nil adType:MPAdTypeFullscreen];
+    MPAdConfiguration * config = [[MPAdConfiguration alloc] initWithMetadata:headers data:nil isFullscreenAd:YES];
 
     XCTAssertNotNil(config.availableRewards);
     XCTAssertNotNil(config.selectedReward);
@@ -121,7 +121,7 @@ extern NSString * const kNativeImpressionMinVisiblePixelsMetadataKey;
     //   "rewards": [ { "n": "Coins", "a": 8 } ]
     // }
     NSDictionary * headers = @{ kRewardedCurrenciesMetadataKey: @{ @"rewards": @[ @{ @"n": @"Coins", @"a": @(8) } ] } };
-    MPAdConfiguration * config = [[MPAdConfiguration alloc] initWithMetadata:headers data:nil adType:MPAdTypeFullscreen];
+    MPAdConfiguration * config = [[MPAdConfiguration alloc] initWithMetadata:headers data:nil isFullscreenAd:YES];
 
     XCTAssertNotNil(config.availableRewards);
     XCTAssertNotNil(config.selectedReward);
@@ -136,7 +136,7 @@ extern NSString * const kNativeImpressionMinVisiblePixelsMetadataKey;
                                 kRewardedVideoCurrencyAmountMetadataKey: @"3",
                                 kRewardedCurrenciesMetadataKey: @{ }
                                 };
-    MPAdConfiguration * config = [[MPAdConfiguration alloc] initWithMetadata:headers data:nil adType:MPAdTypeFullscreen];
+    MPAdConfiguration * config = [[MPAdConfiguration alloc] initWithMetadata:headers data:nil isFullscreenAd:YES];
 
     XCTAssertNotNil(config.availableRewards);
     XCTAssertNotNil(config.selectedReward);
@@ -179,7 +179,7 @@ extern NSString * const kNativeImpressionMinVisiblePixelsMetadataKey;
     //   "X-Disable-Viewability": 3
     // }
     NSDictionary * headers = @{ kViewabilityDisableMetadataKey: @"3" };
-    MPAdConfiguration * config = [[MPAdConfiguration alloc] initWithMetadata:headers data:nil adType:MPAdTypeFullscreen];
+    MPAdConfiguration * config = [[MPAdConfiguration alloc] initWithMetadata:headers data:nil isFullscreenAd:YES];
 
     XCTAssertNotNil(config);
 
@@ -195,7 +195,7 @@ extern NSString * const kNativeImpressionMinVisiblePixelsMetadataKey;
     //   "X-Disable-Viewability": 0
     // }
     NSDictionary * headers = @{ kViewabilityDisableMetadataKey: @"0" };
-    MPAdConfiguration * config = [[MPAdConfiguration alloc] initWithMetadata:headers data:nil adType:MPAdTypeFullscreen];
+    MPAdConfiguration * config = [[MPAdConfiguration alloc] initWithMetadata:headers data:nil isFullscreenAd:YES];
 
     XCTAssertNotNil(config);
 
@@ -211,7 +211,7 @@ extern NSString * const kNativeImpressionMinVisiblePixelsMetadataKey;
     //   "X-Disable-Viewability": 3
     // }
     NSDictionary * headers = @{ kViewabilityDisableMetadataKey: @"3" };
-    MPAdConfiguration * config = [[MPAdConfiguration alloc] initWithMetadata:headers data:nil adType:MPAdTypeFullscreen];
+    MPAdConfiguration * config = [[MPAdConfiguration alloc] initWithMetadata:headers data:nil isFullscreenAd:YES];
 
     XCTAssertNotNil(config);
 
@@ -226,7 +226,7 @@ extern NSString * const kNativeImpressionMinVisiblePixelsMetadataKey;
     //   "X-Disable-Viewability": 0
     // }
     headers = @{ kViewabilityDisableMetadataKey: @"0" };
-    config = [[MPAdConfiguration alloc] initWithMetadata:headers data:nil adType:MPAdTypeFullscreen];
+    config = [[MPAdConfiguration alloc] initWithMetadata:headers data:nil isFullscreenAd:YES];
 
     XCTAssertNotNil(config);
 
@@ -242,7 +242,7 @@ extern NSString * const kNativeImpressionMinVisiblePixelsMetadataKey;
     //   "X-Disable-Viewability": 3aaaa
     // }
     NSDictionary * headers = @{ kViewabilityDisableMetadataKey: @"aaaa" };
-    MPAdConfiguration * config = [[MPAdConfiguration alloc] initWithMetadata:headers data:nil adType:MPAdTypeFullscreen];
+    MPAdConfiguration * config = [[MPAdConfiguration alloc] initWithMetadata:headers data:nil isFullscreenAd:YES];
 
     XCTAssertNotNil(config);
 
@@ -258,7 +258,7 @@ extern NSString * const kNativeImpressionMinVisiblePixelsMetadataKey;
     //   "X-Disable-Viewability": ""
     // }
     NSDictionary * headers = @{ kViewabilityDisableMetadataKey: @"" };
-    MPAdConfiguration * config = [[MPAdConfiguration alloc] initWithMetadata:headers data:nil adType:MPAdTypeFullscreen];
+    MPAdConfiguration * config = [[MPAdConfiguration alloc] initWithMetadata:headers data:nil isFullscreenAd:YES];
 
     XCTAssertNotNil(config);
 
@@ -270,42 +270,42 @@ extern NSString * const kNativeImpressionMinVisiblePixelsMetadataKey;
 
 - (void)testMinVisiblePixelsParseSuccess {
     NSDictionary *headers = @{ kNativeImpressionMinVisiblePixelsMetadataKey: @"50" };
-    MPAdConfiguration *config = [[MPAdConfiguration alloc] initWithMetadata:headers data:nil adType:MPAdTypeFullscreen];
+    MPAdConfiguration *config = [[MPAdConfiguration alloc] initWithMetadata:headers data:nil isFullscreenAd:YES];
 
     XCTAssertEqual(config.nativeImpressionMinVisiblePixels, 50.0);
 }
 
 - (void)testMinVisiblePixelsParseNoHeader {
     NSDictionary *headers = @{};
-    MPAdConfiguration *config = [[MPAdConfiguration alloc] initWithMetadata:headers data:nil adType:MPAdTypeFullscreen];
+    MPAdConfiguration *config = [[MPAdConfiguration alloc] initWithMetadata:headers data:nil isFullscreenAd:YES];
 
     XCTAssertEqual(config.nativeImpressionMinVisiblePixels, -1.0);
 }
 
 - (void)testMinVisiblePercentParseSuccess {
     NSDictionary *headers = @{ kNativeImpressionMinVisiblePercentMetadataKey: @"50" };
-    MPAdConfiguration *config = [[MPAdConfiguration alloc] initWithMetadata:headers data:nil adType:MPAdTypeFullscreen];
+    MPAdConfiguration *config = [[MPAdConfiguration alloc] initWithMetadata:headers data:nil isFullscreenAd:YES];
 
     XCTAssertEqual(config.nativeImpressionMinVisiblePercent, 50);
 }
 
 - (void)testMinVisiblePercentParseNoHeader {
     NSDictionary *headers = @{};
-    MPAdConfiguration *config = [[MPAdConfiguration alloc] initWithMetadata:headers data:nil adType:MPAdTypeFullscreen];
+    MPAdConfiguration *config = [[MPAdConfiguration alloc] initWithMetadata:headers data:nil isFullscreenAd:YES];
 
     XCTAssertEqual(config.nativeImpressionMinVisiblePercent, -1);
 }
 
 - (void)testMinVisibleTimeIntervalParseSuccess {
     NSDictionary *headers = @{ kNativeImpressionVisibleMsMetadataKey: @"1500" };
-    MPAdConfiguration *config = [[MPAdConfiguration alloc] initWithMetadata:headers data:nil adType:MPAdTypeFullscreen];
+    MPAdConfiguration *config = [[MPAdConfiguration alloc] initWithMetadata:headers data:nil isFullscreenAd:YES];
 
     XCTAssertEqual(config.nativeImpressionMinVisibleTimeInterval, 1.5);
 }
 
 - (void)testMinVisibleTimeIntervalParseNoHeader {
     NSDictionary *headers = @{};
-    MPAdConfiguration *config = [[MPAdConfiguration alloc] initWithMetadata:headers data:nil adType:MPAdTypeFullscreen];
+    MPAdConfiguration *config = [[MPAdConfiguration alloc] initWithMetadata:headers data:nil isFullscreenAd:YES];
 
     XCTAssertEqual(config.nativeImpressionMinVisibleTimeInterval, -1);
 }
@@ -314,26 +314,26 @@ extern NSString * const kNativeImpressionMinVisiblePixelsMetadataKey;
 
 - (void)testVisibleImpressionHeader {
     NSDictionary * headers = @{ kBannerImpressionVisableMsMetadataKey: @"0", kBannerImpressionMinPixelMetadataKey:@"1"};
-    MPAdConfiguration * config = [[MPAdConfiguration alloc] initWithMetadata:headers data:nil adType:MPAdTypeFullscreen];
+    MPAdConfiguration * config = [[MPAdConfiguration alloc] initWithMetadata:headers data:nil isFullscreenAd:YES];
     XCTAssertEqual(config.impressionMinVisiblePixels, 1);
     XCTAssertEqual(config.impressionMinVisibleTimeInSec, 0);
 }
 
 - (void)testVisibleImpressionEnabled {
     NSDictionary * headers = @{ kBannerImpressionVisableMsMetadataKey: @"0", kBannerImpressionMinPixelMetadataKey:@"1"};
-    MPAdConfiguration * config = [[MPAdConfiguration alloc] initWithMetadata:headers data:nil adType:MPAdTypeFullscreen];
+    MPAdConfiguration * config = [[MPAdConfiguration alloc] initWithMetadata:headers data:nil isFullscreenAd:YES];
     XCTAssertTrue(config.visibleImpressionTrackingEnabled);
 }
 
 - (void)testVisibleImpressionEnabledNoHeader {
     NSDictionary * headers = @{};
-    MPAdConfiguration * config = [[MPAdConfiguration alloc] initWithMetadata:headers data:nil adType:MPAdTypeFullscreen];
+    MPAdConfiguration * config = [[MPAdConfiguration alloc] initWithMetadata:headers data:nil isFullscreenAd:YES];
     XCTAssertFalse(config.visibleImpressionTrackingEnabled);
 }
 
 - (void)testVisibleImpressionNotEnabled {
     NSDictionary * headers = @{kBannerImpressionVisableMsMetadataKey: @"0", kBannerImpressionMinPixelMetadataKey:@"0"};
-    MPAdConfiguration * config = [[MPAdConfiguration alloc] initWithMetadata:headers data:nil adType:MPAdTypeFullscreen];
+    MPAdConfiguration * config = [[MPAdConfiguration alloc] initWithMetadata:headers data:nil isFullscreenAd:YES];
     XCTAssertFalse(config.visibleImpressionTrackingEnabled);
 }
 
@@ -341,7 +341,7 @@ extern NSString * const kNativeImpressionMinVisiblePixelsMetadataKey;
 
 - (void)testMultipleImpressionTrackingURLs {
     NSDictionary * headers = @{ kImpressionTrackersMetadataKey: @[@"https://google.com", @"https://mopub.com", @"https://twitter.com"] };
-    MPAdConfiguration * config = [[MPAdConfiguration alloc] initWithMetadata:headers data:nil adType:MPAdTypeFullscreen];
+    MPAdConfiguration * config = [[MPAdConfiguration alloc] initWithMetadata:headers data:nil isFullscreenAd:YES];
 
     XCTAssert(config.impressionTrackingURLs.count == 3);
     XCTAssert([config.impressionTrackingURLs containsObject:[NSURL URLWithString:@"https://google.com"]]);
@@ -351,7 +351,7 @@ extern NSString * const kNativeImpressionMinVisiblePixelsMetadataKey;
 
 - (void)testSingleImpressionTrackingURLIsFunctional {
     NSDictionary * headers = @{ kImpressionTrackerMetadataKey: @"https://twitter.com" };
-    MPAdConfiguration * config = [[MPAdConfiguration alloc] initWithMetadata:headers data:nil adType:MPAdTypeFullscreen];
+    MPAdConfiguration * config = [[MPAdConfiguration alloc] initWithMetadata:headers data:nil isFullscreenAd:YES];
 
     XCTAssert(config.impressionTrackingURLs.count == 1);
     XCTAssert([config.impressionTrackingURLs containsObject:[NSURL URLWithString:@"https://twitter.com"]]);
@@ -362,7 +362,7 @@ extern NSString * const kNativeImpressionMinVisiblePixelsMetadataKey;
                                kImpressionTrackersMetadataKey: @[@"https://google.com", @"https://mopub.com"],
                                kImpressionTrackerMetadataKey: @"https://twitter.com"
                                };
-    MPAdConfiguration * config = [[MPAdConfiguration alloc] initWithMetadata:headers data:nil adType:MPAdTypeFullscreen];
+    MPAdConfiguration * config = [[MPAdConfiguration alloc] initWithMetadata:headers data:nil isFullscreenAd:YES];
 
     XCTAssert(config.impressionTrackingURLs.count == 2);
     XCTAssert([config.impressionTrackingURLs containsObject:[NSURL URLWithString:@"https://google.com"]]);
@@ -372,7 +372,7 @@ extern NSString * const kNativeImpressionMinVisiblePixelsMetadataKey;
 
 - (void)testLackOfImpressionTrackingURLResultsInNilArray {
     NSDictionary * headers = @{};
-    MPAdConfiguration * config = [[MPAdConfiguration alloc] initWithMetadata:headers data:nil adType:MPAdTypeFullscreen];
+    MPAdConfiguration * config = [[MPAdConfiguration alloc] initWithMetadata:headers data:nil isFullscreenAd:YES];
 
     XCTAssertNil(config.impressionTrackingURLs);
 }
@@ -381,7 +381,7 @@ extern NSString * const kNativeImpressionMinVisiblePixelsMetadataKey;
     NSDictionary * headers = @{
                                kImpressionTrackersMetadataKey: @[@"https://google.com", @"https://mopub.com", @"https://mopub.com/%%FAKEMACRO%%", @"absolutely not a URL"],
                                };
-    MPAdConfiguration * config = [[MPAdConfiguration alloc] initWithMetadata:headers data:nil adType:MPAdTypeFullscreen];
+    MPAdConfiguration * config = [[MPAdConfiguration alloc] initWithMetadata:headers data:nil isFullscreenAd:YES];
     XCTAssert(config.impressionTrackingURLs.count == 2);
     XCTAssert([config.impressionTrackingURLs containsObject:[NSURL URLWithString:@"https://google.com"]]);
     XCTAssert([config.impressionTrackingURLs containsObject:[NSURL URLWithString:@"https://mopub.com"]]);
@@ -394,7 +394,7 @@ extern NSString * const kNativeImpressionMinVisiblePixelsMetadataKey;
     NSString * key = @"url";
     NSDictionary * metadata = @{ @"url": url };
 
-    MPAdConfiguration * dummyConfig = [[MPAdConfiguration alloc] initWithMetadata:nil data:nil adType:MPAdTypeFullscreen];
+    MPAdConfiguration * dummyConfig = [[MPAdConfiguration alloc] initWithMetadata:nil data:nil isFullscreenAd:YES];
 
     NSArray <NSString *> * strings = [dummyConfig URLStringsFromMetadata:metadata forKey:key];
 
@@ -411,7 +411,7 @@ extern NSString * const kNativeImpressionMinVisiblePixelsMetadataKey;
     NSString * key = @"url";
     NSDictionary * metadata = @{ @"url": urlStrings };
 
-    MPAdConfiguration * dummyConfig = [[MPAdConfiguration alloc] initWithMetadata:nil data:nil adType:MPAdTypeFullscreen];
+    MPAdConfiguration * dummyConfig = [[MPAdConfiguration alloc] initWithMetadata:nil data:nil isFullscreenAd:YES];
 
     NSArray <NSString *> * strings = [dummyConfig URLStringsFromMetadata:metadata forKey:key];
 
@@ -430,7 +430,7 @@ extern NSString * const kNativeImpressionMinVisiblePixelsMetadataKey;
     NSString * key = @"url";
     NSDictionary * metadata = @{ @"url": urlStrings };
 
-    MPAdConfiguration * dummyConfig = [[MPAdConfiguration alloc] initWithMetadata:nil data:nil adType:MPAdTypeFullscreen];
+    MPAdConfiguration * dummyConfig = [[MPAdConfiguration alloc] initWithMetadata:nil data:nil isFullscreenAd:YES];
 
     NSArray <NSString *> * strings = [dummyConfig URLStringsFromMetadata:metadata forKey:key];
     XCTAssertNil(strings);
@@ -444,7 +444,7 @@ extern NSString * const kNativeImpressionMinVisiblePixelsMetadataKey;
     NSString * key = @"url";
     NSDictionary * metadata = @{ @"url": urlStrings };
 
-    MPAdConfiguration * dummyConfig = [[MPAdConfiguration alloc] initWithMetadata:nil data:nil adType:MPAdTypeFullscreen];
+    MPAdConfiguration * dummyConfig = [[MPAdConfiguration alloc] initWithMetadata:nil data:nil isFullscreenAd:YES];
 
     NSArray <NSString *> * strings = [dummyConfig URLStringsFromMetadata:metadata forKey:key];
 
@@ -463,7 +463,7 @@ extern NSString * const kNativeImpressionMinVisiblePixelsMetadataKey;
     NSString * key = @"url";
     NSDictionary * metadata = @{ @"url": urlStrings };
 
-    MPAdConfiguration * dummyConfig = [[MPAdConfiguration alloc] initWithMetadata:nil data:nil adType:MPAdTypeFullscreen];
+    MPAdConfiguration * dummyConfig = [[MPAdConfiguration alloc] initWithMetadata:nil data:nil isFullscreenAd:YES];
 
     NSArray <NSString *> * strings = [dummyConfig URLStringsFromMetadata:metadata forKey:key];
     XCTAssertNil(strings);
@@ -477,7 +477,7 @@ extern NSString * const kNativeImpressionMinVisiblePixelsMetadataKey;
     NSString * key = @"url";
     NSDictionary * metadata = @{ @"url": url };
 
-    MPAdConfiguration * dummyConfig = [[MPAdConfiguration alloc] initWithMetadata:nil data:nil adType:MPAdTypeFullscreen];
+    MPAdConfiguration * dummyConfig = [[MPAdConfiguration alloc] initWithMetadata:nil data:nil isFullscreenAd:YES];
 
     NSArray <NSString *> * strings = [dummyConfig URLStringsFromMetadata:metadata forKey:key];
     XCTAssertNil(strings);
@@ -491,7 +491,7 @@ extern NSString * const kNativeImpressionMinVisiblePixelsMetadataKey;
     NSString * key = @"url";
     NSDictionary * metadata = @{ @"url": url };
 
-    MPAdConfiguration * dummyConfig = [[MPAdConfiguration alloc] initWithMetadata:nil data:nil adType:MPAdTypeFullscreen];
+    MPAdConfiguration * dummyConfig = [[MPAdConfiguration alloc] initWithMetadata:nil data:nil isFullscreenAd:YES];
 
     NSArray <NSURL *> * urls = [dummyConfig URLsFromMetadata:metadata forKey:key];
     XCTAssertNil(urls);
@@ -501,7 +501,7 @@ extern NSString * const kNativeImpressionMinVisiblePixelsMetadataKey;
 
 - (void)testSingleDefaultUrlBackwardsCompatibility {
     NSDictionary * metadata = @{ kAfterLoadUrlMetadataKey: @"https://google.com" };
-    MPAdConfiguration * config = [[MPAdConfiguration alloc] initWithMetadata:metadata data:nil adType:MPAdTypeFullscreen];
+    MPAdConfiguration * config = [[MPAdConfiguration alloc] initWithMetadata:metadata data:nil isFullscreenAd:YES];
 
     NSArray <NSURL *> * urls = [config afterLoadUrlsWithLoadDuration:0.0 loadResult:MPAfterLoadResultAdLoaded];
 
@@ -514,7 +514,7 @@ extern NSString * const kNativeImpressionMinVisiblePixelsMetadataKey;
                                 kAfterLoadSuccessUrlMetadataKey: @"https://google.com",
                                 kAfterLoadFailureUrlMetadataKey: @"https://twitter.com",
                                 };
-    MPAdConfiguration * config = [[MPAdConfiguration alloc] initWithMetadata:metadata data:nil adType:MPAdTypeFullscreen];
+    MPAdConfiguration * config = [[MPAdConfiguration alloc] initWithMetadata:metadata data:nil isFullscreenAd:YES];
 
     NSArray <NSURL *> * urls = [config afterLoadUrlsWithLoadDuration:0.0 loadResult:MPAfterLoadResultAdLoaded];
 
@@ -527,7 +527,7 @@ extern NSString * const kNativeImpressionMinVisiblePixelsMetadataKey;
                                 kAfterLoadSuccessUrlMetadataKey: @"https://google.com",
                                 kAfterLoadFailureUrlMetadataKey: @"https://twitter.com",
                                 };
-    MPAdConfiguration * config = [[MPAdConfiguration alloc] initWithMetadata:metadata data:nil adType:MPAdTypeFullscreen];
+    MPAdConfiguration * config = [[MPAdConfiguration alloc] initWithMetadata:metadata data:nil isFullscreenAd:YES];
 
     NSArray <NSURL *> * urls = [config afterLoadUrlsWithLoadDuration:0.0 loadResult:MPAfterLoadResultError];
 
@@ -540,7 +540,7 @@ extern NSString * const kNativeImpressionMinVisiblePixelsMetadataKey;
                                 kAfterLoadSuccessUrlMetadataKey: @"https://google.com",
                                 kAfterLoadFailureUrlMetadataKey: @"https://twitter.com",
                                 };
-    MPAdConfiguration * config = [[MPAdConfiguration alloc] initWithMetadata:metadata data:nil adType:MPAdTypeFullscreen];
+    MPAdConfiguration * config = [[MPAdConfiguration alloc] initWithMetadata:metadata data:nil isFullscreenAd:YES];
 
     NSArray <NSURL *> * urls = [config afterLoadUrlsWithLoadDuration:0.0 loadResult:MPAfterLoadResultMissingAdapter];
 
@@ -553,7 +553,7 @@ extern NSString * const kNativeImpressionMinVisiblePixelsMetadataKey;
                                 kAfterLoadSuccessUrlMetadataKey: @"https://google.com",
                                 kAfterLoadFailureUrlMetadataKey: @"https://twitter.com",
                                 };
-    MPAdConfiguration * config = [[MPAdConfiguration alloc] initWithMetadata:metadata data:nil adType:MPAdTypeFullscreen];
+    MPAdConfiguration * config = [[MPAdConfiguration alloc] initWithMetadata:metadata data:nil isFullscreenAd:YES];
 
     NSArray <NSURL *> * urls = [config afterLoadUrlsWithLoadDuration:0.0 loadResult:MPAfterLoadResultTimeout];
 
@@ -566,7 +566,7 @@ extern NSString * const kNativeImpressionMinVisiblePixelsMetadataKey;
                                 kAfterLoadUrlMetadataKey: @"https://google.com",
                                 kAfterLoadSuccessUrlMetadataKey: @"https://twitter.com",
                                 };
-    MPAdConfiguration * config = [[MPAdConfiguration alloc] initWithMetadata:metadata data:nil adType:MPAdTypeFullscreen];
+    MPAdConfiguration * config = [[MPAdConfiguration alloc] initWithMetadata:metadata data:nil isFullscreenAd:YES];
 
     NSArray <NSURL *> * urls = [config afterLoadUrlsWithLoadDuration:0.0 loadResult:MPAfterLoadResultAdLoaded];
 
@@ -580,7 +580,7 @@ extern NSString * const kNativeImpressionMinVisiblePixelsMetadataKey;
                                 kAfterLoadUrlMetadataKey: @"https://google.com",
                                 kAfterLoadSuccessUrlMetadataKey: @"https://twitter.com",
                                 };
-    MPAdConfiguration * config = [[MPAdConfiguration alloc] initWithMetadata:metadata data:nil adType:MPAdTypeFullscreen];
+    MPAdConfiguration * config = [[MPAdConfiguration alloc] initWithMetadata:metadata data:nil isFullscreenAd:YES];
 
     NSArray <NSURL *> * urls = [config afterLoadUrlsWithLoadDuration:0.0 loadResult:MPAfterLoadResultError];
 
@@ -593,7 +593,7 @@ extern NSString * const kNativeImpressionMinVisiblePixelsMetadataKey;
                                 kAfterLoadUrlMetadataKey: @"https://google.com",
                                 kAfterLoadSuccessUrlMetadataKey: @"https://twitter.com",
                                 };
-    MPAdConfiguration * config = [[MPAdConfiguration alloc] initWithMetadata:metadata data:nil adType:MPAdTypeFullscreen];
+    MPAdConfiguration * config = [[MPAdConfiguration alloc] initWithMetadata:metadata data:nil isFullscreenAd:YES];
 
     NSArray <NSURL *> * urls = [config afterLoadUrlsWithLoadDuration:0.0 loadResult:MPAfterLoadResultMissingAdapter];
 
@@ -606,7 +606,7 @@ extern NSString * const kNativeImpressionMinVisiblePixelsMetadataKey;
                                 kAfterLoadUrlMetadataKey: @"https://google.com",
                                 kAfterLoadSuccessUrlMetadataKey: @"https://twitter.com",
                                 };
-    MPAdConfiguration * config = [[MPAdConfiguration alloc] initWithMetadata:metadata data:nil adType:MPAdTypeFullscreen];
+    MPAdConfiguration * config = [[MPAdConfiguration alloc] initWithMetadata:metadata data:nil isFullscreenAd:YES];
 
     NSArray <NSURL *> * urls = [config afterLoadUrlsWithLoadDuration:0.0 loadResult:MPAfterLoadResultTimeout];
 
@@ -619,7 +619,7 @@ extern NSString * const kNativeImpressionMinVisiblePixelsMetadataKey;
                                 kAfterLoadUrlMetadataKey: @"https://google.com",
                                 kAfterLoadFailureUrlMetadataKey: @"https://twitter.com",
                                 };
-    MPAdConfiguration * config = [[MPAdConfiguration alloc] initWithMetadata:metadata data:nil adType:MPAdTypeFullscreen];
+    MPAdConfiguration * config = [[MPAdConfiguration alloc] initWithMetadata:metadata data:nil isFullscreenAd:YES];
 
     NSArray <NSURL *> * urls = [config afterLoadUrlsWithLoadDuration:0.0 loadResult:MPAfterLoadResultAdLoaded];
 
@@ -632,7 +632,7 @@ extern NSString * const kNativeImpressionMinVisiblePixelsMetadataKey;
                                 kAfterLoadUrlMetadataKey: @"https://google.com",
                                 kAfterLoadFailureUrlMetadataKey: @"https://twitter.com",
                                 };
-    MPAdConfiguration * config = [[MPAdConfiguration alloc] initWithMetadata:metadata data:nil adType:MPAdTypeFullscreen];
+    MPAdConfiguration * config = [[MPAdConfiguration alloc] initWithMetadata:metadata data:nil isFullscreenAd:YES];
 
     NSArray <NSURL *> * urls = [config afterLoadUrlsWithLoadDuration:0.0 loadResult:MPAfterLoadResultError];
 
@@ -646,7 +646,7 @@ extern NSString * const kNativeImpressionMinVisiblePixelsMetadataKey;
                                 kAfterLoadUrlMetadataKey: @"https://google.com",
                                 kAfterLoadFailureUrlMetadataKey: @"https://twitter.com",
                                 };
-    MPAdConfiguration * config = [[MPAdConfiguration alloc] initWithMetadata:metadata data:nil adType:MPAdTypeFullscreen];
+    MPAdConfiguration * config = [[MPAdConfiguration alloc] initWithMetadata:metadata data:nil isFullscreenAd:YES];
 
     NSArray <NSURL *> * urls = [config afterLoadUrlsWithLoadDuration:0.0 loadResult:MPAfterLoadResultMissingAdapter];
 
@@ -660,7 +660,7 @@ extern NSString * const kNativeImpressionMinVisiblePixelsMetadataKey;
                                 kAfterLoadUrlMetadataKey: @"https://google.com",
                                 kAfterLoadFailureUrlMetadataKey: @"https://twitter.com",
                                 };
-    MPAdConfiguration * config = [[MPAdConfiguration alloc] initWithMetadata:metadata data:nil adType:MPAdTypeFullscreen];
+    MPAdConfiguration * config = [[MPAdConfiguration alloc] initWithMetadata:metadata data:nil isFullscreenAd:YES];
 
     NSArray <NSURL *> * urls = [config afterLoadUrlsWithLoadDuration:0.0 loadResult:MPAfterLoadResultTimeout];
 
@@ -675,7 +675,7 @@ extern NSString * const kNativeImpressionMinVisiblePixelsMetadataKey;
                                 kAfterLoadSuccessUrlMetadataKey: @"https://testurl.com",
                                 kAfterLoadFailureUrlMetadataKey: @"https://twitter.com",
                                 };
-    MPAdConfiguration * config = [[MPAdConfiguration alloc] initWithMetadata:metadata data:nil adType:MPAdTypeFullscreen];
+    MPAdConfiguration * config = [[MPAdConfiguration alloc] initWithMetadata:metadata data:nil isFullscreenAd:YES];
 
     NSArray <NSURL *> * urls = [config afterLoadUrlsWithLoadDuration:0.0 loadResult:MPAfterLoadResultAdLoaded];
 
@@ -691,7 +691,7 @@ extern NSString * const kNativeImpressionMinVisiblePixelsMetadataKey;
                                 kAfterLoadSuccessUrlMetadataKey: @"https://testurl.com",
                                 kAfterLoadFailureUrlMetadataKey: @"https://twitter.com",
                                 };
-    MPAdConfiguration * config = [[MPAdConfiguration alloc] initWithMetadata:metadata data:nil adType:MPAdTypeFullscreen];
+    MPAdConfiguration * config = [[MPAdConfiguration alloc] initWithMetadata:metadata data:nil isFullscreenAd:YES];
 
     NSArray <NSURL *> * urls = [config afterLoadUrlsWithLoadDuration:0.0 loadResult:MPAfterLoadResultError];
 
@@ -707,7 +707,7 @@ extern NSString * const kNativeImpressionMinVisiblePixelsMetadataKey;
                                 kAfterLoadSuccessUrlMetadataKey: @"https://testurl.com",
                                 kAfterLoadFailureUrlMetadataKey: @"https://twitter.com",
                                 };
-    MPAdConfiguration * config = [[MPAdConfiguration alloc] initWithMetadata:metadata data:nil adType:MPAdTypeFullscreen];
+    MPAdConfiguration * config = [[MPAdConfiguration alloc] initWithMetadata:metadata data:nil isFullscreenAd:YES];
 
     NSArray <NSURL *> * urls = [config afterLoadUrlsWithLoadDuration:0.0 loadResult:MPAfterLoadResultMissingAdapter];
 
@@ -723,7 +723,7 @@ extern NSString * const kNativeImpressionMinVisiblePixelsMetadataKey;
                                 kAfterLoadSuccessUrlMetadataKey: @"https://testurl.com",
                                 kAfterLoadFailureUrlMetadataKey: @"https://twitter.com",
                                 };
-    MPAdConfiguration * config = [[MPAdConfiguration alloc] initWithMetadata:metadata data:nil adType:MPAdTypeFullscreen];
+    MPAdConfiguration * config = [[MPAdConfiguration alloc] initWithMetadata:metadata data:nil isFullscreenAd:YES];
 
     NSArray <NSURL *> * urls = [config afterLoadUrlsWithLoadDuration:0.0 loadResult:MPAfterLoadResultTimeout];
 
@@ -738,7 +738,7 @@ extern NSString * const kNativeImpressionMinVisiblePixelsMetadataKey;
                                 kAfterLoadUrlMetadataKey: @[@"https://google.com", @"https://test.com"],
                                 kAfterLoadSuccessUrlMetadataKey: @[@"https://twitter.com", @"https://test2.com"],
                                 };
-    MPAdConfiguration * config = [[MPAdConfiguration alloc] initWithMetadata:metadata data:nil adType:MPAdTypeFullscreen];
+    MPAdConfiguration * config = [[MPAdConfiguration alloc] initWithMetadata:metadata data:nil isFullscreenAd:YES];
 
     NSArray <NSURL *> * urls = [config afterLoadUrlsWithLoadDuration:0.0 loadResult:MPAfterLoadResultAdLoaded];
 
@@ -754,7 +754,7 @@ extern NSString * const kNativeImpressionMinVisiblePixelsMetadataKey;
                                 kAfterLoadUrlMetadataKey: @[@"https://google.com", @"https://test.com"],
                                 kAfterLoadSuccessUrlMetadataKey: @[@"https://twitter.com", @"https://test2.com"],
                                 };
-    MPAdConfiguration * config = [[MPAdConfiguration alloc] initWithMetadata:metadata data:nil adType:MPAdTypeFullscreen];
+    MPAdConfiguration * config = [[MPAdConfiguration alloc] initWithMetadata:metadata data:nil isFullscreenAd:YES];
 
     NSArray <NSURL *> * urls = [config afterLoadUrlsWithLoadDuration:0.0 loadResult:MPAfterLoadResultError];
 
@@ -770,7 +770,7 @@ extern NSString * const kNativeImpressionMinVisiblePixelsMetadataKey;
                                 kAfterLoadUrlMetadataKey: @[@"https://google.com", @"https://test.com"],
                                 kAfterLoadSuccessUrlMetadataKey: @[@"https://twitter.com", @"https://test2.com"],
                                 };
-    MPAdConfiguration * config = [[MPAdConfiguration alloc] initWithMetadata:metadata data:nil adType:MPAdTypeFullscreen];
+    MPAdConfiguration * config = [[MPAdConfiguration alloc] initWithMetadata:metadata data:nil isFullscreenAd:YES];
 
     NSArray <NSURL *> * urls = [config afterLoadUrlsWithLoadDuration:0.0 loadResult:MPAfterLoadResultMissingAdapter];
 
@@ -786,7 +786,7 @@ extern NSString * const kNativeImpressionMinVisiblePixelsMetadataKey;
                                 kAfterLoadUrlMetadataKey: @[@"https://google.com", @"https://test.com"],
                                 kAfterLoadSuccessUrlMetadataKey: @[@"https://twitter.com", @"https://test2.com"],
                                 };
-    MPAdConfiguration * config = [[MPAdConfiguration alloc] initWithMetadata:metadata data:nil adType:MPAdTypeFullscreen];
+    MPAdConfiguration * config = [[MPAdConfiguration alloc] initWithMetadata:metadata data:nil isFullscreenAd:YES];
 
     NSArray <NSURL *> * urls = [config afterLoadUrlsWithLoadDuration:0.0 loadResult:MPAfterLoadResultTimeout];
 
@@ -802,7 +802,7 @@ extern NSString * const kNativeImpressionMinVisiblePixelsMetadataKey;
                                 kAfterLoadUrlMetadataKey: @[@"https://google.com", @"https://test.com"],
                                 kAfterLoadFailureUrlMetadataKey: @[@"https://twitter.com", @"https://test2.com"],
                                 };
-    MPAdConfiguration * config = [[MPAdConfiguration alloc] initWithMetadata:metadata data:nil adType:MPAdTypeFullscreen];
+    MPAdConfiguration * config = [[MPAdConfiguration alloc] initWithMetadata:metadata data:nil isFullscreenAd:YES];
 
     NSArray <NSURL *> * urls = [config afterLoadUrlsWithLoadDuration:0.0 loadResult:MPAfterLoadResultAdLoaded];
 
@@ -818,7 +818,7 @@ extern NSString * const kNativeImpressionMinVisiblePixelsMetadataKey;
                                 kAfterLoadUrlMetadataKey: @[@"https://google.com", @"https://test.com"],
                                 kAfterLoadFailureUrlMetadataKey: @[@"https://twitter.com", @"https://test2.com"],
                                 };
-    MPAdConfiguration * config = [[MPAdConfiguration alloc] initWithMetadata:metadata data:nil adType:MPAdTypeFullscreen];
+    MPAdConfiguration * config = [[MPAdConfiguration alloc] initWithMetadata:metadata data:nil isFullscreenAd:YES];
 
     NSArray <NSURL *> * urls = [config afterLoadUrlsWithLoadDuration:0.0 loadResult:MPAfterLoadResultError];
 
@@ -834,7 +834,7 @@ extern NSString * const kNativeImpressionMinVisiblePixelsMetadataKey;
                                 kAfterLoadUrlMetadataKey: @[@"https://google.com", @"https://test.com"],
                                 kAfterLoadFailureUrlMetadataKey: @[@"https://twitter.com", @"https://test2.com"],
                                 };
-    MPAdConfiguration * config = [[MPAdConfiguration alloc] initWithMetadata:metadata data:nil adType:MPAdTypeFullscreen];
+    MPAdConfiguration * config = [[MPAdConfiguration alloc] initWithMetadata:metadata data:nil isFullscreenAd:YES];
 
     NSArray <NSURL *> * urls = [config afterLoadUrlsWithLoadDuration:0.0 loadResult:MPAfterLoadResultMissingAdapter];
 
@@ -850,7 +850,7 @@ extern NSString * const kNativeImpressionMinVisiblePixelsMetadataKey;
                                 kAfterLoadUrlMetadataKey: @[@"https://google.com", @"https://test.com"],
                                 kAfterLoadFailureUrlMetadataKey: @[@"https://twitter.com", @"https://test2.com"],
                                 };
-    MPAdConfiguration * config = [[MPAdConfiguration alloc] initWithMetadata:metadata data:nil adType:MPAdTypeFullscreen];
+    MPAdConfiguration * config = [[MPAdConfiguration alloc] initWithMetadata:metadata data:nil isFullscreenAd:YES];
 
     NSArray <NSURL *> * urls = [config afterLoadUrlsWithLoadDuration:0.0 loadResult:MPAfterLoadResultTimeout];
 
@@ -867,7 +867,7 @@ extern NSString * const kNativeImpressionMinVisiblePixelsMetadataKey;
                                 kAfterLoadSuccessUrlMetadataKey: @[@"https://fakeurl.com", @"https://fakeurl2.com"],
                                 kAfterLoadFailureUrlMetadataKey: @[@"https://twitter.com", @"https://test2.com"],
                                 };
-    MPAdConfiguration * config = [[MPAdConfiguration alloc] initWithMetadata:metadata data:nil adType:MPAdTypeFullscreen];
+    MPAdConfiguration * config = [[MPAdConfiguration alloc] initWithMetadata:metadata data:nil isFullscreenAd:YES];
 
     NSArray <NSURL *> * urls = [config afterLoadUrlsWithLoadDuration:0.0 loadResult:MPAfterLoadResultAdLoaded];
 
@@ -886,7 +886,7 @@ extern NSString * const kNativeImpressionMinVisiblePixelsMetadataKey;
                                 kAfterLoadSuccessUrlMetadataKey: @[@"https://fakeurl.com", @"https://fakeurl2.com"],
                                 kAfterLoadFailureUrlMetadataKey: @[@"https://twitter.com", @"https://test2.com"],
                                 };
-    MPAdConfiguration * config = [[MPAdConfiguration alloc] initWithMetadata:metadata data:nil adType:MPAdTypeFullscreen];
+    MPAdConfiguration * config = [[MPAdConfiguration alloc] initWithMetadata:metadata data:nil isFullscreenAd:YES];
 
     NSArray <NSURL *> * urls = [config afterLoadUrlsWithLoadDuration:0.0 loadResult:MPAfterLoadResultError];
 
@@ -905,7 +905,7 @@ extern NSString * const kNativeImpressionMinVisiblePixelsMetadataKey;
                                 kAfterLoadSuccessUrlMetadataKey: @[@"https://fakeurl.com", @"https://fakeurl2.com"],
                                 kAfterLoadFailureUrlMetadataKey: @[@"https://twitter.com", @"https://test2.com"],
                                 };
-    MPAdConfiguration * config = [[MPAdConfiguration alloc] initWithMetadata:metadata data:nil adType:MPAdTypeFullscreen];
+    MPAdConfiguration * config = [[MPAdConfiguration alloc] initWithMetadata:metadata data:nil isFullscreenAd:YES];
 
     NSArray <NSURL *> * urls = [config afterLoadUrlsWithLoadDuration:0.0 loadResult:MPAfterLoadResultMissingAdapter];
 
@@ -924,7 +924,7 @@ extern NSString * const kNativeImpressionMinVisiblePixelsMetadataKey;
                                 kAfterLoadSuccessUrlMetadataKey: @[@"https://fakeurl.com", @"https://fakeurl2.com"],
                                 kAfterLoadFailureUrlMetadataKey: @[@"https://twitter.com", @"https://test2.com"],
                                 };
-    MPAdConfiguration * config = [[MPAdConfiguration alloc] initWithMetadata:metadata data:nil adType:MPAdTypeFullscreen];
+    MPAdConfiguration * config = [[MPAdConfiguration alloc] initWithMetadata:metadata data:nil isFullscreenAd:YES];
 
     NSArray <NSURL *> * urls = [config afterLoadUrlsWithLoadDuration:0.0 loadResult:MPAfterLoadResultTimeout];
 

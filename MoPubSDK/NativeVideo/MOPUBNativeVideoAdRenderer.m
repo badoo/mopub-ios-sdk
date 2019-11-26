@@ -13,6 +13,7 @@
 #import "MPNativeAdAdapter.h"
 #import "MPNativeAdConstants.h"
 #import "MPNativeAdError.h"
+#import "MPNativeAdError+VAST.h"
 #import "MPNativeAdRendererImageHandler.h"
 #import "MPTimer.h"
 #import "MPGlobal.h"
@@ -92,6 +93,7 @@ static const CGFloat kAutoPlayTimerInterval = 0.25f;
     if (!adapter) {
         if (error) {
             *error = MPNativeAdNSErrorForRenderValueTypeError();
+            [self.vastTracking handleVASTError:VASTErrorCodeFromNativeAdErrorCode((*error).code) videoTimeOffset:0];
         }
 
         return nil;
@@ -156,6 +158,7 @@ static const CGFloat kAutoPlayTimerInterval = 0.25f;
                 [imageView addGestureRecognizer:tapRecognizer];
             } errorHandler:^(NSError * _Nonnull error) {
                 MPLogInfo(@"Failed to retrieve privacy icon from %@", privacyIconImageUrl);
+                [self.vastTracking handleVASTError:MPVASTErrorUndefined videoTimeOffset:0];
             }];
         }
         // The ad network may provide its own view for its privacy information icon.

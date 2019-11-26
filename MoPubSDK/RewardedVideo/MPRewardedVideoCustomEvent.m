@@ -13,15 +13,14 @@
 
 - (void)requestRewardedVideoWithCustomEventInfo:(NSDictionary *)info
 {
-    // The default implementation of this method does nothing. Subclasses must override this method
-    // and implement code to load a rewarded video here.
+    // This deprecated method will forward the request to with no ad markup.
+    [self requestRewardedVideoWithCustomEventInfo:info adMarkup:nil];
 }
 
 - (void)requestRewardedVideoWithCustomEventInfo:(NSDictionary *)info adMarkup:(NSString *)adMarkup
 {
-    // By default, the original requestRewardedVideoWithCustomEventInfo: method will be called.
-    // Otherwise subclasses must override this method and implement code to load a banner here.
-    [self requestRewardedVideoWithCustomEventInfo:info];
+    // The default implementation of this method does nothing. Subclasses must override this method
+    // and implement code to load a rewarded video here.
 }
 
 - (BOOL)hasAdAvailable

@@ -31,26 +31,6 @@ extension UIViewController {
         }
     }
     
-    /**
-     Saved ads split view controller.
-     */
-    var savedAdSplitViewController: UISplitViewController? {
-        if #available(iOS 13.0, *) {
-            guard let sceneDelegate = view.window?.windowScene?.delegate as? SceneDelegate else {
-                fatalError()
-            }
-            switch sceneDelegate.mode {
-            case .adViewScene, .unknown:
-                print("`savedAdSplitViewController` is only available for the main scene")
-                return nil
-            case .mainScene(let mainSceneState):
-                return mainSceneState.savedAdSplitViewController
-            }
-        } else {
-            return AppDelegate.shared.savedAdSplitViewController
-        }
-    }
-    
     @available(iOS 13.0, *)
     @objc func destroySceneSession() {
         guard let session = view.window?.windowScene?.session else {

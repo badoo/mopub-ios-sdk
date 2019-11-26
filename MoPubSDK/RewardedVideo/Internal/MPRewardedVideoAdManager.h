@@ -20,7 +20,7 @@
 @interface MPRewardedVideoAdManager : NSObject
 
 @property (nonatomic, weak) id<MPRewardedVideoAdManagerDelegate> delegate;
-@property (nonatomic, readonly) NSString *adUnitID;
+@property (nonatomic, readonly) NSString *adUnitId;
 @property (nonatomic, strong) NSArray *mediationSettings;
 @property (nonatomic, copy) NSString *customerId;
 @property (nonatomic, strong) MPAdTargeting *targeting;

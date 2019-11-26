@@ -169,7 +169,7 @@ static NSString *const kMRAIDCommandResize = @"resize";
 
     self.mraidBridge = [[MRBridge alloc] initWithWebView:self.mraidWebView delegate:self];
     self.mraidAdView = [[MPClosableView alloc] initWithFrame:self.mraidDefaultAdFrame
-                                                     webView:self.mraidWebView
+                                                 contentView:self.mraidWebView
                                                     delegate:self];
     if (self.placementType == MRAdViewPlacementTypeInterstitial) {
         self.mraidAdView.autoresizingMask = UIViewAutoresizingFlexibleWidth | UIViewAutoresizingFlexibleHeight;
@@ -760,7 +760,7 @@ static NSString *const kMRAIDCommandResize = @"resize";
     } else if (command == MPMoPubHostCommandFailLoad) {
         [self adDidFailToLoad];
     } else if (command == MPMoPubHostCommandRewardedVideoEnded) {
-        [self.delegate rewardedVideoEnded];
+        [self rewardedVideoEnded];
     } else {
         MPLogInfo(@"MRController - unsupported MoPub URL: %@", [url absoluteString]);
     }
@@ -899,7 +899,7 @@ static NSString *const kMRAIDCommandResize = @"resize";
         MPWebView *twoPartWebView = [self buildMRAIDWebViewWithFrame:twoPartFrame];
         self.mraidBridgeTwoPart = [[MRBridge alloc] initWithWebView:twoPartWebView delegate:self];
         self.mraidAdViewTwoPart = [[MPClosableView alloc] initWithFrame:twoPartFrame
-                                                                webView:twoPartWebView
+                                                            contentView:twoPartWebView
                                                                delegate:self];
         self.isAdLoading = YES;
 
@@ -1300,6 +1300,13 @@ static NSString *const kMRAIDCommandResize = @"resize";
 {
     if ([self.delegate respondsToSelector:@selector(adDidClose:)]) {
         [self.delegate adDidClose:self.mraidAdView];
+    }
+}
+
+- (void)rewardedVideoEnded
+{
+    if ([self.delegate respondsToSelector:@selector(rewardedVideoEnded)]) {
+        [self.delegate rewardedVideoEnded];
     }
 }
 

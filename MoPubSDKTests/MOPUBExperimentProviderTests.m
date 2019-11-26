@@ -24,7 +24,7 @@
     testSubject.isDisplayAgentOverriddenByClient = NO;
     MPAdConfiguration * config = [[MPAdConfiguration alloc] initWithMetadata:nil
                                                                         data:nil
-                                                                      adType:MPAdTypeFullscreen
+                                                              isFullscreenAd:YES
                                                           experimentProvider:testSubject];
 
     XCTAssertEqual(config.clickthroughExperimentBrowserAgent, MOPUBDisplayAgentTypeInApp);
@@ -39,7 +39,7 @@
     testSubject.isDisplayAgentOverriddenByClient = NO;
     MPAdConfiguration * config = [[MPAdConfiguration alloc] initWithMetadata:headers
                                                                         data:nil
-                                                                      adType:MPAdTypeFullscreen
+                                                              isFullscreenAd:YES
                                                           experimentProvider:testSubject];
 
     XCTAssertEqual(config.clickthroughExperimentBrowserAgent, MOPUBDisplayAgentTypeInApp);
@@ -55,7 +55,7 @@
     testSubject.isDisplayAgentOverriddenByClient = NO;
     MPAdConfiguration * config = [[MPAdConfiguration alloc] initWithMetadata:headers
                                                                         data:nil
-                                                                      adType:MPAdTypeFullscreen
+                                                              isFullscreenAd:YES
                                                           experimentProvider:testSubject];
 
     XCTAssertEqual(config.clickthroughExperimentBrowserAgent, MOPUBDisplayAgentTypeNativeSafari);

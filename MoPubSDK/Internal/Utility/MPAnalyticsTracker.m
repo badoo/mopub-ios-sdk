@@ -12,7 +12,6 @@
 #import "MPHTTPNetworkSession.h"
 #import "MPLogging.h"
 #import "MPURLRequest.h"
-#import "MPVASTTrackingEvent.h"
 
 @implementation MPAnalyticsTracker
 

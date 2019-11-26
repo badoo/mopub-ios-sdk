@@ -42,19 +42,12 @@ class SceneDelegate: UIResponder {
          */
         let containerViewController: ContainerViewController
         
-        /**
-         Saved ads split view controller. Assignment deferred to `handleMainSceneStart`.
-         */
-        let savedAdSplitViewController: UISplitViewController
-        
         #if INTERNAL
         let internalState = InternalState()
         #endif
         
-        init(containerViewController: ContainerViewController,
-             savedAdSplitViewController: UISplitViewController) {
+        init(containerViewController: ContainerViewController) {
             self.containerViewController = containerViewController
-            self.savedAdSplitViewController = savedAdSplitViewController
             #if INTERNAL
             internalState.initialize(with: containerViewController)
             #endif
@@ -97,16 +90,7 @@ class SceneDelegate: UIResponder {
         }
         containerViewController.loadViewIfNeeded()
         
-        guard
-            let tabBarChildren = containerViewController.mainTabBarController?.viewControllers,
-            let savedAdSplitViewController = tabBarChildren.first(where: {
-                $0.tabBarItem.title == "Saved Ads"
-            }) as? UISplitViewController else {
-            fatalError()
-        }
-        
-        mode = .mainScene(mainSceneState: MainSceneState(containerViewController: containerViewController,
-                                                         savedAdSplitViewController: savedAdSplitViewController))
+        mode = .mainScene(mainSceneState: MainSceneState(containerViewController: containerViewController))
         
         if userDefaults.shouldClearCachedNetworks {
             mopub.clearCachedNetworks() // do this before initializing the MoPub SDK
@@ -141,7 +125,7 @@ class SceneDelegate: UIResponder {
                     return false
             }
             return SceneDelegate.openMoPubAdUnit(adUnit: adUnit,
-                                                 onto: mainSceneState.savedAdSplitViewController,
+                                                 onto: mainSceneState.containerViewController,
                                                  shouldSave: true)
         case .adViewScene, .unknown:
             return false
@@ -151,14 +135,14 @@ class SceneDelegate: UIResponder {
     /**
      Attempts to open a valid `AdUnit` object instance
      - Parameter adUnit: MoPub `AdUnit` object instance
-     - Parameter splitViewController: Split view controller that will present the opened deep link
+     - Parameter containerViewController: Container view controller that will present the opened deep link
      - Parameter shouldSave: Flag indicating that the ad unit that was opened should be saved
      - Parameter savedAdsManager: The manager for saving the ad unit
      - Returns: `true` if successfully shown, `false` if not
      */
     @discardableResult
     static func openMoPubAdUnit(adUnit: AdUnit,
-                                onto splitViewController: UISplitViewController,
+                                onto containerViewController: ContainerViewController,
                                 shouldSave: Bool,
                                 savedAdsManager: SavedAdsManager = .sharedInstance) -> Bool {
         // Generate the destinate view controller and attempt to push the destination to the
@@ -172,11 +156,11 @@ class SceneDelegate: UIResponder {
         DispatchQueue.main.async {
             // If the ad unit should be saved, we will switch the tab to the saved ads
             // tab and then push the view controller on that navigation stack.
-            splitViewController.containerViewController?.mainTabBarController?.selectedIndex = 1
+            containerViewController.mainTabBarController?.selectedIndex = 1
             if shouldSave {
                 savedAdsManager.addSavedAd(adUnit: adUnit)
             }
-            splitViewController.showDetailViewController(destination, sender: splitViewController)
+            containerViewController.savedAdSplitViewController.showDetailViewController(destination, sender: self)
         }
         return true
     }

@@ -23,6 +23,7 @@ const NSTimeInterval kDefaultCountdownTimerIntervalInSeconds = 30;
 @property (nonatomic, strong) MPMRAIDInterstitialViewController *interstitial;
 @property (nonatomic, strong) MPCountdownTimerView *timerView;
 @property (nonatomic, assign) BOOL userRewarded;
+@property (nonatomic, assign) NSTimeInterval countdownDuration;
 
 @end
 
@@ -79,7 +80,7 @@ const NSTimeInterval kDefaultCountdownTimerIntervalInSeconds = 30;
 
 @dynamic delegate;
 
-- (void)requestRewardedVideoWithCustomEventInfo:(NSDictionary *)info {
+- (void)requestRewardedVideoWithCustomEventInfo:(NSDictionary *)info adMarkup:(NSString *)adMarkup {
     MPAdConfiguration * configuration = self.delegate.configuration;
     MPLogAdEvent([MPLogEvent adLoadAttemptForAdapter:NSStringFromClass(configuration.customEventClass) dspCreativeId:configuration.dspCreativeId dspName:nil], self.adUnitId);
 

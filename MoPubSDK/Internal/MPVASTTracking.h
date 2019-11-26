@@ -7,6 +7,7 @@
 //
 
 #import <Foundation/Foundation.h>
+#import "MPVASTError.h"
 #import "MPVideoConfig.h"
 
 @interface MPVASTTracking : NSObject
@@ -30,5 +31,10 @@
  the video complete event.
  */
 - (void)handleVideoProgressEvent:(NSTimeInterval)videoTimeOffset videoDuration:(NSTimeInterval)videoDuration;
+
+/**
+ Call this when a VAST related error happens.
+ */
+- (void)handleVASTError:(MPVASTError)error videoTimeOffset:(NSTimeInterval)videoTimeOffset;
 
 @end

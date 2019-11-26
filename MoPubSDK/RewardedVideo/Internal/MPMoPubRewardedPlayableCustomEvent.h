@@ -10,7 +10,6 @@
 #import "MPPrivateRewardedVideoCustomEventDelegate.h"
 
 @interface MPMoPubRewardedPlayableCustomEvent : MPRewardedVideoCustomEvent
-@property (nonatomic, readonly) NSTimeInterval countdownDuration;
 
 @property (nonatomic, weak) id<MPPrivateRewardedVideoCustomEventDelegate> delegate;
 @end

@@ -40,6 +40,6 @@
 - (void)communicatorDidReceiveAdConfigurations:(NSArray<MPAdConfiguration *> *)configurations;
 - (void)communicatorDidFailWithError:(NSError *)error;
 
-- (MPAdType)adTypeForAdServerCommunicator:(MPAdServerCommunicator *)adServerCommunicator;
-- (NSString *)adUnitIDForAdServerCommunicator:(MPAdServerCommunicator *)adServerCommunicator;
+- (BOOL)isFullscreenAd;
+- (NSString *)adUnitId;
 @end

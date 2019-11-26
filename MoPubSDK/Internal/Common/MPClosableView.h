@@ -10,8 +10,6 @@
 
 extern const CGSize kCloseRegionSize;
 
-@class MPWebView;
-
 enum {
     MPClosableViewCloseButtonLocationTopRight,
     MPClosableViewCloseButtonLocationTopLeft,
@@ -50,7 +48,7 @@ CGRect MPClosableViewCustomCloseButtonFrame(CGSize size, MPClosableViewCloseButt
 @property (nonatomic, strong, readonly) UIButton *closeButton;
 
 - (instancetype)initWithFrame:(CGRect)frame
-                      webView:(MPWebView *)webView
+                  contentView:(UIView *)contentView
                      delegate:(id<MPClosableViewDelegate>)delegate;
 
 @end

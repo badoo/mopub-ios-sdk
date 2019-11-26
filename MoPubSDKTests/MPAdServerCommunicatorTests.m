@@ -651,9 +651,7 @@ static NSString * const kIsWhitelistedUserDefaultsKey = @"com.mopub.mopub-ios-sd
     // Simulate a successful ad load
     NSString * adunitID = @"extremely not an actual adunit ID";
 
-    self.communicatorDelegateHandler.adUnitIdForAdServerCommunicator = ^NSString *(MPAdServerCommunicator *adServerCommunicator) {
-        return adunitID;
-    };
+    self.communicatorDelegateHandler.adUnitId = adunitID;
 
     [self.communicator didFinishLoadingWithData:garbageResponseData];
 
@@ -694,9 +692,7 @@ static NSString * const kIsWhitelistedUserDefaultsKey = @"com.mopub.mopub-ios-sd
     // Simulate a successful ad load
     NSString * adunitID = @"extremely not an actual adunit ID";
 
-    self.communicatorDelegateHandler.adUnitIdForAdServerCommunicator = ^NSString *(MPAdServerCommunicator *adServerCommunicator) {
-        return adunitID;
-    };
+    self.communicatorDelegateHandler.adUnitId = adunitID;
 
     [self.communicator didFinishLoadingWithData:garbageResponseData];
 
@@ -709,9 +705,7 @@ static NSString * const kIsWhitelistedUserDefaultsKey = @"com.mopub.mopub-ios-sd
 
     // Make a new adunit ID and see if that gets set
     NSString * newAdunitID = @"still not an adunit ID";
-    self.communicatorDelegateHandler.adUnitIdForAdServerCommunicator = ^NSString *(MPAdServerCommunicator *adServerCommunicator) {
-        return newAdunitID;
-    };
+    self.communicatorDelegateHandler.adUnitId = newAdunitID;
     [self.communicator didFinishLoadingWithData:garbageResponseData];
 
     // Check state
@@ -734,9 +728,7 @@ static NSString * const kIsWhitelistedUserDefaultsKey = @"com.mopub.mopub-ios-sd
 
     // Simulate an unsuccessful ad load
     NSString * adunitID = @"extremely not an actual adunit ID";
-    self.communicatorDelegateHandler.adUnitIdForAdServerCommunicator = ^NSString *(MPAdServerCommunicator *adServerCommunicator) {
-        return adunitID;
-    };
+    self.communicatorDelegateHandler.adUnitId = adunitID;
     [self.communicator didFailWithError:nil];
 
     // Check to make sure the adunit ID is not populated
@@ -777,9 +769,7 @@ static NSString * const kIsWhitelistedUserDefaultsKey = @"com.mopub.mopub-ios-sd
         [waitForDelegate fulfill];
     };
 
-    self.communicatorDelegateHandler.adUnitIdForAdServerCommunicator = ^(MPAdServerCommunicator * communicator){
-        return @"testRateLimitTimerSuccessfullySetOnClearResponseWithBackoffKeyWithoutReason";
-    };
+    self.communicatorDelegateHandler.adUnitId = @"testRateLimitTimerSuccessfullySetOnClearResponseWithBackoffKeyWithoutReason";
 
     // Load data (set rate limit timer)
     [self.communicator didFinishLoadingWithData:jsonData];
@@ -794,8 +784,8 @@ static NSString * const kIsWhitelistedUserDefaultsKey = @"com.mopub.mopub-ios-sd
 
         // Did the rate limit timer get set
         XCTAssertTrue(isRateLimited);
-        XCTAssertEqual(kDefaultRateLimitTimeMs, [[MPRateLimitManager sharedInstance] lastRateLimitMillisecondsForAdUnitId:self.communicatorDelegateHandler.adUnitIdForAdServerCommunicator(nil)]);
-        XCTAssertNil([[MPRateLimitManager sharedInstance] lastRateLimitReasonForAdUnitId:self.communicatorDelegateHandler.adUnitIdForAdServerCommunicator(nil)]);
+        XCTAssertEqual(kDefaultRateLimitTimeMs, [[MPRateLimitManager sharedInstance] lastRateLimitMillisecondsForAdUnitId:self.communicatorDelegateHandler.adUnitId]);
+        XCTAssertNil([[MPRateLimitManager sharedInstance] lastRateLimitReasonForAdUnitId:self.communicatorDelegateHandler.adUnitId]);
 
         // Did the attempt at a request fail
         XCTAssertTrue(didFail);
@@ -835,9 +825,7 @@ static NSString * const kIsWhitelistedUserDefaultsKey = @"com.mopub.mopub-ios-sd
         [waitForDelegate fulfill];
     };
 
-    self.communicatorDelegateHandler.adUnitIdForAdServerCommunicator = ^(MPAdServerCommunicator * communicator){
-        return @"testRateLimitTimerSuccessfullySetOnClearResponseWithBackoffKeyWithReason";
-    };
+    self.communicatorDelegateHandler.adUnitId = @"testRateLimitTimerSuccessfullySetOnClearResponseWithBackoffKeyWithReason";
 
     // Load data (set rate limit timer)
     [self.communicator didFinishLoadingWithData:jsonData];
@@ -852,8 +840,8 @@ static NSString * const kIsWhitelistedUserDefaultsKey = @"com.mopub.mopub-ios-sd
 
         // Did the rate limit timer get set
         XCTAssertTrue(isRateLimited);
-        XCTAssertEqual(kDefaultRateLimitTimeMs, [[MPRateLimitManager sharedInstance] lastRateLimitMillisecondsForAdUnitId:self.communicatorDelegateHandler.adUnitIdForAdServerCommunicator(nil)]);
-        XCTAssert([kDefaultRateLimitReason isEqualToString:[[MPRateLimitManager sharedInstance] lastRateLimitReasonForAdUnitId:self.communicatorDelegateHandler.adUnitIdForAdServerCommunicator(nil)]]);
+        XCTAssertEqual(kDefaultRateLimitTimeMs, [[MPRateLimitManager sharedInstance] lastRateLimitMillisecondsForAdUnitId:self.communicatorDelegateHandler.adUnitId]);
+        XCTAssert([kDefaultRateLimitReason isEqualToString:[[MPRateLimitManager sharedInstance] lastRateLimitReasonForAdUnitId:self.communicatorDelegateHandler.adUnitId]]);
 
         // Did the attempt at a request fail
         XCTAssertTrue(didFail);
@@ -878,15 +866,13 @@ static NSString * const kIsWhitelistedUserDefaultsKey = @"com.mopub.mopub-ios-sd
                                                        options:0
                                                          error:nil];
 
-    self.communicatorDelegateHandler.adUnitIdForAdServerCommunicator = ^(MPAdServerCommunicator * communicator){
-        return @"testRateLimitTimerIsNotSetOnClearResponseWithNoBackoffKey";
-    };
+    self.communicatorDelegateHandler.adUnitId = @"testRateLimitTimerIsNotSetOnClearResponseWithNoBackoffKey";
 
     [self.communicator didFinishLoadingWithData:jsonData];
 
     XCTAssertFalse(self.communicator.isRateLimited);
-    XCTAssertEqual(0, [[MPRateLimitManager sharedInstance] lastRateLimitMillisecondsForAdUnitId:self.communicatorDelegateHandler.adUnitIdForAdServerCommunicator(nil)]);
-    XCTAssertNil([[MPRateLimitManager sharedInstance] lastRateLimitReasonForAdUnitId:self.communicatorDelegateHandler.adUnitIdForAdServerCommunicator(nil)]);
+    XCTAssertEqual(0, [[MPRateLimitManager sharedInstance] lastRateLimitMillisecondsForAdUnitId:self.communicatorDelegateHandler.adUnitId]);
+    XCTAssertNil([[MPRateLimitManager sharedInstance] lastRateLimitReasonForAdUnitId:self.communicatorDelegateHandler.adUnitId]);
 }
 
 - (void)testRateLimitTimerIsSetOnMraidResponseWithReason {
@@ -917,9 +903,7 @@ static NSString * const kIsWhitelistedUserDefaultsKey = @"com.mopub.mopub-ios-sd
         [waitForDelegate fulfill];
     };
 
-    self.communicatorDelegateHandler.adUnitIdForAdServerCommunicator = ^(MPAdServerCommunicator * communicator){
-        return @"testRateLimitTimerIsSetOnMraidResponseWithReason";
-    };
+    self.communicatorDelegateHandler.adUnitId = @"testRateLimitTimerIsSetOnMraidResponseWithReason";
 
     // Load data (set rate limit timer)
     [self.communicator didFinishLoadingWithData:jsonData];
@@ -934,8 +918,8 @@ static NSString * const kIsWhitelistedUserDefaultsKey = @"com.mopub.mopub-ios-sd
 
         // Did the rate limit timer get set
         XCTAssertTrue(isRateLimited);
-        XCTAssertEqual(kDefaultRateLimitTimeMs, [[MPRateLimitManager sharedInstance] lastRateLimitMillisecondsForAdUnitId:self.communicatorDelegateHandler.adUnitIdForAdServerCommunicator(nil)]);
-        XCTAssert([kDefaultRateLimitReason isEqualToString:[[MPRateLimitManager sharedInstance] lastRateLimitReasonForAdUnitId:self.communicatorDelegateHandler.adUnitIdForAdServerCommunicator(nil)]]);
+        XCTAssertEqual(kDefaultRateLimitTimeMs, [[MPRateLimitManager sharedInstance] lastRateLimitMillisecondsForAdUnitId:self.communicatorDelegateHandler.adUnitId]);
+        XCTAssert([kDefaultRateLimitReason isEqualToString:[[MPRateLimitManager sharedInstance] lastRateLimitReasonForAdUnitId:self.communicatorDelegateHandler.adUnitId]]);
 
         // Did the attempt at a request fail
         XCTAssertTrue(didFail);
@@ -972,9 +956,7 @@ static NSString * const kIsWhitelistedUserDefaultsKey = @"com.mopub.mopub-ios-sd
         [waitForDelegate fulfill];
     };
 
-    self.communicatorDelegateHandler.adUnitIdForAdServerCommunicator = ^(MPAdServerCommunicator * communicator){
-        return @"testRateLimitTimerIsSetOnMraidResponseWithoutReason";
-    };
+    self.communicatorDelegateHandler.adUnitId = @"testRateLimitTimerIsSetOnMraidResponseWithoutReason";
 
     // Load data (set rate limit timer)
     [self.communicator didFinishLoadingWithData:jsonData];
@@ -989,8 +971,8 @@ static NSString * const kIsWhitelistedUserDefaultsKey = @"com.mopub.mopub-ios-sd
 
         // Did the rate limit timer get set
         XCTAssertTrue(isRateLimited);
-        XCTAssertEqual(kDefaultRateLimitTimeMs, [[MPRateLimitManager sharedInstance] lastRateLimitMillisecondsForAdUnitId:self.communicatorDelegateHandler.adUnitIdForAdServerCommunicator(nil)]);
-        XCTAssertNil([[MPRateLimitManager sharedInstance] lastRateLimitReasonForAdUnitId:self.communicatorDelegateHandler.adUnitIdForAdServerCommunicator(nil)]);
+        XCTAssertEqual(kDefaultRateLimitTimeMs, [[MPRateLimitManager sharedInstance] lastRateLimitMillisecondsForAdUnitId:self.communicatorDelegateHandler.adUnitId]);
+        XCTAssertNil([[MPRateLimitManager sharedInstance] lastRateLimitReasonForAdUnitId:self.communicatorDelegateHandler.adUnitId]);
 
         // Did the attempt at a request fail
         XCTAssertTrue(didFail);
@@ -1010,9 +992,7 @@ static NSString * const kIsWhitelistedUserDefaultsKey = @"com.mopub.mopub-ios-sd
                                                                }, ]
                                        };
 
-    self.communicatorDelegateHandler.adUnitIdForAdServerCommunicator = ^(MPAdServerCommunicator * communicator){
-        return @"testRateLimitTimerIsNotSetOnMraidResponseWithNoBackoffKey";
-    };
+    self.communicatorDelegateHandler.adUnitId = @"testRateLimitTimerIsNotSetOnMraidResponseWithNoBackoffKey";
 
     NSData *jsonData = [NSJSONSerialization dataWithJSONObject:responseDataDict
                                                        options:0
@@ -1021,8 +1001,8 @@ static NSString * const kIsWhitelistedUserDefaultsKey = @"com.mopub.mopub-ios-sd
     [self.communicator didFinishLoadingWithData:jsonData];
 
     XCTAssertFalse(self.communicator.isRateLimited);
-    XCTAssertEqual(0, [[MPRateLimitManager sharedInstance] lastRateLimitMillisecondsForAdUnitId:self.communicatorDelegateHandler.adUnitIdForAdServerCommunicator(nil)]);
-    XCTAssertNil([[MPRateLimitManager sharedInstance] lastRateLimitReasonForAdUnitId:self.communicatorDelegateHandler.adUnitIdForAdServerCommunicator(nil)]);
+    XCTAssertEqual(0, [[MPRateLimitManager sharedInstance] lastRateLimitMillisecondsForAdUnitId:self.communicatorDelegateHandler.adUnitId]);
+    XCTAssertNil([[MPRateLimitManager sharedInstance] lastRateLimitReasonForAdUnitId:self.communicatorDelegateHandler.adUnitId]);
 }
 
 @end

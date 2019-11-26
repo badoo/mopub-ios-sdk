@@ -45,6 +45,13 @@ class ContainerViewController: UIViewController {
      */
     private(set) var menuViewController: MenuViewController? = nil
     
+    var savedAdSplitViewController: UISplitViewController {
+        guard let mainTabBarController = mainTabBarController else {
+            fatalError()
+        }
+        return mainTabBarController.savedAdSplitViewController
+    }
+    
     // MARK: - Forced Traits
     
     func setForcedTraits(for size: CGSize) {

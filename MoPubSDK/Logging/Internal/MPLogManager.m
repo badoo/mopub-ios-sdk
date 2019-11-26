@@ -84,6 +84,10 @@ static NSString * sObfuscatedIdentifier;
 #pragma mark - Logging
 
 - (void)logMessage:(NSString *)message atLogLevel:(MPBLogLevel)level {
+    if (level == MPBLogLevelNone) {
+        return;
+    }
+
     // Lazily retrieve the IDFA
     if (sIdentifier == nil) {
         sIdentifier = [[MPIdentityProvider identifier] copy];

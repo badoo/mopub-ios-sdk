@@ -16,11 +16,11 @@
 
 - (instancetype)initWithMetadata:(NSDictionary *)metadata
                             data:(NSData *)data
-                          adType:(MPAdType)adType
+                  isFullscreenAd:(BOOL)isFullscreenAd
               experimentProvider:(MOPUBExperimentProvider *)experimentProvider;
 - (void)commonInitWithMetadata:(NSDictionary *)metadata
                           data:(NSData *)data
-                        adType:(MPAdType)adType
+                isFullscreenAd:(BOOL)isFullscreenAd
             experimentProvider:(MOPUBExperimentProvider *)experimentProvider;
 - (NSArray <NSURL *> *)URLsFromMetadata:(NSDictionary *)metadata forKey:(NSString *)key;
 - (NSArray <NSString *> *)URLStringsFromMetadata:(NSDictionary *)metadata forKey:(NSString *)key;

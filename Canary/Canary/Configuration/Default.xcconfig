@@ -9,10 +9,7 @@
 // Configuration settings file format documentation can be found at:
 // https://help.apple.com/xcode/#/dev745c5c974
 
-// The default `CFBundleName` is `$(PRODUCT_NAME)`, and the original `PRODUCT_NAME` is `Canary`.
-// Later on, `CFBundleName` should be changed to `MoPub` instead of `Canary`, but we cannot use
-// `MoPub` for `PRODUCT_NAME` since this introduces a namespace collision with the MoPub SDK module.
-// To solve this namespace collision issue, `PRODUCT_NAME` stays the same as `Canary`, but
-// `BUNDLE_NAME` is created and assigned to `CFBundleName` as `$(BUNDLE_NAME)` in the plist files.
-BUNDLE_NAME = MoPub
+// If the display name of the app should be changed, we should change `CFBundleDisplayName` instead
+// of `PRODUCT_NAME`, because `PRODUCT_NAME` is widely used for the module name, build path, and many
+// implicit references when Xcode makes a build and execute tests - thing can go wrong very easily.
 PRODUCT_NAME = Canary

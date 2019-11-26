@@ -11,6 +11,7 @@ import MoPub
 import MoPub_AdMob_Adapters
 import MoPub_FacebookAudienceNetwork_Adapters
 import MoPub_Flurry_Adapters
+import MoPub_Verizon_Adapters
 
 final class NativeAdRendererManager {
     static let shared = NativeAdRendererManager()
@@ -96,7 +97,7 @@ private extension NativeAdRendererManager {
         let mopubSettings: MPStaticNativeAdRendererSettings = MPStaticNativeAdRendererSettings()
         mopubSettings.renderingViewClass = NativeAdView.self
         mopubSettings.viewSizeHandler = { (width) -> CGSize in
-            return CGSize(width: width, height: 275)
+            return CGSize(width: width, height: NativeAdView.estimatedViewHeightForWidth(width))
         }
         
         return mopubSettings
@@ -110,7 +111,7 @@ private extension NativeAdRendererManager {
         let mopubVideoSettings: MOPUBNativeVideoAdRendererSettings = MOPUBNativeVideoAdRendererSettings()
         mopubVideoSettings.renderingViewClass = NativeAdView.self
         mopubVideoSettings.viewSizeHandler = { (width) -> CGSize in
-            return CGSize(width: width, height: 275)
+            return CGSize(width: width, height: NativeAdView.estimatedViewHeightForWidth(width))
         }
         
         return mopubVideoSettings
@@ -132,6 +133,11 @@ private extension NativeAdRendererManager {
         // OPTIONAL: Flurry native video renderer
         if let flurryConfig = FlurryNativeVideoAdRenderer.rendererConfiguration(with: mopubVideoRendererSettings) {
             renderers.append(flurryConfig)
+        }
+        
+        // OPTIONAL: Verizon native video renderer
+        if let verizonConfig = MPVerizonNativeAdRenderer.rendererConfiguration(with: mopubVideoRendererSettings) {
+            renderers.append(verizonConfig)
         }
         
         return renderers

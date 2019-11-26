@@ -91,10 +91,10 @@
             [params setValue:[UIDevice currentDevice].systemVersion forKey:@"platform_version"];
             [params setValue:[MPIdentityProvider identifier] forKey:@"device_id"];
             [params setValue:[UIDevice currentDevice].model forKey:@"device_model"];
-            [params setValue:[NSNumber numberWithInteger:self.adConfiguration.adType] forKey:@"ad_type"];
+            [params setValue:[NSNumber numberWithBool:self.adConfiguration.isFullscreenAd] forKey:@"is_fullscreen_ad"];
             [params setValue:self.adUnitId forKey:@"ad_unit_id"];
             [params setValue:self.adConfiguration.dspCreativeId forKey:@"creative_id"];
-            [params setValue:self.adConfiguration.networkType forKey:@"network_type"];
+            [params setValue:self.adConfiguration.adType forKey:@"ad_type"];
             [params setValue:[[NSLocale currentLocale] localeIdentifier] forKey:@"device_locale"];
             [params setValue:[self.location description] forKey:@"location"];
             [params setValue:MP_SDK_VERSION forKey:@"sdk_version"];

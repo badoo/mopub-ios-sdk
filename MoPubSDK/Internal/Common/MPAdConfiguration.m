@@ -7,26 +7,25 @@
 //
 
 #import "MOPUBExperimentProvider.h"
-#import "MOPUBNativeVideoCustomEvent.h"
 #import "MPAdConfiguration.h"
 #import "MPAdServerKeys.h"
 #import "MPConstants.h"
 #import "MPHTMLBannerCustomEvent.h"
 #import "MPHTMLInterstitialCustomEvent.h"
 #import "MPLogging.h"
-#import "MPMoPubNativeCustomEvent.h"
 #import "MPMoPubRewardedPlayableCustomEvent.h"
 #import "MPMoPubRewardedVideoCustomEvent.h"
 #import "MPMRAIDBannerCustomEvent.h"
 #import "MPMRAIDInterstitialCustomEvent.h"
 #import "MPRewardedVideoReward.h"
-#import "MPVASTTracking.h"
 #import "MPViewabilityTracker.h"
 #import "NSDictionary+MPAdditions.h"
 #import "NSJSONSerialization+MPAdditions.h"
 #import "NSString+MPAdditions.h"
 
 #if MP_HAS_NATIVE_PACKAGE
+#import "MOPUBNativeVideoCustomEvent.h"
+#import "MPMoPubNativeCustomEvent.h"
 #import "MPVASTTrackingEvent.h"
 #endif
 
@@ -59,7 +58,7 @@ NSString * const kPrecacheRequiredKey = @"x-precacherequired";
 NSString * const kIsVastVideoPlayerKey = @"x-vastvideoplayer";
 NSString * const kImpressionDataMetadataKey = @"impdata";
 
-NSString * const kInterstitialAdTypeMetadataKey = @"x-fulladtype";
+NSString * const kFullAdTypeMetadataKey = @"x-fulladtype";
 NSString * const kOrientationTypeMetadataKey = @"x-orientation";
 
 NSString * const kNativeImpressionMinVisiblePixelsMetadataKey = @"x-native-impression-min-px"; // The pixels Metadata takes priority over percentage, but percentage is left for backwards compatibility
@@ -79,6 +78,8 @@ NSString * const kAdTypeMraid = @"mraid";
 NSString * const kAdTypeClear = @"clear";
 NSString * const kAdTypeNative = @"json";
 NSString * const kAdTypeNativeVideo = @"json_video";
+NSString * const kAdTypeRewardedVideo = @"rewarded_video";
+NSString * const kAdTypeRewardedPlayable = @"rewarded_playable";
 
 // rewarded video
 NSString * const kRewardedVideoCurrencyNameMetadataKey = @"x-rewarded-video-currency-name";
@@ -127,13 +128,13 @@ NSString * const kVASTClickabilityExperimentKey = @"vast-click-enabled";
 
 @implementation MPAdConfiguration
 
-- (instancetype)initWithMetadata:(NSDictionary *)metadata data:(NSData *)data adType:(MPAdType)adType
+- (instancetype)initWithMetadata:(NSDictionary *)metadata data:(NSData *)data isFullscreenAd:(BOOL)isFullscreenAd
 {
     self = [super init];
     if (self) {
         [self commonInitWithMetadata:metadata
                                 data:data
-                              adType:adType
+                      isFullscreenAd:isFullscreenAd
                   experimentProvider:MOPUBExperimentProvider.sharedInstance];
     }
     return self;
@@ -144,16 +145,15 @@ NSString * const kVASTClickabilityExperimentKey = @"vast-click-enabled";
  */
 - (void)commonInitWithMetadata:(NSDictionary *)metadata
                           data:(NSData *)data
-                        adType:(MPAdType)adType
+                isFullscreenAd:(BOOL)isFullscreenAd
             experimentProvider:(MOPUBExperimentProvider *)experimentProvider
 {
     self.adResponseData = data;
 
-    self.adType = adType;
+    _isFullscreenAd = isFullscreenAd;
     self.adUnitWarmingUp = [metadata mp_boolForKey:kAdUnitWarmingUpMetadataKey];
 
-    self.networkType = [self networkTypeFromMetadata:metadata];
-    self.networkType = self.networkType ? self.networkType : @"";
+    self.adType = [self adTypeFromMetadata:metadata];
 
     self.preferredSize = CGSizeMake([metadata mp_floatForKey:kWidthMetadataKey],
                                     [metadata mp_floatForKey:kHeightMetadataKey]);
@@ -288,28 +288,23 @@ NSString * const kVASTClickabilityExperimentKey = @"vast-click-enabled";
 - (Class)setUpCustomEventClassFromMetadata:(NSDictionary *)metadata
 {
     NSDictionary *customEventTable;
-    switch (self.adType) {
-        case MPAdTypeInline: {
-            customEventTable = @{@"admob_native": @"MPGoogleAdMobBannerCustomEvent", // optional class
-                                 @"html": NSStringFromClass([MPHTMLBannerCustomEvent class]),
-                                 @"mraid": NSStringFromClass([MPMRAIDBannerCustomEvent class]),
-                                 @"json_video": NSStringFromClass([MOPUBNativeVideoCustomEvent class]),
-                                 @"json": NSStringFromClass([MPMoPubNativeCustomEvent class])};
-            break;
-        }
-        case MPAdTypeFullscreen: {
-            customEventTable = @{@"admob_full": @"MPGoogleAdMobInterstitialCustomEvent", // optional class
-                                 @"html": NSStringFromClass([MPHTMLInterstitialCustomEvent class]),
-                                 @"mraid": NSStringFromClass([MPMRAIDInterstitialCustomEvent class]),
-                                 @"rewarded_video": NSStringFromClass([MPMoPubRewardedVideoCustomEvent class]),
-                                 @"rewarded_playable": NSStringFromClass([MPMoPubRewardedPlayableCustomEvent class])};
-            break;
-        }
+    if (self.isFullscreenAd) {
+        customEventTable = @{@"admob_full": @"MPGoogleAdMobInterstitialCustomEvent", // optional class
+        kAdTypeHtml: NSStringFromClass([MPHTMLInterstitialCustomEvent class]),
+        kAdTypeMraid: NSStringFromClass([MPMRAIDInterstitialCustomEvent class]),
+        kAdTypeRewardedVideo: NSStringFromClass([MPMoPubRewardedVideoCustomEvent class]),
+        kAdTypeRewardedPlayable: NSStringFromClass([MPMoPubRewardedPlayableCustomEvent class])};
+    } else {
+        customEventTable = @{@"admob_native": @"MPGoogleAdMobBannerCustomEvent", // optional class
+        kAdTypeHtml: NSStringFromClass([MPHTMLBannerCustomEvent class]),
+        kAdTypeMraid: NSStringFromClass([MPMRAIDBannerCustomEvent class]),
+        kAdTypeNativeVideo: NSStringFromClass([MOPUBNativeVideoCustomEvent class]),
+        kAdTypeNative: NSStringFromClass([MPMoPubNativeCustomEvent class])};
     }
 
     NSString *customEventClassName = metadata[kCustomEventClassNameMetadataKey];
-    if (customEventTable[self.networkType]) {
-        customEventClassName = customEventTable[self.networkType];
+    if (customEventTable[self.adType]) {
+        customEventClassName = customEventTable[self.adType];
     }
 
     Class customEventClass = NSClassFromString(customEventClassName);
@@ -429,14 +424,30 @@ NSString * const kVASTClickabilityExperimentKey = @"vast-click-enabled";
     return [baseArray arrayByAddingObjectsFromArray:conditionalArray];
 }
 
-- (NSString *)networkTypeFromMetadata:(NSDictionary *)metadata
+/**
+ Read the ad type from the "x-adtype" and "x-fulladtype" of the provided @c metadata. The return
+ value is non-null because ad type might be used as a dictionary key, and a nil key causes crash.
+ @param metadata the dictionary that contains ad type information
+ @return A non-null @c NSString. If @c metadata does not contain valid ad type value, then return
+ an empty string.
+*/
+- (NSString * _Nonnull)adTypeFromMetadata:(NSDictionary *)metadata
 {
     NSString *adTypeString = [metadata objectForKey:kAdTypeMetadataKey];
-    if ([adTypeString isEqualToString:@"interstitial"]) {
-        return [metadata objectForKey:kInterstitialAdTypeMetadataKey];
-    } else {
-        return adTypeString;
+
+    // override ad type if full ad type is provided
+    if ([adTypeString isEqualToString:kAdTypeInterstitial]
+        && [[metadata objectForKey:kFullAdTypeMetadataKey] isKindOfClass:[NSString class]]
+        && ((NSString *)[metadata objectForKey:kFullAdTypeMetadataKey]).length > 0) {
+        adTypeString = [metadata objectForKey:kFullAdTypeMetadataKey];
     }
+
+    // make sure the return value is non-null
+    if (adTypeString.length == 0) {
+        adTypeString = @"";
+    }
+
+    return adTypeString;
 }
 
 - (NSURL *)URLFromMetadata:(NSDictionary *)metadata forKey:(NSString *)key

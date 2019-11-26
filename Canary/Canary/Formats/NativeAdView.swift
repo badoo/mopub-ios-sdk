@@ -46,6 +46,21 @@ class NativeAdView: UIView {
         setupNib()
     }
     
+    /**
+     The function is essential for supporting flexible width. The native view content might be
+     stretched, cut, or have undesired padding if the height is not estimated properly.
+     */
+    static func estimatedViewHeightForWidth(_ width: CGFloat) -> CGFloat {
+        // The numbers are obtained from the constraint defined in the xib file
+        let padding: CGFloat = 8
+        let iconImageViewWidth: CGFloat = 50
+        let estimatedNonMainContentCombinedHeight: CGFloat = 72 // [title, main text, call to action] labels
+        
+        let mainContentWidth = width - padding * 3 - iconImageViewWidth
+        let mainContentHeight = mainContentWidth / 2 // the xib has a 2:1 width:height ratio constraint
+        return floor(mainContentHeight + estimatedNonMainContentCombinedHeight + padding * 2)
+    }
+    
     func setupNib() -> Void {
         guard let view = loadViewFromNib(nibName: nibName) else {
             return

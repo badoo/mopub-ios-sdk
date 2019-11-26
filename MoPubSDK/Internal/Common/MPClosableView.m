@@ -9,7 +9,6 @@
 #import "MPClosableView.h"
 #import "MPGlobal.h"
 #import "MPUserInteractionGestureRecognizer.h"
-#import "MPWebView.h"
 
 /**
  Per MRAID spec https://www.iab.com/wp-content/uploads/2015/08/IAB_MRAID_v2_FINAL.pdf, page 31, the
@@ -72,7 +71,7 @@ CGRect MPClosableViewCustomCloseButtonFrame(CGSize adSize, MPClosableViewCloseBu
 @implementation MPClosableView
 
 - (instancetype)initWithFrame:(CGRect)frame
-                      webView:(MPWebView *)webView
+                  contentView:(UIView *)contentView
                      delegate:(id<MPClosableViewDelegate>)delegate {
     self = [super initWithFrame:frame];
 
@@ -104,8 +103,8 @@ CGRect MPClosableViewCustomCloseButtonFrame(CGSize adSize, MPClosableViewCloseBu
         [self addSubview:_closeButton];
 
         // Set up web view
-        webView.frame = self.bounds;
-        [self addSubview:webView];
+        contentView.frame = self.bounds;
+        [self addSubview:contentView];
     }
 
     return self;

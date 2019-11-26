@@ -152,7 +152,7 @@ static NSString * const kAdResonsesContentKey = @"content";
 }
 
 - (BOOL)isRateLimited {
-    return [[MPRateLimitManager sharedInstance] isRateLimitedForAdUnitId:[self.delegate adUnitIDForAdServerCommunicator:self]];
+    return [[MPRateLimitManager sharedInstance] isRateLimitedForAdUnitId:self.delegate.adUnitId];
 }
 
 - (void)failLoadForSDKInit {
@@ -174,8 +174,7 @@ static NSString * const kAdResonsesContentKey = @"content";
     // we should populate it with this known good adunit ID. This is to cover any edge case where the
     // publisher manages to initialize with no adunit ID or a malformed adunit ID.
     // It is known good since this is the success callback from the ad request.
-    NSString * adunitID = [self.delegate adUnitIDForAdServerCommunicator:self];
-    [MPConsentManager.sharedManager setAdUnitIdUsedForConsent:adunitID isKnownGood:YES];
+    [MPConsentManager.sharedManager setAdUnitIdUsedForConsent:self.delegate.adUnitId isKnownGood:YES];
 
     // Headers from the original HTTP response are intentionally ignored as laid out
     // by the Client Side Waterfall design doc.
@@ -231,7 +230,7 @@ static NSString * const kAdResonsesContentKey = @"content";
             continue;
         }
 
-        MPAdConfiguration * configuration = [[MPAdConfiguration alloc] initWithMetadata:metadata data:content adType:[self.delegate adTypeForAdServerCommunicator:self]];
+        MPAdConfiguration * configuration = [[MPAdConfiguration alloc] initWithMetadata:metadata data:content isFullscreenAd:self.delegate.isFullscreenAd];
         if (configuration != nil) {
             [configurations addObject:configuration];
         } else {
@@ -242,7 +241,7 @@ static NSString * const kAdResonsesContentKey = @"content";
     // Set up rate limiting (has no effect if backoffMs is 0)
     NSInteger backoffMs = [json[kBackoffMsKey] integerValue];
     NSString * backoffReason = json[kBackoffReasonKey];
-    [[MPRateLimitManager sharedInstance] setRateLimitTimerWithAdUnitId:[self.delegate adUnitIDForAdServerCommunicator:self]
+    [[MPRateLimitManager sharedInstance] setRateLimitTimerWithAdUnitId:self.delegate.adUnitId
                                                           milliseconds:backoffMs
                                                                 reason:backoffReason];
 

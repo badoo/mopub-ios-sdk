@@ -8,6 +8,7 @@
 
 #import "MPVASTManager.h"
 #import "MPVASTAd.h"
+#import "MPVASTError.h"
 #import "MPVASTWrapper.h"
 #import "MPXMLParser.h"
 #import "MPHTTPNetworkSession.h"
@@ -63,7 +64,9 @@ static NSString * const kMPVASTManagerErrorDomain = @"com.mopub.MPVASTManager";
             completion(VASTResponse, nil);
             return;
         } else {
-            completion(nil, [NSError errorWithDomain:kMPVASTManagerErrorDomain code:MPVASTErrorNoAdsFound userInfo:nil]);
+            completion(nil, [NSError errorWithDomain:kMPVASTManagerErrorDomain
+                                                code:MPVASTErrorFailedToDisplayAdFromInlineResponse
+                                            userInfo:nil]);
             return;
         }
     }
@@ -92,7 +95,9 @@ static NSString * const kMPVASTManagerErrorDomain = @"com.mopub.MPVASTManager";
                             completion(VASTResponse, nil);
                             return;
                         } else {
-                            completion(nil, [NSError errorWithDomain:kMPVASTManagerErrorDomain code:MPVASTErrorNoAdsFound userInfo:nil]);
+                            completion(nil, [NSError errorWithDomain:kMPVASTManagerErrorDomain
+                                                                code:MPVASTErrorNoVASTResponseAfterOneOrMoreWrappers
+                                                            userInfo:nil]);
                             return;
                         }
                     }

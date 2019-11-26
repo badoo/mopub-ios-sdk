@@ -13,7 +13,7 @@
 
 @property (nonatomic, copy) void (^communicatorDidReceiveAdConfigurations)(NSArray<MPAdConfiguration *> *configurations);
 @property (nonatomic, copy) void (^communicatorDidFailWithError)(NSError *error);
-@property (nonatomic, copy) MPAdType (^adTypeForAdServerCommunicator)(MPAdServerCommunicator *adServerCommunicator);
-@property (nonatomic, copy) NSString * (^adUnitIdForAdServerCommunicator)(MPAdServerCommunicator *adServerCommunicator);
+@property (nonatomic, assign) BOOL isFullscreenAd;
+@property (nonatomic, copy) NSString *adUnitId;
 
 @end

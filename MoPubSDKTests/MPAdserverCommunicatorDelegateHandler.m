@@ -10,9 +10,16 @@
 
 @implementation MPAdServerCommunicatorDelegateHandler
 
-- (void)communicatorDidReceiveAdConfigurations:(NSArray<MPAdConfiguration *> *)configurations { if (self.communicatorDidReceiveAdConfigurations) self.communicatorDidReceiveAdConfigurations(configurations); }
-- (void)communicatorDidFailWithError:(NSError *)error { if (self.communicatorDidFailWithError) self.communicatorDidFailWithError(error); }
-- (MPAdType)adTypeForAdServerCommunicator:(MPAdServerCommunicator *)adServerCommunicator { if (self.adTypeForAdServerCommunicator) return self.adTypeForAdServerCommunicator(adServerCommunicator); else return MPAdTypeFullscreen; }
-- (NSString *)adUnitIDForAdServerCommunicator:(MPAdServerCommunicator *)adServerCommunicator { if (self.adUnitIdForAdServerCommunicator) return self.adUnitIdForAdServerCommunicator(adServerCommunicator); else return @""; }
+- (void)communicatorDidReceiveAdConfigurations:(NSArray<MPAdConfiguration *> *)configurations {
+    if (self.communicatorDidReceiveAdConfigurations) {
+        self.communicatorDidReceiveAdConfigurations(configurations);
+    }
+}
+
+- (void)communicatorDidFailWithError:(NSError *)error {
+    if (self.communicatorDidFailWithError) {
+        self.communicatorDidFailWithError(error);
+    }
+}
 
 @end

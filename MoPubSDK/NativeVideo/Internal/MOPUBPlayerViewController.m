@@ -154,6 +154,7 @@ static const double kVideoFinishedBufferingAllowedError = 0.1;
                         videoTimeOffset:self.avPlayer.currentPlaybackTime];
     [self stopLoadingIndicator];
     [self.playerView handleVideoInitFailure];
+    [self.vastTracking handleVASTError:MPVASTErrorCannotPlayMedia videoTimeOffset:0];
 }
 
 - (void)loadAndPlayVideo

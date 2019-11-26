@@ -11,7 +11,7 @@
 
 @implementation MPMockChartboostRewardedVideoCustomEvent
 
-- (void)requestRewardedVideoWithCustomEventInfo:(NSDictionary *)info {
+- (void)requestRewardedVideoWithCustomEventInfo:(NSDictionary *)info adMarkup:(NSString *)adMarkup {
     [MPMockChartboostAdapterConfiguration setCachedInitializationParameters:info];
     [self.delegate rewardedVideoDidLoadAdForCustomEvent:self];
 }

@@ -14,6 +14,7 @@
 @property (nonatomic, readonly) BOOL isCountdownActive;
 @property (nonatomic, strong) MPMRAIDInterstitialViewController *interstitial;
 @property (nonatomic, strong) MPCountdownTimerView *timerView;
+@property (nonatomic, readonly) NSTimeInterval countdownDuration;
 
 - (instancetype)initWithInterstitial:(MPMRAIDInterstitialViewController *)interstitial;
 

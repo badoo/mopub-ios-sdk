@@ -15,7 +15,7 @@
             <BuildableReference
                BuildableIdentifier = "primary"
                BlueprintIdentifier = "BC33E04A1FBB63260060ECBE"
-               BuildableName = "MoPub.app"
+               BuildableName = "Canary.app"
                BlueprintName = "Internal Application"
                ReferencedContainer = "container:Canary.xcodeproj">
             </BuildableReference>
@@ -32,7 +32,7 @@
          <BuildableReference
             BuildableIdentifier = "primary"
             BlueprintIdentifier = "BC33E04A1FBB63260060ECBE"
-            BuildableName = "MoPub.app"
+            BuildableName = "Canary.app"
             BlueprintName = "Internal Application"
             ReferencedContainer = "container:Canary.xcodeproj">
          </BuildableReference>
@@ -67,7 +67,7 @@
          <BuildableReference
             BuildableIdentifier = "primary"
             BlueprintIdentifier = "BC33E04A1FBB63260060ECBE"
-            BuildableName = "MoPub.app"
+            BuildableName = "Canary.app"
             BlueprintName = "Internal Application"
             ReferencedContainer = "container:Canary.xcodeproj">
          </BuildableReference>
@@ -84,7 +84,7 @@
          <BuildableReference
             BuildableIdentifier = "primary"
             BlueprintIdentifier = "BC33E04A1FBB63260060ECBE"
-            BuildableName = "MoPub.app"
+            BuildableName = "Canary.app"
             BlueprintName = "Internal Application"
             ReferencedContainer = "container:Canary.xcodeproj">
          </BuildableReference>

@@ -12,11 +12,6 @@
 
 @class MPRewardedVideoReward;
 
-typedef NS_ENUM(NSUInteger, MPAdType) {
-    MPAdTypeInline,
-    MPAdTypeFullscreen
-};
-
 typedef NS_ENUM(NSUInteger, MPAfterLoadResult) {
     MPAfterLoadResultMissingAdapter,
     MPAfterLoadResultAdLoaded,
@@ -55,7 +50,7 @@ extern NSString * const kRewardedPlayableDurationMetadataKey;
 extern NSString * const kRewardedPlayableRewardOnClickMetadataKey;
 extern NSString * const kImpressionDataMetadataKey;
 
-extern NSString * const kInterstitialAdTypeMetadataKey;
+extern NSString * const kFullAdTypeMetadataKey;
 extern NSString * const kOrientationTypeMetadataKey;
 
 extern NSString * const kAdTypeHtml;
@@ -64,6 +59,8 @@ extern NSString * const kAdTypeMraid;
 extern NSString * const kAdTypeClear;
 extern NSString * const kAdTypeNative;
 extern NSString * const kAdTypeNativeVideo;
+extern NSString * const kAdTypeRewardedVideo;
+extern NSString * const kAdTypeRewardedPlayable;
 
 extern NSString * const kClickthroughExperimentBrowserAgent;
 
@@ -74,10 +71,10 @@ extern NSString * const kBannerImpressionMinPixelMetadataKey;
 
 @interface MPAdConfiguration : NSObject
 
-@property (nonatomic, assign) MPAdType adType;
+@property (nonatomic, readonly) BOOL isFullscreenAd;
 @property (nonatomic, assign) BOOL adUnitWarmingUp;
 @property (nonatomic, readonly) BOOL isMraidAd;
-@property (nonatomic, copy) NSString *networkType;
+@property (nonatomic, copy) NSString *adType; // the value is a `kAdType` constant from "x-adtype"
 // If this flag is YES, it implies that we've reached the end of the waterfall for the request
 // and there is no need to hit ad server again.
 @property (nonatomic) BOOL isEndOfWaterfall;
@@ -125,7 +122,7 @@ extern NSString * const kBannerImpressionMinPixelMetadataKey;
 @property (nonatomic) CGFloat impressionMinVisiblePixels;
 @property (nonatomic) BOOL visibleImpressionTrackingEnabled;
 
-- (instancetype)initWithMetadata:(NSDictionary *)metadata data:(NSData *)data adType:(MPAdType)adType;
+- (instancetype)initWithMetadata:(NSDictionary *)metadata data:(NSData *)data isFullscreenAd:(BOOL)isFullscreenAd;
 
 // Default @c init is unavailable
 - (instancetype)init NS_UNAVAILABLE;

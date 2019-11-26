@@ -39,12 +39,12 @@ class NativeAdDataSource: BaseNativeAdDataSource, AdDataSource {
      */
     lazy var title: [AdEvent: String] = {
         var titleStrings: [AdEvent: String] = [:]
-        titleStrings[.didLoad]            = "nativeAdDidLoad(_:)"
-        titleStrings[.didFailToLoad]      = "nativeAdDidFailToLoad(_:_:)"
-        titleStrings[.willPresentModal]   = "willPresentModal(_:)"
-        titleStrings[.didDismissModal]    = "didDismissModal(_:)"
-        titleStrings[.willLeaveApp]       = "willLeaveApplication(_:)"
-        titleStrings[.didTrackImpression] = "mopubAd(_:, didTrackImpressionWith _:)"
+        titleStrings[.didLoad]            = CallbackFunctionNames.nativeAdDidLoad
+        titleStrings[.didFailToLoad]      = CallbackFunctionNames.nativeAdDidFailToLoad
+        titleStrings[.willPresentModal]   = CallbackFunctionNames.willPresentModal
+        titleStrings[.didDismissModal]    = CallbackFunctionNames.didDismissModal
+        titleStrings[.willLeaveApp]       = CallbackFunctionNames.willLeaveApplication
+        titleStrings[.didTrackImpression] = CallbackFunctionNames.didTrackImpression
         
         return titleStrings
     }()

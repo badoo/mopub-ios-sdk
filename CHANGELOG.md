@@ -1,3 +1,14 @@
+## Version 5.10.0 (October 30, 2019)
+- **Features**
+  - Added support for the Verizon native ad renderer.
+  - Deprecated base custom event `requestAd` calls without the `adMarkup` parameter.
+
+- **Bug Fixes**
+  - Fixed non-native SDK target compilation error.
+  - Fixed potential crash in `MPTableViewAdPlacer` and `MPCollectionViewAdPlacer`.
+  - Removed extraneous `NSLog` statements for Release build configuration.
+  - Fixed VAST error code macro replacement in tracking URLs.
+
 ## Version 5.9.0 (September 16, 2019)
 - **Features**
   - Add iOS 13 support to both SDK and MoPub Sample app. 
@@ -46,6 +57,7 @@
 - **Features**
   - Impression Level Revenue Data: A data object that includes revenue information associated with each impression
   - Verizon Ads SDK now supported as a mediated network
+  - Native ad renderer registration for FacebookNativeCustomEvent and MillennialNativeCustomEvent is removed from the SDK. Pubishers must register renderers in their app.
 
 - **Bug Fixes**
   - Fixed bug where native video fires an impression when main image asset is missing

@@ -12,9 +12,9 @@
 
 - (instancetype)init {
     if (self = [super init]) {
-        // The console logging level is set to info by default in the event
-        // that an error needs to be logged to the console prior to SDK
-        // initialization.
+        // The console logging level is set to `MPBLogLevelInfo` by default in the event that an
+        // error needs to be logged to the console prior to SDK initialization. `MPMoPubConfiguration`
+        // will set the log level to `MPBLogLevelInfo` during initialization.
         _logLevel = MPBLogLevelInfo;
     }
 

@@ -21,6 +21,18 @@ class MainTabBarController: UITabBarController {
      */
     private var notificationButton: UIButton = UIButton(type: .custom)
     
+    /**
+     The view controller of the second tab "Saved Ads", which is a `UISplitViewController`.
+     */
+    var savedAdSplitViewController: UISplitViewController {
+        guard let savedAdSplitViewController = viewControllers?.first(where: {
+            $0.tabBarItem.title == "Saved Ads"
+        }) as? UISplitViewController else {
+            fatalError()
+        }
+        return savedAdSplitViewController
+    }
+    
     // MARK: - View Lifecycle
     
     override func viewDidLoad() {

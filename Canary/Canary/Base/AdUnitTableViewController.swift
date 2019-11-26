@@ -48,6 +48,7 @@ class AdUnitTableViewController: UIViewController {
         if #available(iOS 13.0, *) {
             tableView.dragDelegate = self
             view.backgroundColor = .systemBackground
+            tableView.backgroundColor = .systemBackground
         }
     }
     

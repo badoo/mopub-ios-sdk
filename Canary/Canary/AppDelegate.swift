@@ -69,23 +69,6 @@ class AppDelegate: UIResponder {
             }
         }
     }
-    
-    /**
-     Saved ads split view controller.
-     */
-    var savedAdSplitViewController: UISplitViewController? {
-        if #available(iOS 13, *) {
-            fatalError("Handle multi-scene in `SceneDelegate` for iOS 13+")
-        } else {
-            switch sceneDelegate.mode {
-            case .adViewScene, .unknown:
-                print("`savedAdSplitViewController` is only available for the main scene")
-                return nil
-            case .mainScene(let mainSceneState):
-                return mainSceneState.savedAdSplitViewController
-            }
-        }
-    }
 }
 
 // MARK: - UIApplicationDelegate
