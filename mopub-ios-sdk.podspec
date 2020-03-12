@@ -1,7 +1,7 @@
 Pod::Spec.new do |spec|
   spec.name             = 'mopub-ios-sdk'
   spec.module_name      = 'MoPub'
-  spec.version          = '5.10.0'
+  spec.version          = '5.11.0'
   spec.license          = { :type => 'New BSD', :file => 'LICENSE' }
   spec.homepage         = 'https://github.com/mopub/mopub-ios-sdk'
   spec.authors          = { 'MoPub' => 'support@mopub.com' }
@@ -14,7 +14,7 @@ Pod::Spec.new do |spec|
                             To learn more or sign up for an account, go to http://www.mopub.com. \n
                           DESC
   spec.social_media_url = 'http://twitter.com/mopub'
-  spec.source           = { :git => 'https://github.com/mopub/mopub-ios-sdk.git', :tag => '5.10.0' }
+  spec.source           = { :git => 'https://github.com/mopub/mopub-ios-sdk.git', :tag => '5.11.0' }
   spec.requires_arc     = true
   spec.ios.deployment_target = '9.0'
   spec.frameworks       = [
@@ -40,6 +40,7 @@ Pod::Spec.new do |spec|
 
   spec.subspec 'MoPubSDK' do |sdk|
     sdk.dependency              'mopub-ios-sdk/Core'
+    sdk.dependency              'mopub-ios-sdk/NativeAds'
     sdk.dependency              'mopub-ios-sdk/Avid'
     sdk.dependency              'mopub-ios-sdk/Moat'
   end
@@ -47,7 +48,12 @@ Pod::Spec.new do |spec|
   spec.subspec 'Core' do |core|
     core.source_files         = 'MoPubSDK/**/*.{h,m}'
     core.resources            = ['MoPubSDK/**/*.{png,bundle,xib,nib}', 'MoPubSDK/**/MPAdapters.plist']
-    core.exclude_files        = ['MoPubSDK/Viewability/Moat', 'MoPubSDK/Viewability/Avid']
+    core.exclude_files        = ['MoPubSDK/Viewability/Moat', 'MoPubSDK/Viewability/Avid', 'MoPubSDK/NativeAds', 'MoPubSDK/NativeVideo']
+  end
+
+  spec.subspec 'NativeAds' do |native|
+    native.dependency             'mopub-ios-sdk/Core'
+    native.source_files         = ['MoPubSDK/NativeAds/**/*.{h,m}', 'MoPubSDK/NativeVideo/**/*.{h,m}']
   end
 
   spec.subspec 'Avid' do |avid|

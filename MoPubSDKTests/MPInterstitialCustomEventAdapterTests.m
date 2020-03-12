@@ -1,7 +1,7 @@
 //
 //  MPInterstitialCustomEventAdapterTests.m
 //
-//  Copyright 2018-2019 Twitter, Inc.
+//  Copyright 2018-2020 Twitter, Inc.
 //  Licensed under the MoPub SDK License Agreement
 //  http://www.mopub.com/legal/sdk-license-agreement/
 //
@@ -114,6 +114,7 @@ static NSTimeInterval const kTestTimeout = 2;
 }
 
 // test ad never expires if not mopub-specific custom event
+// Custom events for 3rd party SDK have their own timeout and expiration handling
 - (void)testAdNeverExpiresIfNotMoPubCustomEvent {
     MPInterstitialCustomEvent *customEvent = [[MPInterstitialCustomEvent alloc] init];
 

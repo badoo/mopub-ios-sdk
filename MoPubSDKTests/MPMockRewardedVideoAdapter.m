@@ -1,7 +1,7 @@
 //
 //  MPMockRewardedVideoAdapter.m
 //
-//  Copyright 2018-2019 Twitter, Inc.
+//  Copyright 2018-2020 Twitter, Inc.
 //  Licensed under the MoPub SDK License Agreement
 //  http://www.mopub.com/legal/sdk-license-agreement/
 //
@@ -12,7 +12,7 @@
 
 @interface MPMockRewardedVideoAdapter()
 @property (nonatomic, strong) MPAdConfiguration * configuration;
-@property (nonatomic, strong) MPRewardedVideoCustomEvent * rewardedVideoCustomEvent;
+@property (nonatomic, strong) id<MPRewardedVideoCustomEvent> rewardedVideoCustomEvent;
 @property (nonatomic, copy) NSString * customData;
 @end
 

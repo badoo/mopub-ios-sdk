@@ -1,7 +1,7 @@
 //
 //  MPAdConfiguration.h
 //
-//  Copyright 2018-2019 Twitter, Inc.
+//  Copyright 2018-2020 Twitter, Inc.
 //  Licensed under the MoPub SDK License Agreement
 //  http://www.mopub.com/legal/sdk-license-agreement/
 //
@@ -103,14 +103,14 @@ extern NSString * const kBannerImpressionMinPixelMetadataKey;
 @property (nonatomic, assign) NSTimeInterval nativeImpressionMinVisibleTimeInterval;
 @property (nonatomic, assign) NSTimeInterval nativeVideoMaxBufferingTime;
 @property (nonatomic) NSDictionary *nativeVideoTrackers;
-@property (nonatomic, readonly) NSArray *availableRewards;
+@property (nonatomic, readonly) NSArray<MPRewardedVideoReward *> *availableRewards;
 @property (nonatomic, strong) MPRewardedVideoReward *selectedReward;
 @property (nonatomic, copy) NSString *rewardedVideoCompletionUrl;
 @property (nonatomic, assign) NSTimeInterval rewardedPlayableDuration;
 @property (nonatomic, assign) BOOL rewardedPlayableShouldRewardOnClick;
 @property (nonatomic, copy) NSString *advancedBidPayload;
 @property (nonatomic, strong) MPImpressionData *impressionData;
-@property (nonatomic, assign) BOOL isVASTClickabilityExperimentEnabled;
+@property (nonatomic, assign) BOOL enableEarlyClickthroughForNonRewardedVideo;
 
 /**
  Unified ad unit format in its raw string representation.
@@ -121,6 +121,13 @@ extern NSString * const kBannerImpressionMinPixelMetadataKey;
 @property (nonatomic) NSTimeInterval impressionMinVisibleTimeInSec;
 @property (nonatomic) CGFloat impressionMinVisiblePixels;
 @property (nonatomic) BOOL visibleImpressionTrackingEnabled;
+
+/**
+ When there is no actual reward, `availableRewards` contains a default reward with the type
+ `kMPRewardedVideoRewardCurrencyTypeUnspecified`, thus we cannot simply count the array size
+ of `availableRewards` to tell whether there is a valid reward.
+ */
+@property (nonatomic, readonly) BOOL hasValidReward;
 
 - (instancetype)initWithMetadata:(NSDictionary *)metadata data:(NSData *)data isFullscreenAd:(BOOL)isFullscreenAd;
 

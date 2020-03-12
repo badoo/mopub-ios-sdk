@@ -1,7 +1,7 @@
 //
 //  MPVASTTrackingTests.m
 //
-//  Copyright 2018-2019 Twitter, Inc.
+//  Copyright 2018-2020 Twitter, Inc.
 //  Licensed under the MoPub SDK License Agreement
 //  http://www.mopub.com/legal/sdk-license-agreement/
 //
@@ -60,6 +60,7 @@
 - (void)setUp {
     if (self.allTrackingEventNames == nil) {
         _allTrackingEventNames = @[MPVideoEventClick,
+                                   MPVideoEventClose,
                                    MPVideoEventCloseLinear,
                                    MPVideoEventCollapse,
                                    MPVideoEventComplete,
@@ -83,6 +84,7 @@
 
     if (self.testData == nil) {
         _testData = @{MPVideoEventClick: @[@"https://www.mopub.com/?q=videoClickTracking"],
+                      MPVideoEventClose: @[@"https://www.mopub.com/?q=close"],
                       MPVideoEventCloseLinear: @[@"https://www.mopub.com/?q=closeLinear"],
                       MPVideoEventCollapse: @[@"https://www.mopub.com/?q=collapse"],
                       MPVideoEventComplete: @[@"https://www.mopub.com/?q=complete"],
@@ -117,6 +119,7 @@
     if (self.oneOffEventTypes == nil) {
         _oneOffEventTypes = [NSSet setWithObjects:
                              MPVideoEventClick,
+                             MPVideoEventClose,
                              MPVideoEventCloseLinear,
                              MPVideoEventComplete,
                              MPVideoEventCreativeView,

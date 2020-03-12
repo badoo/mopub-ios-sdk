@@ -1,7 +1,7 @@
 //
 //  MPVASTTracking.m
 //
-//  Copyright 2018-2019 Twitter, Inc.
+//  Copyright 2018-2020 Twitter, Inc.
 //  Licensed under the MoPub SDK License Agreement
 //  http://www.mopub.com/legal/sdk-license-agreement/
 //
@@ -9,6 +9,7 @@
 #import "MPAnalyticsTracker.h"
 #import "MPVASTMacroProcessor.h"
 #import "MPVASTTracking.h"
+#import "MPViewabilityTracker.h"
 
 static dispatch_once_t dispatchOnceToken; // for `oneOffEventTypes`
 static NSSet<MPVideoEvent> *oneOffEventTypes;
@@ -18,6 +19,7 @@ static NSSet<MPVideoEvent> *oneOffEventTypes;
 @property (nonatomic, strong) MPVideoConfig *videoConfig;
 @property (nonatomic, strong) NSURL *videoURL;
 @property (nonatomic, strong) id<MPAnalyticsTracker> analyticsTracker;
+@property (nonatomic, strong) MPViewabilityTracker *viewabilityTracker;
 
 /**
  The key is a @c MPVideoEvent string, and the value is a set of fired @c MPVASTTrackingEvent of the same type.
@@ -47,6 +49,7 @@ static NSSet<MPVideoEvent> *oneOffEventTypes;
         dispatch_once(&dispatchOnceToken, ^{
             oneOffEventTypes = [NSSet setWithObjects:
                                 MPVideoEventClick,
+                                MPVideoEventClose,
                                 MPVideoEventCloseLinear,
                                 MPVideoEventComplete,
                                 MPVideoEventCreativeView,
@@ -63,13 +66,22 @@ static NSSet<MPVideoEvent> *oneOffEventTypes;
     return self;
 }
 
+- (void)registerVideoViewForViewabilityTracking:(UIView *)videoView {
+    self.viewabilityTracker = [[MPViewabilityTracker alloc] initWithNativeVideoView:videoView
+                                                           startTrackingImmediately:YES];
+}
+
+- (void)stopViewabilityTracking {
+    [self.viewabilityTracker stopTracking];
+}
+
 - (void)handleVideoEvent:(MPVideoEvent)videoEvent videoTimeOffset:(NSTimeInterval)videoTimeOffset {
     if ([oneOffEventTypes containsObject:videoEvent]
         && self.firedTable[videoEvent] != nil) {
         return; // do not fire more than once
     }
 
-    if (videoEvent == MPVideoEventError) {
+    if ([videoEvent isEqualToString:MPVideoEventError]) {
         [self handleVASTError:MPVASTErrorCannotPlayMedia videoTimeOffset:videoTimeOffset];
         return;
     }
@@ -90,9 +102,11 @@ static NSSet<MPVideoEvent> *oneOffEventTypes;
     }
 
     if (urls.count > 0) {
-        [self processAndSendURLs:urls videoTimeOffset:videoTimeOffset];
+        [self processAndSendURLs:urls errorCode:nil videoTimeOffset:videoTimeOffset];
     }
     self.firedTable[videoEvent] = firedEvents;
+
+    [self.viewabilityTracker trackNativeVideoEvent:videoEvent eventInfo:nil];
 }
 
 - (void)handleVideoProgressEvent:(NSTimeInterval)videoTimeOffset videoDuration:(NSTimeInterval)videoDuration {
@@ -133,7 +147,7 @@ static NSSet<MPVideoEvent> *oneOffEventTypes;
     }
 
     if (urls.count > 0) {
-        [self processAndSendURLs:urls videoTimeOffset:videoTimeOffset];
+        [self processAndSendURLs:urls errorCode:nil videoTimeOffset:videoTimeOffset];
     }
     self.firedTable[MPVideoEventProgress] = firedProgressEvents;
 }
@@ -143,12 +157,21 @@ static NSSet<MPVideoEvent> *oneOffEventTypes;
     for (MPVASTTrackingEvent *event in [self.videoConfig trackingEventsForKey:MPVideoEventError]) {
         [urls addObject:event.URL];
     }
-    [self processAndSendURLs:urls videoTimeOffset:videoTimeOffset];
+    [self processAndSendURLs:urls
+                   errorCode:[NSString stringWithFormat:@"%lu", (unsigned long)error]
+             videoTimeOffset:videoTimeOffset];
+
+    [self.viewabilityTracker trackNativeVideoEvent:MPVideoEventError
+                                         eventInfo:@{@"message": [self stringFromVASTError:error]}];
 }
 
 #pragma mark - Private
 
+/**
+ @c errorCode is the @c NSString representation of @c `MPVASTError`.
+ */
 - (void)processAndSendURLs:(NSSet<NSURL *> *)urls
+                 errorCode:(NSString *)errorCode
            videoTimeOffset:(NSTimeInterval)videoTimeOffset {
     if ([urls count] == 0) {
         return;
@@ -158,11 +181,37 @@ static NSSet<MPVideoEvent> *oneOffEventTypes;
     for (NSURL *url in urls) {
         [processedURLs addObject:[MPVASTMacroProcessor
                                   macroExpandedURLForURL:url
-                                  errorCode:nil
+                                  errorCode:errorCode
                                   videoTimeOffset:videoTimeOffset
                                   videoAssetURL:self.videoURL]];
     }
     [self.analyticsTracker sendTrackingRequestForURLs:processedURLs];
+}
+
+- (NSString *)stringFromVASTError:(MPVASTError)error {
+    // return the message from `MPVASTError` comments
+    switch (error) {
+        case MPVASTErrorXMLParseFailure:
+            return @"XML parsing error.";
+        case MPVASTErrorCannotPlayMedia:
+            return @"Trafficking error. Media player received an Ad type that it was not expecting and/or cannot play.";
+        case MPVASTErrorExceededMaximumWrapperDepth:
+            return @"Wrapper limit reached, as defined by the media player.";
+        case MPVASTErrorNoVASTResponseAfterOneOrMoreWrappers:
+            return @"No VAST response after one or more Wrappers.";
+        case MPVASTErrorFailedToDisplayAdFromInlineResponse:
+            return @"InLine response returned ad unit that failed to result in ad display within defined time limit.";
+        case MPVASTErrorUnableToFindLinearAdOrMediaFileFromURI:
+            return @"General Linear error. Media player is unable to display the Linear Ad.";
+        case MPVASTErrorTimeoutOfMediaFileURI:
+            return @"File not found. Unable to find Linear/MediaFile from URI.";
+        case MPVASTErrorMezzanineIsBeingProccessed:
+            return @"Mezzanine is in the process of being downloaded for the first time.";
+        case MPVASTErrorGeneralCompanionAdsError:
+            return @"General CompanionAds error.";
+        case MPVASTErrorUndefined:
+            return @"Undefined Error.";
+    }
 }
 
 @end

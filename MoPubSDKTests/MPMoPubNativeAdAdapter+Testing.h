@@ -1,7 +1,7 @@
 //
 //  MPMoPubNativeAdAdapter+Testing.h
 //
-//  Copyright 2018-2019 Twitter, Inc.
+//  Copyright 2018-2020 Twitter, Inc.
 //  Licensed under the MoPub SDK License Agreement
 //  http://www.mopub.com/legal/sdk-license-agreement/
 //
@@ -13,7 +13,7 @@
 @interface MPMoPubNativeAdAdapter (Testing)
 
 @property (nonatomic) MPAdImpressionTimer *impressionTimer;
-@property (nonatomic, strong) MPAdDestinationDisplayAgent *destinationDisplayAgent;
+@property (nonatomic, strong) id<MPAdDestinationDisplayAgent> destinationDisplayAgent;
 
 // Expose private methods for testing
 - (void)displayContentForDAAIconTap;

@@ -1,7 +1,7 @@
 //
 //  MPViewabilityTrackerTests.m
 //
-//  Copyright 2018-2019 Twitter, Inc.
+//  Copyright 2018-2020 Twitter, Inc.
 //  Licensed under the MoPub SDK License Agreement
 //  http://www.mopub.com/legal/sdk-license-agreement/
 //
@@ -23,9 +23,9 @@
 - (void)setUp {
     [MPViewabilityTracker initialize];
     self.webView = [[MPWebView alloc] initWithFrame:CGRectZero];
-    self.tracker = [[MPViewabilityTracker alloc] initWithAdView:self.webView
-                                                        isVideo:NO
-                                       startTrackingImmediately:NO];
+    self.tracker = [[MPViewabilityTracker alloc] initWithWebView:self.webView
+                                                         isVideo:NO
+                                        startTrackingImmediately:NO];
 }
 
 - (void)tearDown {
@@ -40,9 +40,9 @@
 }
 
 - (void)testImmediateStartTracking {
-    self.tracker = [[MPViewabilityTracker alloc] initWithAdView:self.webView
-                                                        isVideo:NO
-                                       startTrackingImmediately:YES];
+    self.tracker = [[MPViewabilityTracker alloc] initWithWebView:self.webView
+                                                         isVideo:NO
+                                        startTrackingImmediately:YES];
     XCTAssertTrue(self.tracker.isTracking);
 }
 
@@ -90,7 +90,7 @@
     XCTAssertTrue([MPViewabilityTracker enabledViewabilityVendors] == MPViewabilityOptionNone);
 
     // Initializing new webview should not result in tracking
-    self.tracker = [[MPViewabilityTracker alloc] initWithAdView:self.webView isVideo:NO startTrackingImmediately:YES];
+    self.tracker = [[MPViewabilityTracker alloc] initWithWebView:self.webView isVideo:NO startTrackingImmediately:YES];
     XCTAssertFalse(self.tracker.isTracking);
 }
 
@@ -105,7 +105,7 @@
     XCTAssertTrue([MPViewabilityTracker enabledViewabilityVendors] == MPViewabilityOptionNone);
 
     // Initializing new webview should not result in tracking
-    self.tracker = [[MPViewabilityTracker alloc] initWithAdView:self.webView isVideo:NO startTrackingImmediately:NO];
+    self.tracker = [[MPViewabilityTracker alloc] initWithWebView:self.webView isVideo:NO startTrackingImmediately:NO];
     XCTAssertFalse(self.tracker.isTracking);
 
     // Start tracking should not result in tracking since it's been disabled.
@@ -118,7 +118,7 @@
     XCTAssertTrue([MPViewabilityTracker enabledViewabilityVendors] == MPViewabilityOptionIAS);
 
     // Initializing new webview should not result in tracking
-    self.tracker = [[MPViewabilityTracker alloc] initWithAdView:self.webView isVideo:NO startTrackingImmediately:NO];
+    self.tracker = [[MPViewabilityTracker alloc] initWithWebView:self.webView isVideo:NO startTrackingImmediately:NO];
     XCTAssertFalse(self.tracker.isTracking);
 
     // Disable IAS tracking
@@ -137,7 +137,7 @@
     XCTAssertTrue([MPViewabilityTracker enabledViewabilityVendors] == MPViewabilityOptionIAS);
 
     // Initializing new webview should result in tracking
-    self.tracker = [[MPViewabilityTracker alloc] initWithAdView:self.webView isVideo:NO startTrackingImmediately:YES];
+    self.tracker = [[MPViewabilityTracker alloc] initWithWebView:self.webView isVideo:NO startTrackingImmediately:YES];
     XCTAssertTrue(self.tracker.isTracking);
 
     // Disable IAS tracking
@@ -161,7 +161,7 @@
     XCTAssertTrue([MPViewabilityTracker enabledViewabilityVendors] == MPViewabilityOptionIAS);
 
     // Initializing new webview should result in tracking
-    self.tracker = [[MPViewabilityTracker alloc] initWithAdView:self.webView isVideo:NO startTrackingImmediately:YES];
+    self.tracker = [[MPViewabilityTracker alloc] initWithWebView:self.webView isVideo:NO startTrackingImmediately:YES];
     XCTAssertTrue(self.tracker.isTracking);
 }
 

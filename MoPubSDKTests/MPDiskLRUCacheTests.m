@@ -1,7 +1,7 @@
 //
 //  MPDiskLRUCacheTests.m
 //
-//  Copyright 2018-2019 Twitter, Inc.
+//  Copyright 2018-2020 Twitter, Inc.
 //  Licensed under the MoPub SDK License Agreement
 //  http://www.mopub.com/legal/sdk-license-agreement/
 //
@@ -88,9 +88,8 @@
 
     // create an empty file instead of moving a real media file to the destination
     [[NSFileManager defaultManager] createFileAtPath:sourceFileURL.path contents:nil attributes:nil];
-    NSError *moveFileError = [self.cache moveLocalFileToCache:sourceFileURL remoteSourceFileURL:testURL];
+    [self.cache storeData:[NSData data] forRemoteSourceFileURL:testURL];
     [self.cache touchCachedFileForRemoteFile:testURL]; // should not crash or anything bad
-    XCTAssertNil(moveFileError);
     XCTAssertTrue([self.cache isRemoteFileCached:testURL]);
 
     // "touch" should not create a file nor throw an exception

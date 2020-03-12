@@ -1,7 +1,7 @@
 //
 //  SceneDelegate.swift
 //
-//  Copyright 2018-2019 Twitter, Inc.
+//  Copyright 2018-2020 Twitter, Inc.
 //  Licensed under the MoPub SDK License Agreement
 //  http://www.mopub.com/legal/sdk-license-agreement/
 //
@@ -215,6 +215,7 @@ private extension SceneDelegate {
      - Parameter userDefaults: the target `UserDefaults` instance
      */
     func checkAndInitializeSdk(containerViewController: ContainerViewController, userDefaults: UserDefaults = .standard) {
+        #if DEBUG
         // Already have a valid cached ad unit ID for consent. Just initialize the SDK.
         if userDefaults.cachedAdUnitId.isEmpty {
             // Need to prompt for an ad unit.
@@ -245,6 +246,10 @@ private extension SceneDelegate {
             initializeMoPubSdk(adUnitIdForConsent: userDefaults.cachedAdUnitId,
                                containerViewController: containerViewController)
         }
+        #else
+        // Production should only use the default ad unit ID.
+        initializeMoPubSdk(adUnitIdForConsent: kAdUnitId, containerViewController: containerViewController)
+        #endif
     }
 
     /**

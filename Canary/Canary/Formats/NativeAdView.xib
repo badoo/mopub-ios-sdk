@@ -1,11 +1,9 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<document type="com.apple.InterfaceBuilder3.CocoaTouch.XIB" version="3.0" toolsVersion="14460.31" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES" useTraitCollections="YES" useSafeAreas="YES" colorMatched="YES">
-    <device id="retina4_7" orientation="portrait">
-        <adaptation id="fullscreen"/>
-    </device>
+<document type="com.apple.InterfaceBuilder3.CocoaTouch.XIB" version="3.0" toolsVersion="14868" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES" useTraitCollections="YES" useSafeAreas="YES" colorMatched="YES">
+    <device id="retina4_7" orientation="portrait" appearance="light"/>
     <dependencies>
         <deployment identifier="iOS"/>
-        <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="14460.20"/>
+        <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="14824"/>
         <capability name="Safe area layout guides" minToolsVersion="9.0"/>
         <capability name="documents saved in the Xcode 8 format" minToolsVersion="8.0"/>
     </dependencies>
@@ -17,6 +15,7 @@
                 <outlet property="mainImageView" destination="hXM-eZ-BFd" id="qXF-0Y-oQ8"/>
                 <outlet property="mainTextLabel" destination="kC5-zo-i5Q" id="FfI-2D-guk"/>
                 <outlet property="privacyInformationIconImageView" destination="nXF-DE-Car" id="Qde-f9-mKP"/>
+                <outlet property="sponsoredByLabel" destination="MNF-vY-kIl" id="Qza-dG-gqU"/>
                 <outlet property="titleLabel" destination="rpQ-BZ-rLh" id="epd-7b-ZyT"/>
                 <outlet property="videoView" destination="aWO-vX-t2U" id="sVC-qB-rv8"/>
             </connections>
@@ -78,8 +77,14 @@
                             </constraints>
                         </view>
                         <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="765" text="Call to action" textAlignment="natural" lineBreakMode="wordWrap" numberOfLines="0" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="y2T-gR-bOR" customClass="PreferredWidthLabel" customModule="Canary" customModuleProvider="target">
-                            <rect key="frame" x="0.0" y="201" width="301" height="37"/>
+                            <rect key="frame" x="0.0" y="201" width="301" height="19.5"/>
                             <fontDescription key="fontDescription" style="UICTFontTextStyleCallout"/>
+                            <nil key="textColor"/>
+                            <nil key="highlightedColor"/>
+                        </label>
+                        <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Sponsored by MoPub" textAlignment="right" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="MNF-vY-kIl">
+                            <rect key="frame" x="0.0" y="224.5" width="301" height="13.5"/>
+                            <fontDescription key="fontDescription" type="system" pointSize="11"/>
                             <nil key="textColor"/>
                             <nil key="highlightedColor"/>
                         </label>

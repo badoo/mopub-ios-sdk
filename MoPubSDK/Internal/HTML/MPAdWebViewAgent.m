@@ -1,7 +1,7 @@
 //
 //  MPAdWebViewAgent.m
 //
-//  Copyright 2018-2019 Twitter, Inc.
+//  Copyright 2018-2020 Twitter, Inc.
 //  Licensed under the MoPub SDK License Agreement
 //  http://www.mopub.com/legal/sdk-license-agreement/
 //
@@ -30,7 +30,7 @@
 @interface MPAdWebViewAgent () <UIGestureRecognizerDelegate>
 
 @property (nonatomic, strong) MPAdConfiguration *configuration;
-@property (nonatomic, strong) MPAdDestinationDisplayAgent *destinationDisplayAgent;
+@property (nonatomic, strong) id<MPAdDestinationDisplayAgent> destinationDisplayAgent;
 @property (nonatomic, assign) BOOL shouldHandleRequests;
 @property (nonatomic, strong) id<MPAdAlertManagerProtocol> adAlertManager;
 @property (nonatomic, assign) BOOL userInteractedWithWebView;
@@ -293,7 +293,10 @@ shouldStartLoadWithRequest:(NSURLRequest *)request
 
 - (void)init3rdPartyViewabilityTrackers
 {
-    self.viewabilityTracker = [[MPViewabilityTracker alloc] initWithAdView:self.view isVideo:self.configuration.isVastVideoPlayer startTrackingImmediately:[self shouldStartViewabilityDuringInitialization]];
+    self.viewabilityTracker = [[MPViewabilityTracker alloc]
+                               initWithWebView:self.view
+                               isVideo:self.configuration.isVastVideoPlayer
+                               startTrackingImmediately:[self shouldStartViewabilityDuringInitialization]];
 }
 
 - (BOOL)shouldStartViewabilityDuringInitialization

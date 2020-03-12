@@ -1,7 +1,7 @@
 //
 //  AdUnitTableViewController.swift
 //
-//  Copyright 2018-2019 Twitter, Inc.
+//  Copyright 2018-2020 Twitter, Inc.
 //  Licensed under the MoPub SDK License Agreement
 //  http://www.mopub.com/legal/sdk-license-agreement/
 //
@@ -20,7 +20,7 @@ class AdUnitTableViewController: UIViewController {
     @IBOutlet var addButton: UIBarButtonItem?
     
     // Table data source.
-    fileprivate var dataSource: AdUnitDataSource? = nil
+    internal var dataSource: AdUnitDataSource? = nil
     
     // MARK: - Initialization
     

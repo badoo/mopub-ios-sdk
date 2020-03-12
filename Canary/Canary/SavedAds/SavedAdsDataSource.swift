@@ -1,7 +1,7 @@
 //
 //  SavedAdsDataSource.swift
 //
-//  Copyright 2018-2019 Twitter, Inc.
+//  Copyright 2018-2020 Twitter, Inc.
 //  Licensed under the MoPub SDK License Agreement
 //  http://www.mopub.com/legal/sdk-license-agreement/
 //
@@ -39,5 +39,22 @@ final class SavedAdsDataSource: AdUnitDataSource {
      */
     override var sections: [String] {
         return [savedAdSectionTitle]
+    }
+    
+    /**
+     Removes an item if supported.
+     */
+    override func removeItem(at indexPath: IndexPath) -> AdUnit? {
+        guard let adUnit: AdUnit = adUnits[savedAdSectionTitle]?[indexPath.row] else {
+            return nil
+        }
+        
+        // Remove the ad unit entry
+        SavedAdsManager.sharedInstance.removeSavedAd(adUnit: adUnit)
+        
+        // Reload the internal state
+        reloadData()
+        
+        return adUnit
     }
 }

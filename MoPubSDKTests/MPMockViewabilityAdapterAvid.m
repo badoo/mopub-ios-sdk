@@ -1,7 +1,7 @@
 //
 //  MPMockViewabilityAdapterAvid.m
 //
-//  Copyright 2018-2019 Twitter, Inc.
+//  Copyright 2018-2020 Twitter, Inc.
 //  Licensed under the MoPub SDK License Agreement
 //  http://www.mopub.com/legal/sdk-license-agreement/
 //
@@ -14,14 +14,6 @@
 
 @implementation MPViewabilityAdapterAvid
 
-- (instancetype)initWithAdView:(UIView *)webView isVideo:(BOOL)isVideo startTrackingImmediately:(BOOL)startTracking {
-    if (self = [super init]) {
-        _isTracking = startTracking;
-    }
-
-    return self;
-}
-
 - (void)startTracking {
     self.isTracking = YES;
 }
@@ -31,7 +23,32 @@
 }
 
 - (void)registerFriendlyObstructionView:(UIView *)view {
+    // no op
+}
 
+#pragma mark - MPViewabilityAdapterForWebView
+
+- (instancetype)initWithWebView:(UIView *)webView isVideo:(BOOL)isVideo startTrackingImmediately:(BOOL)startTracking {
+    if (self = [super init]) {
+        _isTracking = startTracking;
+    }
+
+    return self;
+}
+
+
+#pragma mark - MPViewabilityAdapterForNativeVideoView
+
+- (instancetype)initWithNativeVideoView:(UIView *)nativeVideoView startTrackingImmediately:(BOOL)startTracking {
+    if (self = [super init]) {
+        _isTracking = startTracking;
+    }
+
+    return self;
+}
+
+- (void)trackNativeVideoEvent:(MPVideoEvent)event eventInfo:(NSDictionary<NSString *, id> *)eventInfo {
+    // no op
 }
 
 @end

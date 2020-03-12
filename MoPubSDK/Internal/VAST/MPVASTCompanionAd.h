@@ -1,7 +1,7 @@
 //
 //  MPVASTCompanionAd.h
 //
-//  Copyright 2018-2019 Twitter, Inc.
+//  Copyright 2018-2020 Twitter, Inc.
 //  Licensed under the MoPub SDK License Agreement
 //  http://www.mopub.com/legal/sdk-license-agreement/
 //
@@ -9,15 +9,27 @@
 #import <Foundation/Foundation.h>
 #import <UIKit/UIKit.h>
 #import "MPVASTModel.h"
+#import "MPVASTResource.h"
+#import "MPVASTTrackingEvent.h"
 
-@class MPVASTResource;
-@class MPVASTTrackingEvent;
+@class MPVASTCompanionAd;
+
+@protocol MPVASTCompanionAdProvider <NSObject>
+
+- (BOOL)hasCompanionAd;
+
+/**
+ Return that best companion ad that fits into the provided container size.
+ */
+- (MPVASTCompanionAd *)companionAdForContainerSize:(CGSize)containerSize;
+
+@end
 
 @interface MPVASTCompanionAd : MPVASTModel
 
 @property (nonatomic, strong, readonly) NSString *identifier; // optional attribute
-@property (nonatomic, readonly) CGFloat width;
-@property (nonatomic, readonly) CGFloat height;
+@property (nonatomic, readonly) CGFloat width; // point width
+@property (nonatomic, readonly) CGFloat height; // point height
 @property (nonatomic, readonly) CGFloat assetHeight; // optional attribute
 @property (nonatomic, readonly) CGFloat assetWidth; // optional attribute
 
@@ -32,25 +44,21 @@
  */
 @property (nonatomic, strong, readonly) NSArray<MPVASTTrackingEvent *> *creativeViewTrackers;
 
-/** Per VAST 3.0 spec 2.3.3.2 Companion Resource Elements:
- Companion resource types are described below:
- • StaticResource: Describes non-html creative where an attribute for creativeType is used to
-    identify the creative resource platform. The video player uses the creativeType information to
-    determine how to display the resource:
-    o Image/gif,image/jpeg,image/png:displayedusingtheHTMLtag<img>andthe resource URI as the src attribute.
-    o Application/x-javascript:displayedusingtheHTMLtag<script>andtheresource URI as the src attribute.
- • IFrameResource: Describes a resource that is an HTML page that can be displayed within an
-    Iframe on the publisher’s page.
- • HTMLResource: Describes a “snippet” of HTML code to be inserted directly within the publisher’s
-    HTML page code.
+/**
+ Return the best @c MPVASTResource that should be displayed. Per VAST specification
+ (https://developers.mopub.com/dsps/ad-formats/video/):
+    We will prioritize processing companion banners in the following order once we’ve picked the
+    best size: Static, HTML, iframe." Here we pick the "best size" that has the number of pixels
+    closest to the ad container.
+
+ Note: The @c type of the returned @c MPVASTResource is determined and assigned.
  */
-@property (nonatomic, strong, readonly) NSArray<MPVASTResource *> *HTMLResources;
-@property (nonatomic, strong, readonly) NSArray<MPVASTResource *> *iframeResources;
-@property (nonatomic, strong, readonly) NSArray<MPVASTResource *> *staticResources;
+- (MPVASTResource *)resourceToDisplay;
 
 /**
- Return whether the companion ad has any of static, HTML, or iFrame resources.
+ Return best @c MPVASTCompanionAd that should be displayed.
  */
-- (BOOL)hasResources;
++ (MPVASTCompanionAd *)bestCompanionAdForCandidates:(NSArray<MPVASTCompanionAd *> *)candidates
+                                      containerSize:(CGSize)containerSize;
 
 @end

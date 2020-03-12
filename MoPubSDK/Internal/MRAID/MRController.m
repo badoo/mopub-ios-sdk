@@ -1,7 +1,7 @@
 //
 //  MRController.m
 //
-//  Copyright 2018-2019 Twitter, Inc.
+//  Copyright 2018-2020 Twitter, Inc.
 //  Licensed under the MoPub SDK License Agreement
 //  http://www.mopub.com/legal/sdk-license-agreement/
 //
@@ -65,7 +65,7 @@ static NSString *const kMRAIDCommandResize = @"resize";
 // Points to mraidAdView (one-part expand) or mraidAdViewTwoPart (two-part expand) while expanded.
 @property (nonatomic, strong) MPClosableView *expansionContentView;
 
-@property (nonatomic, strong) MPAdDestinationDisplayAgent *destinationDisplayAgent;
+@property (nonatomic, strong) id<MPAdDestinationDisplayAgent> destinationDisplayAgent;
 @property (nonatomic, strong) id<MPAdAlertManagerProtocol> adAlertManager;
 @property (nonatomic, strong) id<MPAdAlertManagerProtocol> adAlertManagerTwoPart;
 
@@ -278,7 +278,7 @@ static NSString *const kMRAIDCommandResize = @"resize";
 - (void)init3rdPartyViewabilityTrackers
 {
     self.viewabilityTracker = [[MPViewabilityTracker alloc]
-                               initWithAdView:self.mraidWebView
+                               initWithWebView:self.mraidWebView
                                isVideo:self.isAdVastVideoPlayer
                                startTrackingImmediately:[self shouldStartViewabilityDuringInitialization]];
     [self.viewabilityTracker registerFriendlyObstructionView:self.mraidAdView.closeButton];

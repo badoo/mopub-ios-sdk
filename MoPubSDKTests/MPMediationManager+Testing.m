@@ -1,12 +1,13 @@
 //
 //  MPMediationManager+Testing.m
 //
-//  Copyright 2018-2019 Twitter, Inc.
+//  Copyright 2018-2020 Twitter, Inc.
 //  Licensed under the MoPub SDK License Agreement
 //  http://www.mopub.com/legal/sdk-license-agreement/
 //
 
 #import "MPMediationManager+Testing.h"
+#import "MPTestRunner.h"
 
 static NSString * sAdaptersPath = nil;
 
@@ -17,7 +18,7 @@ static NSString * sAdaptersPath = nil;
 @dynamic certifiedAdapterClasses;
 
 + (void)initialize {
-    sAdaptersPath = [[NSBundle bundleForClass:self.class] pathForResource:@"MPMockAdapters" ofType:@"plist"];
+    sAdaptersPath = [MPTestRunner pathForTestResource:@"MPMockAdapters.plist"];
 }
 
 + (NSString *)adapterInformationProvidersFilePath {

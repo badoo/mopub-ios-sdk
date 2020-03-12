@@ -1,7 +1,7 @@
 //
 //  AdUnitDataSource.swift
 //
-//  Copyright 2018-2019 Twitter, Inc.
+//  Copyright 2018-2020 Twitter, Inc.
 //  Licensed under the MoPub SDK License Agreement
 //  http://www.mopub.com/legal/sdk-license-agreement/
 //
@@ -86,6 +86,15 @@ class AdUnitDataSource {
      */
     func reloadData() {
         // By default this does nothing, but may be overridden by subclasses.
+    }
+    
+    /**
+     Removes an item if supported.
+     */
+    @discardableResult
+    func removeItem(at indexPath: IndexPath) -> AdUnit? {
+        // By default this does nothing, but may be overridden by subclasses.
+        return nil
     }
 }
 

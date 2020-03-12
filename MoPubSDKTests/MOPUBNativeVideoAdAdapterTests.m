@@ -1,7 +1,7 @@
 //
 //  MOPUBNativeVideoAdAdapterTests.m
 //
-//  Copyright 2018-2019 Twitter, Inc.
+//  Copyright 2018-2020 Twitter, Inc.
 //  Licensed under the MoPub SDK License Agreement
 //  http://www.mopub.com/legal/sdk-license-agreement/
 //
@@ -51,11 +51,12 @@
     properties[kAdPrivacyIconClickUrlKey] = nil;
 
     MOPUBNativeVideoAdAdapter * adapter = [[MOPUBNativeVideoAdAdapter alloc] initWithAdProperties:properties];
-    MPMockAdDestinationDisplayAgent * displayAgent = [MPMockAdDestinationDisplayAgent new];
+    id<MPAdDestinationDisplayAgent> displayAgent = [MPMockAdDestinationDisplayAgent new];
     adapter.destinationDisplayAgent = displayAgent;
 
     [adapter displayContentForDAAIconTap];
-    XCTAssert([displayAgent.lastDisplayDestinationUrl.absoluteString isEqualToString:kPrivacyIconTapDestinationURL]);
+    XCTAssert([((MPMockAdDestinationDisplayAgent *)displayAgent).lastDisplayDestinationUrl.absoluteString
+               isEqualToString:kPrivacyIconTapDestinationURL]);
 }
 
 - (void)testPrivacyClickthroughOverrideSuccess {
@@ -63,11 +64,12 @@
     properties[kAdPrivacyIconClickUrlKey] = @"http://www.mopub.com/unittest/success";
 
     MOPUBNativeVideoAdAdapter * adapter = [[MOPUBNativeVideoAdAdapter alloc] initWithAdProperties:properties];
-    MPMockAdDestinationDisplayAgent * displayAgent = [MPMockAdDestinationDisplayAgent new];
+    id<MPAdDestinationDisplayAgent> displayAgent = [MPMockAdDestinationDisplayAgent new];
     adapter.destinationDisplayAgent = displayAgent;
 
     [adapter displayContentForDAAIconTap];
-    XCTAssert([displayAgent.lastDisplayDestinationUrl.absoluteString isEqualToString:@"http://www.mopub.com/unittest/success"]);
+    XCTAssert([((MPMockAdDestinationDisplayAgent *)displayAgent).lastDisplayDestinationUrl.absoluteString
+               isEqualToString:@"http://www.mopub.com/unittest/success"]);
 }
 
 #pragma mark - Testing impression tracking header rules

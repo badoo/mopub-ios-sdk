@@ -1,7 +1,7 @@
 //
 //  FilterableAdUnitTableViewController.swift
 //
-//  Copyright 2018-2019 Twitter, Inc.
+//  Copyright 2018-2020 Twitter, Inc.
 //  Licensed under the MoPub SDK License Agreement
 //  http://www.mopub.com/legal/sdk-license-agreement/
 //
@@ -10,11 +10,6 @@ import UIKit
 
 class FilterableAdUnitTableViewController: AdUnitTableViewController {
     // MARK: - Internal State
-    
-    /**
-     Assumes that `dataSource` will be in `viewDidLoad()` before use.
-     */
-    private var dataSource: FilteredAdUnitDataSource!
     
     /**
      Search controller used to filter the data source.
@@ -60,7 +55,11 @@ extension FilterableAdUnitTableViewController: UISearchResultsUpdating {
     // MARK: - UISearchResultsUpdating
     
     func updateSearchResults(for searchController: UISearchController) {
-        dataSource.filter = searchController.searchBar.text
+        guard let filterableDataSource: FilteredAdUnitDataSource = dataSource as? FilteredAdUnitDataSource else {
+            return
+        }
+        
+        filterableDataSource.filter = searchController.searchBar.text
         tableView.reloadData()
     }
 }

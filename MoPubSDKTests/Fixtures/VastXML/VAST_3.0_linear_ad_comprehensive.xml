@@ -51,6 +51,34 @@
                             <MediaFile delivery="progressive" type="video/mp4" bitrate="714" width="1280" height="720"><![CDATA[https://d2al1opqne3nsh.cloudfront.net/videos/corgi_30s_1280x720_main_40.mp4]]></MediaFile>
                             <MediaFile delivery="progressive" type="video/mp4" bitrate="1447" width="1920" height="1080"><![CDATA[https://d2al1opqne3nsh.cloudfront.net/videos/corgi_30s_1920x1080_high_41.mp4]]></MediaFile>
                         </MediaFiles>
+                        <Icons>
+                            <Icon program="AdChoices" width="77" height="15" xPosition="right" yPosition="bottom">
+                                <StaticResource creativeType="image/png">
+                                    <![CDATA[https://choices.trustarc.com/get?name=admarker-full-tl.png]]>
+                                </StaticResource>
+                                <IconClicks>
+                                       <IconClickThrough>
+                                           <![CDATA[https://www.mopub.com/?q=IconClickThrough]]>
+                                       </IconClickThrough>
+                                </IconClicks>
+                                <IconViewTracking>
+                                    <![CDATA[https://www.mopub.com/?q=IconViewTracking]]>
+                                </IconViewTracking>
+                            </Icon>
+                            <Icon program="AdChoices" width="100" height="30" offset="00:00:03" duration="00:00:03">
+                                <StaticResource creativeType="image/png">
+                                    <![CDATA[http://demo.tremormedia.com/proddev/vast/728x90_banner1.jpg]]>
+                                </StaticResource>
+                                <IconClicks>
+                                   <IconClickThrough>
+                                       <![CDATA[https://www.mopub.com/?q=IconClickThrough]]>
+                                   </IconClickThrough>
+                                </IconClicks>
+                                <IconViewTracking>
+                                    <![CDATA[https://www.mopub.com/?q=IconViewTracking]]>
+                                </IconViewTracking>
+                            </Icon>
+                        </Icons>
                     </Linear>
                 </Creative>
                 <Creative>

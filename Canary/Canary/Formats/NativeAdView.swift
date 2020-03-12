@@ -1,7 +1,7 @@
 //
 //  NativeAdView.swift
 //
-//  Copyright 2018-2019 Twitter, Inc.
+//  Copyright 2018-2020 Twitter, Inc.
 //  Licensed under the MoPub SDK License Agreement
 //  http://www.mopub.com/legal/sdk-license-agreement/
 //
@@ -20,6 +20,7 @@ class NativeAdView: UIView {
     @IBOutlet weak var callToActionLabel: UILabel!
     @IBOutlet weak var iconImageView: UIImageView!
     @IBOutlet weak var mainImageView: UIImageView!
+    @IBOutlet weak var sponsoredByLabel: UILabel!
     @IBOutlet weak var privacyInformationIconImageView: UIImageView!
     @IBOutlet weak var videoView: UIView!
     
@@ -115,11 +116,19 @@ extension NativeAdView: MPNativeAdRendering {
         return mainImageView
     }
     
+    func nativeSponsoredByCompanyTextLabel() -> UILabel! {
+        return sponsoredByLabel
+    }
+    
     func nativePrivacyInformationIconImageView() -> UIImageView! {
         return privacyInformationIconImageView
     }
     
     func nativeVideoView() -> UIView! {
         return videoView
+    }
+    
+    static func localizedSponsoredByText(withSponsorName sponsorName: String!) -> String! {
+        return "Brought to you by \(sponsorName!)"
     }
 }

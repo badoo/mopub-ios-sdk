@@ -1,7 +1,7 @@
 //
 //  MOPUBNativeVideoAdAdapter.m
 //
-//  Copyright 2018-2019 Twitter, Inc.
+//  Copyright 2018-2020 Twitter, Inc.
 //  Licensed under the MoPub SDK License Agreement
 //  http://www.mopub.com/legal/sdk-license-agreement/
 //
@@ -19,7 +19,7 @@
 @interface MOPUBNativeVideoAdAdapter() <MPAdDestinationDisplayAgentDelegate, MPAdImpressionTimerDelegate>
 
 @property (nonatomic) MPAdImpressionTimer *impressionTimer;
-@property (nonatomic, strong) MPAdDestinationDisplayAgent *destinationDisplayAgent;
+@property (nonatomic, strong) id<MPAdDestinationDisplayAgent> destinationDisplayAgent;
 
 @end
 
@@ -35,9 +35,9 @@
 
         // Let's make sure the data types of all the provided native ad properties are strings before creating the adapter.
 
-        NSArray *keysToCheck = @[kAdIconImageKey, kAdMainImageKey, kAdTextKey, kAdTitleKey, kAdCTATextKey, kVASTVideoKey, kAdPrivacyIconImageUrlKey, kAdPrivacyIconClickUrlKey];
+        NSArray *stringKeysToCheck = @[kAdIconImageKey, kAdMainImageKey, kAdTextKey, kAdSponsoredByCompanyKey, kAdTitleKey, kAdCTATextKey, kVASTVideoKey, kAdPrivacyIconImageUrlKey, kAdPrivacyIconClickUrlKey];
 
-        for (NSString *key in keysToCheck) {
+        for (NSString *key in stringKeysToCheck) {
             id value = properties[key];
             if (value != nil && ![value isKindOfClass:[NSString class]]) {
                 return nil;

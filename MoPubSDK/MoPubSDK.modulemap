@@ -1,4 +1,4 @@
-framework module MoPubSDKFramework {
+framework module MoPub {
     umbrella header "MoPub.h"
 
     export *

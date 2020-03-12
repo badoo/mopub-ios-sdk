@@ -1,7 +1,7 @@
 //
 //  MPVASTResource.h
 //
-//  Copyright 2018-2019 Twitter, Inc.
+//  Copyright 2018-2020 Twitter, Inc.
 //  Licensed under the MoPub SDK License Agreement
 //  http://www.mopub.com/legal/sdk-license-agreement/
 //
@@ -24,10 +24,25 @@
  • HTMLResource: Describes a “snippet” of HTML code to be inserted directly within the publisher’s
  HTML page code.
  */
+typedef NS_ENUM(NSUInteger, MPVASTResourceType) {
+    MPVASTResourceType_Undetermined,
+    MPVASTResourceType_StaticImage,
+    MPVASTResourceType_StaticScript,
+    MPVASTResourceType_HTML,
+    MPVASTResourceType_Iframe,
+};
+
 @interface MPVASTResource : MPVASTModel
 
 @property (nonatomic, strong, readonly) NSString *content;
 @property (nonatomic, strong, readonly) NSString *staticCreativeType;
+
+/**
+ Default is @c MPVASTResourceType_Undetermined. The owner of this resource object is responsible of
+ determining the actual type of this resource (it's @c MPVastCompanionAd.resourceToDisplay for
+ current implementation).
+ */
+@property (nonatomic, assign) MPVASTResourceType type;
 
 - (BOOL)isStaticCreativeTypeImage;
 
