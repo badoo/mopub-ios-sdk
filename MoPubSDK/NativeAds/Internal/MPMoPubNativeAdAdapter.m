@@ -79,8 +79,12 @@ static const CGFloat kMoPubRequiredViewVisibilityPercentage = 0.5;
         } else {
             valid = NO;
         }
-
-        _defaultActionURL = [NSURL URLWithString:[properties objectForKey:kDefaultActionURLKey]];
+        
+        if (![[properties objectForKey:kDefaultActionURLKey] isKindOfClass:[NSNull class]]) {
+            _defaultActionURL = [NSURL URLWithString:[properties objectForKey:kDefaultActionURLKey]];
+        } else {
+            _defaultActionURL = NULL;
+        }
 
         // Grab the config, figure out requiredSecondsForImpression and requiredViewVisibilityPercentage,
         // and set up the timer.

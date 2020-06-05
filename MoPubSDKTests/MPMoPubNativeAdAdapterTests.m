@@ -214,4 +214,24 @@
     XCTAssertTrue(configValues.isImpressionMinVisibleSecondsValid);
 }
 
+- (void)testInitializationWithNullDefaultActionURL {
+    NSMutableDictionary * properties = [MPAdConfigurationFactory defaultNativeProperties];
+    properties[kDefaultActionURLKey] = [NSNull null];
+
+    MPMoPubNativeAdAdapter * adapter = [[MPMoPubNativeAdAdapter alloc] initWithAdProperties:properties];
+
+    // Verify that adapter created
+    XCTAssertNotNil(adapter);
+}
+
+- (void)testInitializationWithoutDefaultActionURL {
+    NSMutableDictionary * properties = [MPAdConfigurationFactory defaultNativeProperties];
+    properties[kDefaultActionURLKey] = nil;
+
+    MPMoPubNativeAdAdapter * adapter = [[MPMoPubNativeAdAdapter alloc] initWithAdProperties:properties];
+
+    // Verify that adapter created
+    XCTAssertNotNil(adapter);
+}
+
 @end
