@@ -1,49 +1,99 @@
 //
 //  MPVideoConfig.h
-//  MoPub
 //
-//  Copyright (c) 2015 MoPub. All rights reserved.
+//  Copyright 2018-2020 Twitter, Inc.
+//  Licensed under the MoPub SDK License Agreement
+//  http://www.mopub.com/legal/sdk-license-agreement/
 //
 
 #import <Foundation/Foundation.h>
+#import "MPVASTCompanionAd.h"
 #import "MPVASTResponse.h"
+#import "MPViewabilityContext.h"
 
+NS_ASSUME_NONNULL_BEGIN
+
+/**
+ Configuration for a VAST video creative.
+ */
 @interface MPVideoConfig : NSObject
 
-@property (nonatomic, readonly) NSURL *mediaURL;
-@property (nonatomic, readonly) NSURL *clickThroughURL;
-@property (nonatomic, readonly) NSArray *clickTrackingURLs;
-@property (nonatomic, readonly) NSArray *errorURLs;
-@property (nonatomic, readonly) NSArray *impressionURLs;
+#pragma mark - Video Rendering Properties
+/**
+ Call to action text to be displayed when playing the VAST video. By default, this value is `kVASTDefaultCallToActionButtonTitle`.
+ */
+@property (nonatomic, copy, readonly) NSString *callToActionButtonTitle;
 
-/** @name Tracking Events */
+/**
+ Optional URL to launch when a user taps on the video, specified by the Linear Ad.
+ */
+@property (nonatomic, nullable, readonly) NSURL *clickThroughURL;
 
-@property (nonatomic, readonly) NSArray *creativeViewTrackers;
-@property (nonatomic, readonly) NSArray *startTrackers;
-@property (nonatomic, readonly) NSArray *firstQuartileTrackers;
-@property (nonatomic, readonly) NSArray *midpointTrackers;
-@property (nonatomic, readonly) NSArray *thirdQuartileTrackers;
-@property (nonatomic, readonly) NSArray *completionTrackers;
-@property (nonatomic, readonly) NSArray *muteTrackers;
-@property (nonatomic, readonly) NSArray *unmuteTrackers;
-@property (nonatomic, readonly) NSArray *pauseTrackers;
-@property (nonatomic, readonly) NSArray *rewindTrackers;
-@property (nonatomic, readonly) NSArray *resumeTrackers;
-@property (nonatomic, readonly) NSArray *fullscreenTrackers;
-@property (nonatomic, readonly) NSArray *exitFullscreenTrackers;
-@property (nonatomic, readonly) NSArray *expandTrackers;
-@property (nonatomic, readonly) NSArray *collapseTrackers;
-@property (nonatomic, readonly) NSArray *acceptInvitationLinearTrackers;
-@property (nonatomic, readonly) NSArray *closeLinearTrackers;
-@property (nonatomic, readonly) NSArray *skipTrackers;
-@property (nonatomic, readonly) NSArray *otherProgressTrackers;
+/**
+ Indicates that a user is able to click on the VAST video immediately so that they can consume additional content about the advertiser.
+ Clicking on the video should launch the `clickThroughURL`. The default value is `NO`
+ */
+@property (nonatomic, assign) BOOL enableEarlyClickthroughForNonRewardedVideo;
 
-/** @name Viewability */
+/**
+ Optional Industry Icons to display when playing the VAST video.
+ */
+@property (nonatomic, nullable, readonly) NSArray<MPVASTIndustryIcon *> *industryIcons;
 
-@property (nonatomic, readonly) NSTimeInterval minimumViewabilityTimeInterval;
-@property (nonatomic, readonly) double minimumFractionOfVideoVisible;
-@property (nonatomic, readonly) NSURL *viewabilityTrackingURL;
+/**
+ Indicates that a rewarded is expected once the video completes playback without skipping. The default is `NO`
+ */
+@property (nonatomic, assign) BOOL isRewardExpected;
 
-- (instancetype)initWithVASTResponse:(MPVASTResponse *)response additionalTrackers:(NSDictionary *)additionalTrackers;
+/**
+ All available video files included with the VAST creative.
+ @note: The video files will typically have different resolutions and bitrates. The best one is picked when the ad is loaded (not when receiving the ad response).
+ */
+@property (nonatomic, nullable, readonly) NSArray<MPVASTMediaFile *> *mediaFiles;
+
+/**
+ The minimum amount of time (in seconds) that needs to elapse before the VAST video can be skipped by
+ the user. If no skip offset is specified, the VAST video is immediately skippable.
+ */
+@property (nonatomic, nullable, readonly) MPVASTDurationOffset *skipOffset;
+
+/**
+ Viewability context to use with this video asset.
+ */
+@property (nonatomic, nullable, readonly) MPViewabilityContext *viewabilityContext;
+
+#pragma mark - Initialization
+
+/**
+ Initializes the video configuration with a given VAST response.
+ @param response VAST response of the creative.
+ @param additionalTrackers Additional VAST event trackers that should be merged with the trackers present in the VAST response.
+ Note that the only trackers that will be merged are: `MPVideoEventStart`, `MPVideoEventFirstQuartile`, `MPVideoEventMidpoint`, `MPVideoEventThirdQuartile`, and `MPVideoEventComplete`.
+ @return Video configuration for the VAST response.
+ */
+- (instancetype)initWithVASTResponse:(MPVASTResponse * _Nullable)response
+                  additionalTrackers:(NSDictionary<MPVideoEvent, NSArray<MPVASTTrackingEvent *> *> * _Nullable)additionalTrackers NS_DESIGNATED_INITIALIZER;
+
+#pragma mark - Event Trackers
+
+/**
+ Retrieve the VAST trackers for the given event.
+ @param key Tracking event key
+ @return An array of trackers for the given `key`. This may be `nil` if the `key` has no trackers.
+ */
+- (NSArray<MPVASTTrackingEvent *> * _Nullable)trackingEventsForKey:(MPVideoEvent)key;
+
+#pragma mark - Unavailable
+
+// Use the designated initializer instead
+- (instancetype)init NS_UNAVAILABLE;
++ (instancetype)new NS_UNAVAILABLE;
 
 @end
+
+#pragma mark -
+
+@interface MPVideoConfig (MPVASTCompanionAdProvider) <MPVASTCompanionAdProvider>
+@end
+
+NS_ASSUME_NONNULL_END

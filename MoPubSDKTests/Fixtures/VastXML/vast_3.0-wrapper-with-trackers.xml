@@ -1,0 +1,61 @@
+<VAST version="2.0" xmlns:xsi="https://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="vast.xsd">
+  <Ad id="1">
+    <Wrapper>
+      <AdSystem>MoPub</AdSystem>
+      <VASTAdTagURI>
+        <![CDATA[http://d2al1opqne3nsh.cloudfront.net/creatives/vast_2.0_cloudfront_1.xml]]>
+      </VASTAdTagURI>
+      <Error>
+        <![CDATA[https://www.mopub.com/?q=errorWrapper]]>
+      </Error>
+      <Impression>
+        <![CDATA[https://www.mopub.com/?q=impressionWrapper]]>
+      </Impression>
+      <Creatives>
+        <Creative>
+          <Linear>
+            <TrackingEvents>
+              <Tracking event="creativeView">
+                <![CDATA[https://www.mopub.com/?q=creativeViewWrapper]]>
+              </Tracking>
+              <Tracking event="start">
+                <![CDATA[https://www.mopub.com/?q=startWrapper]]>
+              </Tracking>
+              <Tracking event="firstQuartile">
+                <![CDATA[https://www.mopub.com/?q=firstQuartileWrapper]]>
+              </Tracking>
+              <Tracking event="midpoint">
+               <![CDATA[https://www.mopub.com/?q=midpointWrapper]]>
+              </Tracking>
+              <Tracking event="thirdQuartile">
+                <![CDATA[https://www.mopub.com/?q=thirdQuartileWrapper]]>
+              </Tracking>
+              <Tracking event="complete">
+               <![CDATA[https://www.mopub.com/?q=completeWrapper]]>
+              </Tracking>
+              <Tracking event="close">
+                <![CDATA[https://www.mopub.com/?q=closeWrapper]]>
+              </Tracking>
+            </TrackingEvents>
+            <VideoClicks>
+              <ClickTracking>
+                <![CDATA[https://www.mopub.com/?q=videoClickTrackingWrapper]]>
+              </ClickTracking>
+            </VideoClicks>
+          </Linear>
+        </Creative>
+        <Creative>
+          <CompanionAds>
+            <Companion width="569" height="320">
+              <TrackingEvents>
+                <Tracking event="creativeView">
+                  <![CDATA[https://www.mopub.com/?q=companionTrackingWrapper]]>
+                </Tracking>
+              </TrackingEvents>
+            </Companion>
+          </CompanionAds>
+        </Creative>
+      </Creatives>
+    </Wrapper>
+  </Ad>
+</VAST>

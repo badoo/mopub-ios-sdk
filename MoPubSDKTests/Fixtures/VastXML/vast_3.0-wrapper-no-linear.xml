@@ -1,0 +1,19 @@
+<VAST xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="vast_3.0.1-creativeView.xsd" version="3.0">
+  <Ad id="WrapperAdWrapper">
+    <Wrapper>
+      <AdSystem>WrapperAdSystem</AdSystem>
+      <Impression><![CDATA[https://px.moatads.com/pixel.gif?pingImpressionWrapper]]></Impression>
+      <VASTAdTagURI><![CDATA[https://raw.githubusercontent.com/jeffreycarlson/vast-test-ads/master/vast_3.0_inline_1.xml]]></VASTAdTagURI>
+      <AdVerifications>
+        <Verification vendor="moat.com-omsdkmopubinappvideo516564937306">
+          <JavaScriptResource apiFramework="omid" browserOptional="true"><![CDATA[https://z.moatads.com/omsdkmopubinappvideo516564937306/moatvideo.js]]></JavaScriptResource>
+          <VerificationParameters><![CDATA[{"moatClientLevel1":"2f1dc639eb0941cdb2a4f4edf06be9aa","moatClientLevel2":"Fullscreen","moatClientLevel3":"html","moatClientSlicer1":"Fullscreen%3A%20VAST%203.0%20Wrapper%20-","moatClientSlicer2":"382348da626f46b5911ec666ca7e473d","zMoatCreativeID":"%dc73990781bd420ebb6513023ac35841%%"}]]></VerificationParameters>
+        </Verification>
+      </AdVerifications>
+      <Creatives>
+        <Creative>
+        </Creative>
+      </Creatives>
+    </Wrapper>
+  </Ad>
+</VAST>

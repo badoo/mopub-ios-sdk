@@ -1,0 +1,8 @@
+<VAST version="3.0">
+    <Error>
+        <![CDATA[https://www.mopub.com/?q=error-1]]>
+    </Error>
+    <Error>
+        <![CDATA[https://www.mopub.com/?q=error-2]]>
+    </Error>
+</VAST>

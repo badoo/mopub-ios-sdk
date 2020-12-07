@@ -1,0 +1,87 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<VAST version="2.0">
+  <Ad id="1">
+    <InLine>
+      <AdSystem>MoPub</AdSystem>
+      <AdTitle>MoPub Test Ad</AdTitle>
+      <Description>MoPub Description</Description>
+      <Error>
+        <![CDATA[https://www.mopub.com/?q=error&code=[ERRORCODE]]]>
+      </Error>
+      <Impression>
+        <![CDATA[https://www.mopub.com/?q=impression]]>
+      </Impression>
+      <Creatives>
+        <Creative>
+          <Linear>
+            <Duration>00:00:30</Duration>
+            <TrackingEvents>
+              <Tracking event="start">
+                <![CDATA[https://www.mopub.com/?q=start]]>
+              </Tracking>
+              <Tracking event="firstQuartile">
+                <![CDATA[https://www.mopub.com/?q=firstQuartile]]>
+              </Tracking>
+              <Tracking event="midpoint">
+                <![CDATA[https://www.mopub.com/?q=midpoint]]>
+              </Tracking>
+              <Tracking event="thirdQuartile">
+                <![CDATA[https://www.mopub.com/?q=thirdQuartile]]>
+              </Tracking>
+              <Tracking event="complete">
+                <![CDATA[https://www.mopub.com/?q=complete]]>
+              </Tracking>
+            </TrackingEvents>
+            <VideoClicks>
+              <ClickThrough>
+                <![CDATA[https://www.mopub.com/?q=videoClickThrough]]>
+              </ClickThrough>
+              <ClickTracking>
+                <![CDATA[https://www.mopub.com/?q=videoClickTracking]]>
+              </ClickTracking>
+            </VideoClicks>
+            <MediaFiles>
+              <MediaFile delivery="progressive" type="video/mp4" bitrate="325" width="640" height="360">
+                <![CDATA[https://d2al1opqne3nsh.cloudfront.net/videos/corgi_30s_640x360_baseline_30.mp4]]>
+              </MediaFile>
+              <MediaFile delivery="progressive" type="video/mp4" bitrate="714" width="1280" height="720">
+                <![CDATA[https://d2al1opqne3nsh.cloudfront.net/videos/corgi_30s_1280x720_main_40.mp4]]>
+              </MediaFile>
+              <MediaFile delivery="progressive" type="video/mp4" bitrate="1447" width="1920" height="1080">
+                <![CDATA[https://d2al1opqne3nsh.cloudfront.net/videos/corgi_30s_1920x1080_high_41.mp4]]>
+              </MediaFile>
+            </MediaFiles>
+          </Linear>
+        </Creative>
+        <Creative>
+          <CompanionAds>
+             <Companion width="640" height="360">
+                <StaticResource creativeType="image/jpeg"><![CDATA[https://d2al1opqne3nsh.cloudfront.net/images/igetbeggin_640x360.jpg]]></StaticResource>
+                <TrackingEvents>
+                   <Tracking event="creativeView"><![CDATA[https://www.mopub.com/?q=companionTracking640x360]]></Tracking>
+                </TrackingEvents>
+                <CompanionClickThrough><![CDATA[https://www.mopub.com/?q=companionClickThrough640x360]]></CompanionClickThrough>
+             </Companion>
+             <Companion width="1280" height="720">
+                <StaticResource creativeType="image/jpeg"><![CDATA[https://d2al1opqne3nsh.cloudfront.net/images/igetbeggin_1280x720.jpg]]></StaticResource>
+                <TrackingEvents>
+                   <Tracking event="creativeView"><![CDATA[https://www.mopub.com/?q=companionTracking1280x720]]></Tracking>
+                </TrackingEvents>
+                <CompanionClickThrough><![CDATA[https://www.mopub.com/?q=companionClickThrough1280x720]]></CompanionClickThrough>
+             </Companion>
+          </CompanionAds>
+        </Creative>
+      </Creatives>
+      <AdVerifications>
+        <Verification vendor="moat.com-mopubsamplevastwrapper628796485625">
+          <JavaScriptResource apiFramework="omid" browserOptional="true">
+            <![CDATA[https://z.moatads.com/mopubsamplevastwrapper628796485625/moatvideo.js]]>
+          </JavaScriptResource>
+          <VerificationParameters>
+            <![CDATA[{"moatClientLevel1":"MoPub","moatClientLevel2":"OM-VAST-Test","moatClientLevel3":"OM-VAST-Test","moatClientSlicer1":"VAST-4.1","zMoatDuration":"30"}]]>
+          </VerificationParameters>
+        </Verification>
+      </AdVerifications>
+    </InLine>
+  </Ad>
+</VAST>

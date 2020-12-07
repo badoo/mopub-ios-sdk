@@ -1,8 +1,9 @@
 //
 //  MPVASTDurationOffset.m
-//  MoPub
 //
-//  Copyright (c) 2015 MoPub. All rights reserved.
+//  Copyright 2018-2020 Twitter, Inc.
+//  Licensed under the MoPub SDK License Agreement
+//  http://www.mopub.com/legal/sdk-license-agreement/
 //
 
 #import "MPVASTDurationOffset.h"
@@ -37,7 +38,7 @@
     }
 
     if (self.type == MPVASTDurationOffsetTypeAbsolute) {
-        return [MPVASTStringUtilities timeIntervalFromString:self.offset];
+        return [MPVASTStringUtilities timeIntervalFromDurationString:self.offset];
     } else if (self.type == MPVASTDurationOffsetTypePercentage) {
         NSInteger percentage = [MPVASTStringUtilities percentageFromString:self.offset];
         return duration * percentage / 100.0f;

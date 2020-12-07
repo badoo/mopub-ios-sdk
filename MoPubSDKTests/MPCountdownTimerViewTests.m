@@ -1,15 +1,20 @@
 //
 //  MPCountdownTimerViewTests.m
-//  MoPubSDK
 //
-//  Copyright © 2016 MoPub. All rights reserved.
+//  Copyright 2018-2020 Twitter, Inc.
+//  Licensed under the MoPub SDK License Agreement
+//  http://www.mopub.com/legal/sdk-license-agreement/
 //
 
 #import <XCTest/XCTest.h>
+#import "MPCountdownTimerView+Testing.h"
 #import "MPCountdownTimerView.h"
 
-static const NSTimeInterval kTestTimeout   = 15; // seconds
-static const NSTimeInterval kTimerDuration = 7; // seconds
+static const NSTimeInterval kTimerDurationInSeconds = 1;
+
+// `NSTimer` is not totally accurate and it might be slower on build machines , thus we need some
+// extra tolerance while waiting for the expections to be fulfilled.
+static const NSTimeInterval kWaitTimeTolerance = 2;
 
 @interface MPCountdownTimerViewTests : XCTestCase
 @property (nonatomic, strong) MPCountdownTimerView * timerView;
@@ -17,162 +22,191 @@ static const NSTimeInterval kTimerDuration = 7; // seconds
 
 @implementation MPCountdownTimerViewTests
 
-#pragma mark - Setup
-
-- (void)setUp {
-    [super setUp];
-    self.timerView = [[MPCountdownTimerView alloc] initWithFrame:CGRectMake(0, 0, 40, 40) duration:kTimerDuration];
-}
-
-- (void)tearDown {
-    self.timerView = nil;
-    [super tearDown];
-}
-
 #pragma mark - Tests
 
-// Tests that attempting to start an already running timer will do nothing.
-- (void)testDoubleStart {
-    XCTestExpectation * expectation = [self expectationWithDescription:@"Wait for timer completion block to fire."];
-
-    __block BOOL completionFired = NO;
-    [self.timerView startWithTimerCompletion:^(BOOL hasElapsed) {
-        completionFired = YES;
-        [expectation fulfill];
-    }];
-
-    [self.timerView startWithTimerCompletion:^(BOOL hasElapsed) {
-        XCTFail(@"This timer completion block should never have been invoked.");
-    }];
-
-    [self waitForExpectationsWithTimeout:kTestTimeout handler:^(NSError * _Nullable error) {
-        XCTAssertNil(error);
-    }];
-
-    XCTAssert(completionFired, @"Countdown timer completion block failed to fire.");
+// Test initialization with valid and invalid durations.
+- (void)testInitialization {
+    XCTAssertNotNil([[MPCountdownTimerView alloc] initWithDuration:100 timerCompletion:^(BOOL hasElapsed) {}]);
+    XCTAssertNotNil([[MPCountdownTimerView alloc] initWithDuration:1 timerCompletion:^(BOOL hasElapsed) {}]);
+    XCTAssertNil([[MPCountdownTimerView alloc] initWithDuration:0 timerCompletion:^(BOOL hasElapsed) {}]);
+    XCTAssertNil([[MPCountdownTimerView alloc] initWithDuration:-1 timerCompletion:^(BOOL hasElapsed) {}]);
+    XCTAssertNil([[MPCountdownTimerView alloc] initWithDuration:-100 timerCompletion:^(BOOL hasElapsed) {}]);
 }
 
 // Tests that the completion block for the timer executes after the timer has elapsed.
 - (void)testElapses {
-    XCTestExpectation * expectation = [self expectationWithDescription:@"Wait for timer completion block to fire."];
-
-    __block BOOL completionFired = NO;
-    [self.timerView startWithTimerCompletion:^(BOOL hasElapsed) {
-        completionFired = YES;
-        [expectation fulfill];
+    XCTestExpectation * completionExpectation = [self expectationWithDescription:@"Wait for timer completion block to fire."];
+    __block BOOL completionCount = 0; // expected to be exactly 1
+    MPCountdownTimerView * timerView = [[MPCountdownTimerView alloc] initWithDuration:kTimerDurationInSeconds timerCompletion:^(BOOL hasElapsed) {
+        completionCount += 1;
+        [completionExpectation fulfill];
     }];
 
-    [self waitForExpectationsWithTimeout:kTestTimeout handler:^(NSError * _Nullable error) {
+    [timerView start];
+    [self waitForExpectationsWithTimeout:kTimerDurationInSeconds * kWaitTimeTolerance handler:^(NSError * _Nullable error) {
+        XCTAssertEqual(completionCount, 1, "Countdown timer completion block is not fired exactly once");
+        XCTAssertNil(error);
+    }];
+}
+
+// Test that attempting to start an already running timer before completion will do nothing.
+- (void)testDoubleStartBeforeCompletion {
+    XCTestExpectation * completionExpectation = [self expectationWithDescription:@"Wait for timer completion block to fire."];
+    __block BOOL completionCount = 0; // expected to be exactly 1
+    MPCountdownTimerView * timerView = [[MPCountdownTimerView alloc] initWithDuration:kTimerDurationInSeconds timerCompletion:^(BOOL hasElapsed) {
+        completionCount += 1;
+        [completionExpectation fulfill];
+    }];
+
+    [timerView start];
+    [timerView start]; // this redundant `start` should be ignore and has not effect
+    [self waitForExpectationsWithTimeout:kTimerDurationInSeconds * kWaitTimeTolerance handler:^(NSError * _Nullable error) {
+        XCTAssertEqual(completionCount, 1, "Countdown timer completion block is not fired exactly once");
         XCTAssertNil(error);
     }];
 
-    XCTAssert(completionFired, @"Countdown timer completion block failed to fire.");
+    // Now the completion is fired, wait a little longer to make sure the second `start` does nothing
+
+    XCTestExpectation * emptyExpectation = [self expectationWithDescription:@"Nothing should happen, wait a little long to see"];
+    dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(kTimerDurationInSeconds / 5 * NSEC_PER_SEC)), dispatch_get_main_queue(), ^{
+        [emptyExpectation fulfill];
+    });
+    [self waitForExpectationsWithTimeout:kTimerDurationInSeconds * kWaitTimeTolerance handler:^(NSError * _Nullable error) {
+        XCTAssertEqual(completionCount, 1, "Countdown timer completion block is not fired exactly once");
+        XCTAssertNil(error);
+    }];
 }
 
-// Tests initialization with an invalid duration.
-- (void)testInvalidDuration {
-    self.timerView = [[MPCountdownTimerView alloc] initWithFrame:CGRectMake(0, 0, 40, 40) duration:-1];
-
-    XCTAssertNil(self.timerView);
-}
-
-// Tests pausing a stopped timer does nothing.
-- (void)testNoOpPause {
-    [self.timerView pause];
-
-    XCTAssertFalse(self.timerView.isPaused);
-}
-
-// Tests resuming a stopped timer does nothing.
-- (void)testNoOpResume {
-    [self.timerView resume];
-
-    XCTAssertFalse(self.timerView.isPaused);
-    XCTAssertFalse(self.timerView.isActive);
-}
-
-// Tests stopping a stopped timer does nothing.
-- (void)testNoOpStop {
-    [self.timerView stopAndSignalCompletion:NO];
-
-    XCTAssertFalse(self.timerView.isActive);
-}
-
-// Tests that the timer has successfully paused operation.
-- (void)testPause {
-    [self.timerView startWithTimerCompletion:nil];
-    [self.timerView pause];
-
-    XCTAssertTrue(self.timerView.isPaused);
-}
-
-// Tests that the timer has resumed operation.
-- (void)testResume {
-    XCTestExpectation * expectation = [self expectationWithDescription:@"Wait for timer completion block to fire."];
-
-    __block BOOL completionFired = NO;
-    [self.timerView startWithTimerCompletion:^(BOOL hasElapsed) {
-        completionFired = YES;
-        [expectation fulfill];
+// Test that starting a completed timer will do nothing
+- (void)testStartAgainAfterCompletion {
+    XCTestExpectation * completionExpectation = [self expectationWithDescription:@"Wait for timer completion block to fire."];
+    __block BOOL completionCount = 0; // expected to be exactly 1
+    MPCountdownTimerView * timerView = [[MPCountdownTimerView alloc] initWithDuration:kTimerDurationInSeconds timerCompletion:^(BOOL hasElapsed) {
+        completionCount += 1;
+        [completionExpectation fulfill];
     }];
 
-    // Pause the timer.
-    [self.timerView pause];
-    XCTAssertTrue(self.timerView.isPaused);
-
-    // Resume the timer.
-    [self.timerView resume];
-    XCTAssertFalse(self.timerView.isPaused);
-
-    [self waitForExpectationsWithTimeout:kTestTimeout handler:^(NSError * _Nullable error) {
+    [timerView start];
+    [self waitForExpectationsWithTimeout:kTimerDurationInSeconds * kWaitTimeTolerance handler:^(NSError * _Nullable error) {
+        XCTAssertEqual(completionCount, 1, "Countdown timer completion block is not fired exactly once");
         XCTAssertNil(error);
     }];
 
-    XCTAssert(completionFired, @"Countdown timer completion block failed to fire.");
+    // Now the completion is fired, calling `start` again should has no effect
+
+    XCTestExpectation * emptyExpectation = [self expectationWithDescription:@"Nothing should happen, wait a little long to see"];
+    [timerView start];
+    dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(kTimerDurationInSeconds * NSEC_PER_SEC)), dispatch_get_main_queue(), ^{
+        [emptyExpectation fulfill];
+    });
+    [self waitForExpectationsWithTimeout:kTimerDurationInSeconds * kWaitTimeTolerance handler:^(NSError * _Nullable error) {
+        XCTAssertEqual(completionCount, 1, "Countdown timer completion block is not fired exactly once");
+        XCTAssertNil(error);
+    }];
 }
 
-// Tests that the timer has stopped operation.
-- (void)testStop {
-    XCTestExpectation * expectation = [self expectationWithDescription:@"Wait for timer completion block to fire."];
-
-    __block BOOL completionFired = NO;
-    [self.timerView startWithTimerCompletion:^(BOOL hasElapsed) {
-        completionFired = YES;
-        [expectation fulfill];
+// Test the timer can be paused and resumed multiple times by notifications
+- (void)testPauseAndResume {
+    XCTestExpectation * completionExpectation = [self expectationWithDescription:@"Wait for timer completion block to fire."];
+    __block BOOL completionCount = 0; // expected to be exactly 1
+    MPCountdownTimerView * timerView = [[MPCountdownTimerView alloc] initWithDuration:kTimerDurationInSeconds timerCompletion:^(BOOL hasElapsed) {
+        completionCount += 1;
+        [completionExpectation fulfill];
     }];
+    timerView.notificationCenter = [NSNotificationCenter new];
+    const NSTimeInterval kPauseSeconds = kTimerDurationInSeconds / 4;
 
-    dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(1 * NSEC_PER_SEC)), dispatch_get_main_queue(), ^{
-        [self.timerView stopAndSignalCompletion:YES];
+    // nothing should happen before `start`
+    [timerView.notificationCenter postNotificationName:UIApplicationDidEnterBackgroundNotification object:nil];
+    XCTAssertFalse(timerView.timer.isCountdownActive);
+    [timerView.notificationCenter postNotificationName:UIApplicationWillEnterForegroundNotification object:nil];
+    XCTAssertFalse(timerView.timer.isCountdownActive);
+
+    [timerView start];
+    XCTAssertTrue(timerView.timer.isCountdownActive);
+
+    // pause
+    [timerView.notificationCenter postNotificationName:UIApplicationDidEnterBackgroundNotification object:nil];
+    XCTAssertFalse(timerView.timer.isCountdownActive);
+
+    dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(kPauseSeconds * NSEC_PER_SEC)), dispatch_get_main_queue(), ^{
+        // resume
+        [timerView.notificationCenter postNotificationName:UIApplicationWillEnterForegroundNotification object:nil];
+        XCTAssertTrue(timerView.timer.isCountdownActive);
+
+        dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(kPauseSeconds * NSEC_PER_SEC)), dispatch_get_main_queue(), ^{
+            // pause again
+            [timerView.notificationCenter postNotificationName:UIApplicationDidEnterBackgroundNotification object:nil];
+            XCTAssertFalse(timerView.timer.isCountdownActive);
+
+            dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(kPauseSeconds * NSEC_PER_SEC)), dispatch_get_main_queue(), ^{
+                // resume again
+                [timerView.notificationCenter postNotificationName:UIApplicationWillEnterForegroundNotification object:nil];
+                XCTAssertTrue(timerView.timer.isCountdownActive);
+            });
+        });
     });
 
-    [self waitForExpectationsWithTimeout:kTestTimeout handler:^(NSError * _Nullable error) {
+    NSTimeInterval totalTime = kTimerDurationInSeconds + kPauseSeconds * 2; // paused twice
+    [self waitForExpectationsWithTimeout:totalTime * kWaitTimeTolerance handler:^(NSError * _Nullable error) {
+        XCTAssertEqual(completionCount, 1, "Countdown timer completion block is not fired exactly once");
         XCTAssertNil(error);
     }];
 
-    XCTAssert(completionFired, @"Countdown timer completion block failed to fire.");
-    XCTAssertFalse(self.timerView.isActive);
+    XCTAssertFalse(timerView.timer.isCountdownActive);
+
+    // nothing should happen after completion
+    [timerView.notificationCenter postNotificationName:UIApplicationDidEnterBackgroundNotification object:nil];
+    XCTAssertFalse(timerView.timer.isCountdownActive);
+    [timerView.notificationCenter postNotificationName:UIApplicationWillEnterForegroundNotification object:nil];
+    XCTAssertFalse(timerView.timer.isCountdownActive);
 }
 
-// Tests that the timer has stopped operation without signaling the completion block.
+// Test that the timer can stop and signal the completion block.
+- (void)testStopAndSignal {
+    XCTestExpectation * completionExpectation = [self expectationWithDescription:@"Wait for timer completion block to fire."];
+    __block BOOL completionCount = 0; // expected to be exactly 1
+    MPCountdownTimerView * timerView = [[MPCountdownTimerView alloc] initWithDuration:kTimerDurationInSeconds timerCompletion:^(BOOL hasElapsed) {
+        completionCount += 1;
+        [completionExpectation fulfill];
+    }];
+
+    [timerView start];
+
+    NSTimeInterval stopTime = kTimerDurationInSeconds / 2; // stop half way through
+    dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(stopTime * NSEC_PER_SEC)), dispatch_get_main_queue(), ^{
+        [timerView stopAndSignalCompletion:YES];
+    });
+
+    [self waitForExpectationsWithTimeout:kTimerDurationInSeconds * kWaitTimeTolerance handler:^(NSError * _Nullable error) {
+        XCTAssertFalse(timerView.timer.isCountdownActive);
+        XCTAssertEqual(completionCount, 1, "Countdown timer completion block is not fired exactly once");
+        XCTAssertNil(error);
+    }];
+}
+
+// Test that the timer can stop without signaling the completion block.
 - (void)testStopAndNoSignal {
-    XCTestExpectation * expectation = [self expectationWithDescription:@"Wait for timer completion block to fire."];
-
-    __block BOOL completionFired = NO;
-    [self.timerView startWithTimerCompletion:^(BOOL hasElapsed) {
-        completionFired = YES;
+    XCTestExpectation * completionExpectation = [self expectationWithDescription:@"Wait for timer completion block to fire."];
+    __block BOOL completionCount = 0; // expected to be exactly 1
+    MPCountdownTimerView * timerView = [[MPCountdownTimerView alloc] initWithDuration:kTimerDurationInSeconds timerCompletion:^(BOOL hasElapsed) {
+        completionCount += 1; // should not happen
+        [completionExpectation fulfill]; // should not happen
     }];
 
-    dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(1 * NSEC_PER_SEC)), dispatch_get_main_queue(), ^{
-        [self.timerView stopAndSignalCompletion:NO];
-        [expectation fulfill];
+    [timerView start];
+
+    NSTimeInterval stopTime = kTimerDurationInSeconds / 2; // stop half way through
+    dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(stopTime * NSEC_PER_SEC)), dispatch_get_main_queue(), ^{
+        [timerView stopAndSignalCompletion:NO];
+        [completionExpectation fulfill];
     });
 
-    [self waitForExpectationsWithTimeout:kTestTimeout handler:^(NSError * _Nullable error) {
+    [self waitForExpectationsWithTimeout:kTimerDurationInSeconds * kWaitTimeTolerance handler:^(NSError * _Nullable error) {
+        XCTAssertFalse(timerView.timer.isCountdownActive);
+        XCTAssertEqual(completionCount, 0, "Countdown timer completion block is fired unexpectedly");
         XCTAssertNil(error);
     }];
-
-    XCTAssertFalse(completionFired, @"Countdown timer completion block should not have fired.");
-    XCTAssertFalse(self.timerView.isActive);
 }
 
 @end

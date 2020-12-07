@@ -1,8 +1,9 @@
 //
 //  MRBridge.h
-//  MoPubSDK
 //
-//  Copyright (c) 2014 MoPub. All rights reserved.
+//  Copyright 2018-2020 Twitter, Inc.
+//  Licensed under the MoPub SDK License Agreement
+//  http://www.mopub.com/legal/sdk-license-agreement/
 //
 
 #import <UIKit/UIKit.h>
@@ -13,20 +14,21 @@
 @protocol MRBridgeDelegate;
 
 /**
- * The `MRBridge` class is an intermediate object between native code and JavaScript for
- * MRAID ads. The MRAID web view communicates events to `MRBridge` which translates them
- * down to native code. Likewise, native code will communicate with `MRBridge` to execute
- * commands inside the JavaScript. `MRBridge` also inserts mraid.js into the web view when
- * loading an ad's HTML.
+ The `MRBridge` class is an intermediate object between native code and JavaScript for
+ MRAID ads. The MRAID web view communicates events to `MRBridge` which translates them
+ down to native code. Likewise, native code will communicate with `MRBridge` to execute
+ commands inside the JavaScript. `MRBridge` also inserts mraid.js into the web view when
+ loading an ad's HTML.
  */
 @interface MRBridge : NSObject
 
 @property (nonatomic, assign) BOOL shouldHandleRequests;
 @property (nonatomic, weak) id<MRBridgeDelegate> delegate;
 
-- (instancetype)initWithWebView:(MPWebView *)webView;
+- (instancetype)initWithWebView:(MPWebView *)webView delegate:(id<MRBridgeDelegate>)delegate;
 
 - (void)loadHTMLString:(NSString *)HTML baseURL:(NSURL *)baseURL;
+- (void)loadHTMLUrl:(NSURL *)url;
 
 - (void)fireReadyEvent;
 - (void)fireChangeEventForProperty:(MRProperty *)property;
@@ -34,8 +36,8 @@
 - (void)fireErrorEventForAction:(NSString *)action withMessage:(NSString *)message;
 
 /*
- * fireSizeChangeEvent: will always execute the javascript to notify mraid bridge that the size of the ad may have
- * changed. mraid.js will only fire the change event if the size has actually changed.
+ fireSizeChangeEvent: will always execute the javascript to notify mraid bridge that the size of the ad may have
+ changed. mraid.js will only fire the change event if the size has actually changed.
  */
 - (void)fireSizeChangeEvent:(CGSize)size;
 
@@ -48,11 +50,11 @@
 @end
 
 /**
- * The delegate of an `MRBridge` object that implements `MRBridgeDelegate` must provide information
- * about the state of an MRAID ad through `isLoadingAd` and `hasUserInteractedWithWebView` so `MRBridge`
- * can correctly process web view events. The delegate will be notified of specific events that need
- * to be handled natively for an MRAID ad. The delegate is also notified of most web view events so it
- * can perform necessary actions such as changing the ad's state.
+ The delegate of an `MRBridge` object that implements `MRBridgeDelegate` must provide information
+ about the state of an MRAID ad through `isLoadingAd` and `hasUserInteractedWithWebView` so `MRBridge`
+ can correctly process web view events. The delegate will be notified of specific events that need
+ to be handled natively for an MRAID ad. The delegate is also notified of most web view events so it
+ can perform necessary actions such as changing the ad's state.
  */
 @protocol MRBridgeDelegate <NSObject>
 

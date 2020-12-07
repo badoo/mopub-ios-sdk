@@ -1,32 +1,30 @@
 //
 //  MPMockChartboostRewardedVideoCustomEvent.m
-//  MoPubSDK
 //
-//  Copyright © 2017 MoPub. All rights reserved.
+//  Copyright 2018-2020 Twitter, Inc.
+//  Licensed under the MoPub SDK License Agreement
+//  http://www.mopub.com/legal/sdk-license-agreement/
 //
 
 #import "MPMockChartboostRewardedVideoCustomEvent.h"
-#import "MPRewardedVideoCustomEvent+Caching.h"
-
-static BOOL gInitialized = NO;
+#import "MPMockChartboostAdapterConfiguration.h"
 
 @implementation MPMockChartboostRewardedVideoCustomEvent
+@synthesize delegate;
+@synthesize enableAutomaticImpressionAndClickTracking;
+@synthesize localExtras;
 
-+ (BOOL)isSdkInitialized {
-    return gInitialized;
+- (BOOL)hasAdAvailable {
+    return YES;
 }
 
-+ (void)reset {
-    gInitialized = NO;
+- (BOOL)isRewardExpected {
+    return YES;
 }
 
-- (void)initializeSdkWithParameters:(NSDictionary *)parameters {
-    gInitialized = YES;
-}
-
-- (void)requestRewardedVideoWithCustomEventInfo:(NSDictionary *)info {
-    [self setCachedInitializationParameters:info];
-    [self.delegate rewardedVideoDidLoadAdForCustomEvent:self];
+- (void)requestAdWithAdapterInfo:(NSDictionary *)info adMarkup:(NSString *)adMarkup {
+    [MPMockChartboostAdapterConfiguration setCachedInitializationParameters:info];
+    [self.delegate fullscreenAdAdapterDidLoadAd:self];
 }
 
 @end

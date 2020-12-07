@@ -1,0 +1,60 @@
+<VAST xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="vast_3.0.1-creativeView.xsd" version="3.0">
+   <Ad id="WrapperAdWrapper">
+      <Wrapper>
+         <AdSystem>WrapperAdSystem</AdSystem>
+         <Impression><![CDATA[https://px.moatads.com/pixel.gif?pingImpressionWrapper]]></Impression>
+         <VASTAdTagURI><![CDATA[https://raw.githubusercontent.com/jeffreycarlson/vast-test-ads/master/vast_3.0_inline_1.xml]]></VASTAdTagURI>
+         <AdVerifications>
+            <Verification vendor="moat.com-omsdkmopubinappvideo516564937306">
+               <JavaScriptResource apiFramework="omid" browserOptional="true"><![CDATA[https://z.moatads.com/omsdkmopubinappvideo516564937306/moatvideo.js]]></JavaScriptResource>
+               <VerificationParameters><![CDATA[{"moatClientLevel1":"2f1dc639eb0941cdb2a4f4edf06be9aa","moatClientLevel2":"Fullscreen","moatClientLevel3":"html","moatClientSlicer1":"Fullscreen%3A%20VAST%203.0%20Wrapper%20-","moatClientSlicer2":"382348da626f46b5911ec666ca7e473d","zMoatCreativeID":"%dc73990781bd420ebb6513023ac35841%%"}]]></VerificationParameters>
+            </Verification>
+         </AdVerifications>
+          <Creatives>
+            <Creative>
+                <Linear skipoffset="00:00:05">
+                  <Duration>00:00:30</Duration>
+                  <TrackingEvents>
+                    <Tracking>
+                      <![CDATA[https://www.mopub.com/?q=creativeView]]>
+                    </Tracking>
+                  </TrackingEvents>
+                  <VideoClicks>
+                    <ClickThrough>
+                      <![CDATA[https://www.mopub.com/?q=videoClickThrough]]>
+                    </ClickThrough>
+                    <ClickTracking>
+                      <![CDATA[https://www.mopub.com/?q=videoClickTracking]]>
+                    </ClickTracking>
+                  </VideoClicks>
+                  <MediaFiles>
+                    <MediaFile delivery="progressive" type="video/mp4" bitrate="970" width="1280" height="720" scalable="true" maintainAspectRatio="true">
+                      <![CDATA[https://d2al1opqne3nsh.cloudfront.net/videos/corgi30sec3.mp4]]>
+                    </MediaFile>
+                  </MediaFiles>
+                </Linear>
+            </Creative>
+            <Creative>
+              <CompanionAds>
+                <Companion width="569" height="320">
+                  <StaticResource creativeType="image/jpeg">
+                    <![CDATA[https://d2al1opqne3nsh.cloudfront.net/images/corgi569x320.jpeg]]>
+                  </StaticResource>
+                  <TrackingEvents>
+                    <Tracking event="creativeView">
+                      <![CDATA[https://www.mopub.com/?q=companionTracking569x320]]>
+                    </Tracking>
+                  </TrackingEvents>
+                  <CompanionClickThrough>
+                    <![CDATA[https://www.mopub.com/?q=companionClickThrough569x320]]>
+                  </CompanionClickThrough>
+                  <CompanionClickTracking>
+                    <![CDATA[https://www.mopub.com/?q=companionClickTracking569x320]]>
+                  </CompanionClickTracking>
+                </Companion>
+              </CompanionAds>
+            </Creative>
+          </Creatives>
+      </Wrapper>
+   </Ad>
+</VAST>

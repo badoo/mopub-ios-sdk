@@ -1,14 +1,15 @@
 //
 //  MOPUBExperimentProvider+Testing.h
-//  MoPubSDK
 //
-//  Copyright © 2017 MoPub. All rights reserved.
+//  Copyright 2018-2020 Twitter, Inc.
+//  Licensed under the MoPub SDK License Agreement
+//  http://www.mopub.com/legal/sdk-license-agreement/
 //
 
 #import "MOPUBExperimentProvider.h"
 
 @interface MOPUBExperimentProvider (Testing)
 
-+ (void)setDisplayAgentOverriddenByClientFlag:(BOOL)flag;
+@property (nonatomic, assign) BOOL isDisplayAgentOverriddenByClient;
 
 @end

@@ -1,19 +1,24 @@
 //
 //  MoPubTests.m
-//  MoPubSDK
 //
-//  Copyright © 2017 MoPub. All rights reserved.
+//  Copyright 2018-2020 Twitter, Inc.
+//  Licensed under the MoPub SDK License Agreement
+//  http://www.mopub.com/legal/sdk-license-agreement/
 //
 
 #import <XCTest/XCTest.h>
 #import "MoPub.h"
+#import "MoPub+Testing.h"
 #import "MPAdConfiguration.h"
-#import "MPRewardedVideoCustomEvent+Caching.h"
-#import "MPMockAdColonyRewardedVideoCustomEvent.h"
-#import "MPMockChartboostRewardedVideoCustomEvent.h"
+#import "MPMediationManager.h"
+#import "MPMediationManager+Testing.h"
+#import "MPMockAdColonyAdapterConfiguration.h"
+#import "MPMockChartboostAdapterConfiguration.h"
+#import "MPMockTapjoyAdapterConfiguration.h"
 #import "MPWebView+Testing.h"
 #import "MRController.h"
 #import "MRController+Testing.h"
+#import "MPViewabilityManager+Testing.h"
 
 static NSTimeInterval const kTestTimeout = 2;
 
@@ -25,156 +30,202 @@ static NSTimeInterval const kTestTimeout = 2;
 
 - (void)setUp {
     [super setUp];
-    [MPRewardedVideoCustomEvent clearCache];
+    [MPMediationManager.sharedManager clearCache];
+    MPLogging.consoleLogLevel = MPBLogLevelInfo;
 
-    [MoPub sharedInstance].forceWKWebView = NO;
-    [MoPub sharedInstance].logLevel = MPLogLevelInfo;
+    // Reset Viewability Manager state
+    MPViewabilityManager.sharedManager.isEnabled = YES;
+    MPViewabilityManager.sharedManager.isInitialized = NO;
+    MPViewabilityManager.sharedManager.omidPartner = nil;
+    [MPViewabilityManager.sharedManager clearCachedOMIDLibrary];
 }
 
-#pragma mark - Rewarded Video
+#pragma mark - Initialization
 
 - (void)testInitializingNetworkFromCache {
     // Reset initialized state
-    [MPMockAdColonyRewardedVideoCustomEvent reset];
-    [MPMockChartboostRewardedVideoCustomEvent reset];
-    XCTAssertFalse([MPMockAdColonyRewardedVideoCustomEvent isSdkInitialized]);
-    XCTAssertFalse([MPMockChartboostRewardedVideoCustomEvent isSdkInitialized]);
+    MPMockAdColonyAdapterConfiguration.isSdkInitialized = NO;
+    MPMockChartboostAdapterConfiguration.isSdkInitialized = NO;
+    MPMockTapjoyAdapterConfiguration.isSdkInitialized = NO;
+    XCTAssertFalse(MPMockAdColonyAdapterConfiguration.isSdkInitialized);
+    XCTAssertFalse(MPMockChartboostAdapterConfiguration.isSdkInitialized);
+    XCTAssertFalse(MPMockTapjoyAdapterConfiguration.isSdkInitialized);
 
     // Put data into the cache to simulate having been cache prior.
-    [MPRewardedVideoCustomEvent setCachedInitializationParameters:@{ @"appId": @"aaaa" } forNetwork:@"MPMockAdColonyRewardedVideoCustomEvent"];
-    [MPRewardedVideoCustomEvent setCachedInitializationParameters:@{ @"appId": @"bbbb" } forNetwork:@"MPMockChartboostRewardedVideoCustomEvent"];
+    [MPMockAdColonyAdapterConfiguration setCachedInitializationParameters:@{ @"appId": @"aaaa" }];
+    [MPMockChartboostAdapterConfiguration setCachedInitializationParameters:@{ @"appId": @"bbbb" }];
+    [MPMockTapjoyAdapterConfiguration setCachedInitializationParameters:@{ @"appId": @"cccc" }];
 
     // Initialize
-    [[MoPub sharedInstance] initializeRewardedVideoWithGlobalMediationSettings:nil delegate:nil];
+    MPMoPubConfiguration * config = [[MPMoPubConfiguration alloc] initWithAdUnitIdForAppInitialization:@"fake_adunit_id"];
+    config.additionalNetworks = nil;
+    config.globalMediationSettings = nil;
 
     // Wait for SDKs to initialize
     XCTestExpectation * expectation = [self expectationWithDescription:@"Expect timer to fire"];
-    dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)((kTestTimeout / 2.0) * NSEC_PER_SEC)), dispatch_get_main_queue(), ^{
+    [MoPub.sharedInstance setSdkWithConfiguration:config completion:^{
         [expectation fulfill];
-    });
+    }];
 
     [self waitForExpectationsWithTimeout:kTestTimeout handler:^(NSError *error) {
         XCTAssertNil(error);
     }];
 
     // Verify initialized sdks
-    XCTAssertTrue([MPMockAdColonyRewardedVideoCustomEvent isSdkInitialized]);
-    XCTAssertTrue([MPMockChartboostRewardedVideoCustomEvent isSdkInitialized]);
+    XCTAssertTrue(MPMockAdColonyAdapterConfiguration.isSdkInitialized);
+    XCTAssertTrue(MPMockChartboostAdapterConfiguration.isSdkInitialized);
+    XCTAssertFalse(MPMockTapjoyAdapterConfiguration.isSdkInitialized);
+
+    // Verify adapter configurations exist
+    XCTAssertNotNil([MoPub.sharedInstance adapterConfigurationNamed:@"MPMockAdColonyAdapterConfiguration"]);
+    XCTAssertNotNil([MoPub.sharedInstance adapterConfigurationNamed:@"MPMockChartboostAdapterConfiguration"]);
+    XCTAssertNil([MoPub.sharedInstance adapterConfigurationNamed:@"MPMockTapjoyAdapterConfiguration"]);
 }
 
-- (void)testPartialInitializingNetworkFromCache {
+- (void)testAdditionalInitializingNetworkFromCache {
     // Reset initialized state
-    [MPMockAdColonyRewardedVideoCustomEvent reset];
-    [MPMockChartboostRewardedVideoCustomEvent reset];
-    XCTAssertFalse([MPMockAdColonyRewardedVideoCustomEvent isSdkInitialized]);
-    XCTAssertFalse([MPMockChartboostRewardedVideoCustomEvent isSdkInitialized]);
+    MPMockAdColonyAdapterConfiguration.isSdkInitialized = NO;
+    MPMockChartboostAdapterConfiguration.isSdkInitialized = NO;
+    MPMockTapjoyAdapterConfiguration.isSdkInitialized = NO;
+    XCTAssertFalse(MPMockAdColonyAdapterConfiguration.isSdkInitialized);
+    XCTAssertFalse(MPMockChartboostAdapterConfiguration.isSdkInitialized);
+    XCTAssertFalse(MPMockTapjoyAdapterConfiguration.isSdkInitialized);
 
     // Put data into the cache to simulate having been cache prior.
-    [MPRewardedVideoCustomEvent setCachedInitializationParameters:@{ @"appId": @"aaaa" } forNetwork:@"MPMockAdColonyRewardedVideoCustomEvent"];
-    [MPRewardedVideoCustomEvent setCachedInitializationParameters:@{ @"appId": @"bbbb" } forNetwork:@"MPMockChartboostRewardedVideoCustomEvent"];
+    [MPMockAdColonyAdapterConfiguration setCachedInitializationParameters:@{ @"appId": @"aaaa" }];
+    [MPMockChartboostAdapterConfiguration setCachedInitializationParameters:@{ @"appId": @"bbbb" }];
+    [MPMockTapjoyAdapterConfiguration setCachedInitializationParameters:@{ @"appId": @"cccc" }];
 
     // Initialize
-    [[MoPub sharedInstance] initializeRewardedVideoWithGlobalMediationSettings:nil delegate:nil networkInitializationOrder:@[@"MPMockAdColonyRewardedVideoCustomEvent"]];
+    MPMoPubConfiguration * config = [[MPMoPubConfiguration alloc] initWithAdUnitIdForAppInitialization:@"fake_adunit_id"];
+    config.additionalNetworks = [NSArray arrayWithObject:MPMockTapjoyAdapterConfiguration.class];
+    config.globalMediationSettings = nil;
 
     // Wait for SDKs to initialize
     XCTestExpectation * expectation = [self expectationWithDescription:@"Expect timer to fire"];
-    dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)((kTestTimeout / 2.0) * NSEC_PER_SEC)), dispatch_get_main_queue(), ^{
+    [MoPub.sharedInstance setSdkWithConfiguration:config completion:^{
         [expectation fulfill];
-    });
+    }];
 
     [self waitForExpectationsWithTimeout:kTestTimeout handler:^(NSError *error) {
         XCTAssertNil(error);
     }];
 
     // Verify initialized sdks
-    XCTAssertTrue([MPMockAdColonyRewardedVideoCustomEvent isSdkInitialized]);
-    XCTAssertFalse([MPMockChartboostRewardedVideoCustomEvent isSdkInitialized]);
+    XCTAssertTrue(MPMockAdColonyAdapterConfiguration.isSdkInitialized);
+    XCTAssertTrue(MPMockChartboostAdapterConfiguration.isSdkInitialized);
+    XCTAssertTrue(MPMockTapjoyAdapterConfiguration.isSdkInitialized);
+
+    // Verify adapter configurations exist
+    XCTAssertNotNil([MoPub.sharedInstance adapterConfigurationNamed:@"MPMockAdColonyAdapterConfiguration"]);
+    XCTAssertNotNil([MoPub.sharedInstance adapterConfigurationNamed:@"MPMockChartboostAdapterConfiguration"]);
+    XCTAssertNotNil([MoPub.sharedInstance adapterConfigurationNamed:@"MPMockTapjoyAdapterConfiguration"]);
 }
 
 - (void)testNoInitializingNetworkFromCache {
     // Reset initialized state
-    [MPMockAdColonyRewardedVideoCustomEvent reset];
-    [MPMockChartboostRewardedVideoCustomEvent reset];
-    XCTAssertFalse([MPMockAdColonyRewardedVideoCustomEvent isSdkInitialized]);
-    XCTAssertFalse([MPMockChartboostRewardedVideoCustomEvent isSdkInitialized]);
+    MPMockAdColonyAdapterConfiguration.isSdkInitialized = NO;
+    MPMockChartboostAdapterConfiguration.isSdkInitialized = NO;
+    MPMockTapjoyAdapterConfiguration.isSdkInitialized = NO;
+    XCTAssertFalse(MPMockAdColonyAdapterConfiguration.isSdkInitialized);
+    XCTAssertFalse(MPMockChartboostAdapterConfiguration.isSdkInitialized);
+    XCTAssertFalse(MPMockTapjoyAdapterConfiguration.isSdkInitialized);
 
-    // Put data into the cache to simulate having been cache prior.
-    [MPRewardedVideoCustomEvent setCachedInitializationParameters:@{ @"appId": @"aaaa" } forNetwork:@"MPMockAdColonyRewardedVideoCustomEvent"];
-    [MPRewardedVideoCustomEvent setCachedInitializationParameters:@{ @"appId": @"bbbb" } forNetwork:@"MPMockChartboostRewardedVideoCustomEvent"];
-
-    // Initialize
-    [[MoPub sharedInstance] initializeRewardedVideoWithGlobalMediationSettings:nil delegate:nil networkInitializationOrder:nil];
-
-    // Verify initialized sdks
-    XCTAssertFalse([MPMockAdColonyRewardedVideoCustomEvent isSdkInitialized]);
-    XCTAssertFalse([MPMockChartboostRewardedVideoCustomEvent isSdkInitialized]);
-}
-
-- (void)testBadInitializingNetworkFromCache {
-    // Reset initialized state
-    [MPMockAdColonyRewardedVideoCustomEvent reset];
-    [MPMockChartboostRewardedVideoCustomEvent reset];
-    XCTAssertFalse([MPMockAdColonyRewardedVideoCustomEvent isSdkInitialized]);
-    XCTAssertFalse([MPMockChartboostRewardedVideoCustomEvent isSdkInitialized]);
-
-    // Put data into the cache to simulate having been cache prior.
-    [MPRewardedVideoCustomEvent setCachedInitializationParameters:@{ @"appId": @"aaaa" } forNetwork:@"MPMockAdColonyRewardedVideoCustomEvent"];
-    [MPRewardedVideoCustomEvent setCachedInitializationParameters:@{ @"appId": @"bbbb" } forNetwork:@"MPMockChartboostRewardedVideoCustomEvent"];
+    // Remove data from the cache.
+    [MPMediationManager.sharedManager clearCache];
 
     // Initialize
-    [[MoPub sharedInstance] initializeRewardedVideoWithGlobalMediationSettings:nil delegate:nil networkInitializationOrder:@[@"NON_EXISTANT_REWARDED_CLASS"]];
+    MPMoPubConfiguration * config = [[MPMoPubConfiguration alloc] initWithAdUnitIdForAppInitialization:@"fake_adunit_id"];
+    config.additionalNetworks = nil;
+    config.globalMediationSettings = nil;
+
+    // Wait for SDKs to initialize
+    XCTestExpectation * expectation = [self expectationWithDescription:@"Expect timer to fire"];
+    [MoPub.sharedInstance setSdkWithConfiguration:config completion:^{
+        [expectation fulfill];
+    }];
+
+    [self waitForExpectationsWithTimeout:kTestTimeout handler:^(NSError *error) {
+        XCTAssertNil(error);
+    }];
 
     // Verify initialized sdks
-    XCTAssertFalse([MPMockAdColonyRewardedVideoCustomEvent isSdkInitialized]);
-    XCTAssertFalse([MPMockChartboostRewardedVideoCustomEvent isSdkInitialized]);
+    XCTAssertFalse(MPMockAdColonyAdapterConfiguration.isSdkInitialized);
+    XCTAssertFalse(MPMockChartboostAdapterConfiguration.isSdkInitialized);
+    XCTAssertFalse(MPMockTapjoyAdapterConfiguration.isSdkInitialized);
+
+    // Verify adapter configurations exist
+    XCTAssertNotNil([MoPub.sharedInstance adapterConfigurationNamed:@"MPMockAdColonyAdapterConfiguration"]);
+    XCTAssertNotNil([MoPub.sharedInstance adapterConfigurationNamed:@"MPMockChartboostAdapterConfiguration"]);
+    XCTAssertNil([MoPub.sharedInstance adapterConfigurationNamed:@"MPMockTapjoyAdapterConfiguration"]);
 }
 
-#pragma mark - WKWebView
+- (void)testInitializingWithLegitimateInterest {
+    // Initialize
+    MPMoPubConfiguration * config = [[MPMoPubConfiguration alloc] initWithAdUnitIdForAppInitialization:@"fake_adunit_id"];
+    config.allowLegitimateInterest = YES;
 
-- (void)testNoForceWKWebView {
-    // Normal WKWebView behavior
-    [MoPub sharedInstance].forceWKWebView = NO;
+    // Wait for SDKs to initialize
+    XCTestExpectation * expectation = [self expectationWithDescription:@"Expect timer to fire"];
+    [MoPub.sharedInstance setSdkWithConfiguration:config completion:^{
+        [expectation fulfill];
+    }];
 
-    // Verify that UIWebView was used instead of WKWebView for video ads
-    NSDictionary * headers = @{ kAdTypeHeaderKey: @"rewarded_video",
-                                kIsVastVideoPlayerKey: @(1),
-                                kRewardedCurrenciesHeaderKey: @"{ \"rewards\": [ { \"name\": \"Coins\", \"amount\": 8 }, { \"name\": \"Diamonds\", \"amount\": 1 }, { \"name\": \"Energy\", \"amount\": 20 } ] }"
-                                };
+    [self waitForExpectationsWithTimeout:kTestTimeout handler:^(NSError *error) {
+        XCTAssertNil(error);
+    }];
 
-    MPAdConfiguration * config = [[MPAdConfiguration alloc] initWithHeaders:headers data:nil];
-
-    MRController * controller = [[MRController alloc] initWithAdViewFrame:CGRectZero adPlacementType:MRAdViewPlacementTypeInterstitial];
-    [controller loadAdWithConfiguration:config];
-
-    XCTAssertNil(controller.mraidWebView.wkWebView);
-    XCTAssertNotNil(controller.mraidWebView.uiWebView);
+    // Verify legitimate interest is set
+    XCTAssertTrue(MoPub.sharedInstance.allowLegitimateInterest);
 }
 
-- (void)testForceWKWebView {
-    // Force WKWebView
-    [MoPub sharedInstance].forceWKWebView = YES;
+- (void)testInitializingWithoutLegitimateInterest {
+    // Initialize
+    MPMoPubConfiguration * config = [[MPMoPubConfiguration alloc] initWithAdUnitIdForAppInitialization:@"fake_adunit_id"];
 
-    // Verify that WKWebView was used instead of UIWebView for video ads
-    NSDictionary * headers = @{ kAdTypeHeaderKey: @"rewarded_video",
-                                kIsVastVideoPlayerKey: @(1),
-                                kRewardedCurrenciesHeaderKey: @"{ \"rewards\": [ { \"name\": \"Coins\", \"amount\": 8 }, { \"name\": \"Diamonds\", \"amount\": 1 }, { \"name\": \"Energy\", \"amount\": 20 } ] }"
-                                };
+    // Wait for SDKs to initialize
+    XCTestExpectation * expectation = [self expectationWithDescription:@"Expect timer to fire"];
+    [MoPub.sharedInstance setSdkWithConfiguration:config completion:^{
+        [expectation fulfill];
+    }];
 
-    MPAdConfiguration * config = [[MPAdConfiguration alloc] initWithHeaders:headers data:nil];
+    [self waitForExpectationsWithTimeout:kTestTimeout handler:^(NSError *error) {
+        XCTAssertNil(error);
+    }];
 
-    MRController * controller = [[MRController alloc] initWithAdViewFrame:CGRectZero adPlacementType:MRAdViewPlacementTypeInterstitial];
-    [controller loadAdWithConfiguration:config];
-
-    XCTAssertNotNil(controller.mraidWebView.wkWebView);
-    XCTAssertNil(controller.mraidWebView.uiWebView);
+    // Verify legitimate interest is not set by default
+    XCTAssertFalse(MoPub.sharedInstance.allowLegitimateInterest);
 }
 
 #pragma mark - Logging
 
 - (void)testSetLogLevel {
-    [MoPub sharedInstance].logLevel = MPLogLevelFatal;
+    MPLogging.consoleLogLevel = MPBLogLevelDebug;
 
-    XCTAssertTrue([MoPub sharedInstance].logLevel == MPLogLevelFatal);
+    XCTAssertTrue(MPLogging.consoleLogLevel == MPBLogLevelDebug);
+}
+
+#pragma mark - Viewability
+
+- (void)testDisableViewability {
+    // Initialize Viewability Manager
+    XCTestExpectation *expectation = [self expectationWithDescription:@"Expect MPViewabilityManager initialization complete"];
+    [MPViewabilityManager.sharedManager initializeWithCompletion:^(BOOL initialized) {
+        [expectation fulfill];
+    }];
+
+    [self waitForExpectationsWithTimeout:kTestTimeout handler:^(NSError *error) {
+        XCTAssertNil(error);
+    }];
+
+    XCTAssertTrue(MPViewabilityManager.sharedManager.isEnabled);
+    XCTAssertTrue(MPViewabilityManager.sharedManager.isInitialized);
+
+    // Disable viewability
+    [MoPub.sharedInstance disableViewability];
+
+    XCTAssertFalse(MPViewabilityManager.sharedManager.isEnabled);
+    XCTAssertTrue(MPViewabilityManager.sharedManager.isInitialized);
 }
 
 @end

@@ -1,0 +1,21 @@
+source 'https://github.com/CocoaPods/Specs.git'
+
+platform :ios, '10.0'
+use_frameworks!
+workspace 'Canary'
+
+# Pods available to all targets in Canary.xcworkspace
+pod 'LoremIpsum'
+
+# MoPub SDK
+pod 'mopub-ios-sdk', :path => '../'
+
+# Canary application target
+target 'Canary' do
+    # Pods for 'Canary'
+    
+    target 'CanaryUnitTests' do
+        # Unit test target won't be able to link without inheriting the search paths
+        inherit! :search_paths
+    end
+end

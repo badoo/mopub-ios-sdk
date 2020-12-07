@@ -1,0 +1,13 @@
+author: MoPub
+author_url: https://www.mopub.com
+clean: true
+framework_root: MoPubSDK
+github_url: https://github.com/mopub/mopub-ios-sdk
+hide_documentation_coverage: true
+module: MoPub
+objc: true
+output: docs
+sdk: iphonesimulator
+skip_undocumented: true
+theme: fullwidth
+umbrella_header: MoPubSDK/MoPub.h

@@ -1,13 +1,17 @@
 //
 //  MPMoPubNativeAdAdapterTests.m
-//  MoPubSDKTests
 //
-//  Copyright © 2017 MoPub. All rights reserved.
+//  Copyright 2018-2020 Twitter, Inc.
+//  Licensed under the MoPub SDK License Agreement
+//  http://www.mopub.com/legal/sdk-license-agreement/
 //
 
 #import <XCTest/XCTest.h>
 #import "MPMoPubNativeAdAdapter+Testing.h"
+#import "MPAdConfigurationFactory.h"
 #import "MPAdImpressionTimer+Testing.h"
+#import "MPGlobal.h"
+#import "MPMockAdDestinationDisplayAgent.h"
 #import "MPNativeAdConstants.h"
 #import "MPNativeAdConfigValues.h"
 
@@ -17,14 +21,83 @@
 
 @implementation MPMoPubNativeAdAdapterTests
 
-#pragma mark: Impression timer gets set correctly
+#pragma mark - Initialization
+
+- (void)testNSNullClickthroughShouldNotParse {
+    NSMutableDictionary * properties = [MPAdConfigurationFactory defaultNativeProperties];
+    properties[kDefaultActionURLKey] = NSNull.null;
+
+    MPMoPubNativeAdAdapter * adapter = [[MPMoPubNativeAdAdapter alloc] initWithAdProperties:properties];
+    XCTAssertNotNil(adapter);
+    XCTAssertNil(adapter.defaultActionURL);
+}
+
+- (void)testStringClickthroughShouldParse {
+    NSMutableDictionary * properties = [MPAdConfigurationFactory defaultNativeProperties];
+    properties[kDefaultActionURLKey] = @"https://www.mopub.com";
+
+    MPMoPubNativeAdAdapter * adapter = [[MPMoPubNativeAdAdapter alloc] initWithAdProperties:properties];
+    XCTAssertNotNil(adapter);
+    XCTAssertNotNil(adapter.defaultActionURL);
+    XCTAssert([adapter.defaultActionURL.absoluteString isEqualToString:@"https://www.mopub.com"]);
+}
+
+#pragma mark - Privacy Icon Overrides
+
+- (void)testPrivacyIconNoOverrideSuccess {
+    NSMutableDictionary * properties = [MPAdConfigurationFactory defaultNativeProperties];
+    properties[kAdPrivacyIconImageUrlKey] = nil;
+
+    MPMoPubNativeAdAdapter * adapter = [[MPMoPubNativeAdAdapter alloc] initWithAdProperties:properties];
+
+    // Verify that the default icon path to resource is used.
+    XCTAssert([[adapter.properties objectForKey:kAdPrivacyIconImageUrlKey] isEqualToString:MPResourcePathForResource(kPrivacyIconImageName)]);
+    XCTAssertNotNil([adapter.properties objectForKey:kAdPrivacyIconUIImageKey]);
+}
+
+- (void)testPrivacyIconOverrideSuccess {
+    NSMutableDictionary * properties = [MPAdConfigurationFactory defaultNativeProperties];
+    properties[kAdPrivacyIconImageUrlKey] = @"http://www.mopub.com/unittest.jpg";
+
+    MPMoPubNativeAdAdapter * adapter = [[MPMoPubNativeAdAdapter alloc] initWithAdProperties:properties];
+
+    // Verify that the override URL has not been overwritten by the default icon
+    // path to resource.
+    XCTAssert([[adapter.properties objectForKey:kAdPrivacyIconImageUrlKey] isEqualToString:@"http://www.mopub.com/unittest.jpg"]);
+    XCTAssertNil([adapter.properties objectForKey:kAdPrivacyIconUIImageKey]);
+}
+
+- (void)testPrivacyClickthroughNoOverrideSuccess {
+    NSMutableDictionary * properties = [MPAdConfigurationFactory defaultNativeProperties];
+    properties[kAdPrivacyIconClickUrlKey] = nil;
+
+    MPMoPubNativeAdAdapter * adapter = [[MPMoPubNativeAdAdapter alloc] initWithAdProperties:properties];
+    MPMockAdDestinationDisplayAgent * displayAgent = [MPMockAdDestinationDisplayAgent new];
+    adapter.destinationDisplayAgent = displayAgent;
+
+    [adapter displayContentForDAAIconTap];
+    XCTAssert([displayAgent.lastDisplayDestinationUrl.absoluteString isEqualToString:kPrivacyIconTapDestinationURL]);
+}
+
+- (void)testPrivacyClickthroughOverrideSuccess {
+    NSMutableDictionary * properties = [MPAdConfigurationFactory defaultNativeProperties];
+    properties[kAdPrivacyIconClickUrlKey] = @"http://www.mopub.com/unittest/success";
+
+    MPMoPubNativeAdAdapter * adapter = [[MPMoPubNativeAdAdapter alloc] initWithAdProperties:properties];
+    MPMockAdDestinationDisplayAgent * displayAgent = [MPMockAdDestinationDisplayAgent new];
+    adapter.destinationDisplayAgent = displayAgent;
+
+    [adapter displayContentForDAAIconTap];
+    XCTAssert([displayAgent.lastDisplayDestinationUrl.absoluteString isEqualToString:@"http://www.mopub.com/unittest/success"]);
+}
+
+#pragma mark - Impression timer gets set correctly
 
 - (void)testImpressionRulesTimerSetFromHeaderPropertiesPixels {
     MPNativeAdConfigValues *configValues = [[MPNativeAdConfigValues alloc] initWithImpressionMinVisiblePixels:30
                                                                                   impressionMinVisiblePercent:-1
                                                                                   impressionMinVisibleSeconds:5.0];
-    NSDictionary *properties = @{ kImpressionTrackerURLsKey: @[@"https://google.com"], // required for adapter to initialize
-                                  kClickTrackerURLKey: @"https://google.com", // required for adapter to initialize
+    NSDictionary *properties = @{ kClickTrackerURLKey: @"https://google.com", // required for adapter to initialize
                                   kNativeAdConfigKey: configValues,
                                   };
     MPMoPubNativeAdAdapter *adapter = [[MPMoPubNativeAdAdapter alloc] initWithAdProperties:[NSMutableDictionary dictionaryWithDictionary:properties]];
@@ -40,8 +113,7 @@
     MPNativeAdConfigValues *configValues = [[MPNativeAdConfigValues alloc] initWithImpressionMinVisiblePixels:30
                                                                                   impressionMinVisiblePercent:30
                                                                                   impressionMinVisibleSeconds:5.0];
-    NSDictionary *properties = @{ kImpressionTrackerURLsKey: @[@"https://google.com"], // required for adapter to initialize
-                                  kClickTrackerURLKey: @"https://google.com", // required for adapter to initialize
+    NSDictionary *properties = @{ kClickTrackerURLKey: @"https://google.com", // required for adapter to initialize
                                   kNativeAdConfigKey: configValues,
                                   };
     MPMoPubNativeAdAdapter *adapter = [[MPMoPubNativeAdAdapter alloc] initWithAdProperties:[NSMutableDictionary dictionaryWithDictionary:properties]];
@@ -58,8 +130,7 @@
     MPNativeAdConfigValues *configValues = [[MPNativeAdConfigValues alloc] initWithImpressionMinVisiblePixels:-1.0 // invalid pixels to fall through
                                                                                   impressionMinVisiblePercent:30
                                                                                   impressionMinVisibleSeconds:5.0];
-    NSDictionary *properties = @{ kImpressionTrackerURLsKey: @[@"https://google.com"], // required for adapter to initialize
-                                  kClickTrackerURLKey: @"https://google.com", // required for adapter to initialize
+    NSDictionary *properties = @{ kClickTrackerURLKey: @"https://google.com", // required for adapter to initialize
                                   kNativeAdConfigKey: configValues,
                                   };
     MPMoPubNativeAdAdapter *adapter = [[MPMoPubNativeAdAdapter alloc] initWithAdProperties:[NSMutableDictionary dictionaryWithDictionary:properties]];
@@ -76,8 +147,7 @@
     MPNativeAdConfigValues *configValues = [[MPNativeAdConfigValues alloc] initWithImpressionMinVisiblePixels:-1.0
                                                                                   impressionMinVisiblePercent:-1
                                                                                   impressionMinVisibleSeconds:-1.0];
-    NSDictionary *properties = @{ kImpressionTrackerURLsKey: @[@"https://google.com"], // required for adapter to initialize
-                                  kClickTrackerURLKey: @"https://google.com", // required for adapter to initialize
+    NSDictionary *properties = @{ kClickTrackerURLKey: @"https://google.com", // required for adapter to initialize
                                   kNativeAdConfigKey: configValues,
                                   };
     MPMoPubNativeAdAdapter *adapter = [[MPMoPubNativeAdAdapter alloc] initWithAdProperties:[NSMutableDictionary dictionaryWithDictionary:properties]];
@@ -95,8 +165,7 @@
     MPNativeAdConfigValues *configValues = [[MPNativeAdConfigValues alloc] initWithImpressionMinVisiblePixels:-1.0
                                                                                   impressionMinVisiblePercent:-1
                                                                                   impressionMinVisibleSeconds:-1.0];
-    NSDictionary *properties = @{ kImpressionTrackerURLsKey: @[@"https://google.com"], // required for adapter to initialize
-                                  kClickTrackerURLKey: @"https://google.com", // required for adapter to initialize
+    NSDictionary *properties = @{ kClickTrackerURLKey: @"https://google.com", // required for adapter to initialize
                                   kNativeAdConfigKey: configValues,
                                   };
     MPMoPubNativeAdAdapter *adapter = [[MPMoPubNativeAdAdapter alloc] initWithAdProperties:[NSMutableDictionary dictionaryWithDictionary:properties]];
@@ -107,8 +176,7 @@
     MPNativeAdConfigValues *configValues = [[MPNativeAdConfigValues alloc] initWithImpressionMinVisiblePixels:20
                                                                                   impressionMinVisiblePercent:-1
                                                                                   impressionMinVisibleSeconds:-1.0];
-    NSDictionary *properties = @{ kImpressionTrackerURLsKey: @[@"https://google.com"], // required for adapter to initialize
-                                  kClickTrackerURLKey: @"https://google.com", // required for adapter to initialize
+    NSDictionary *properties = @{ kClickTrackerURLKey: @"https://google.com", // required for adapter to initialize
                                   kNativeAdConfigKey: configValues,
                                   };
     MPMoPubNativeAdAdapter *adapter = [[MPMoPubNativeAdAdapter alloc] initWithAdProperties:[NSMutableDictionary dictionaryWithDictionary:properties]];
@@ -125,8 +193,7 @@
     MPNativeAdConfigValues *configValues = [[MPNativeAdConfigValues alloc] initWithImpressionMinVisiblePixels:-1.0
                                                                                   impressionMinVisiblePercent:10
                                                                                   impressionMinVisibleSeconds:-1.0];
-    NSDictionary *properties = @{ kImpressionTrackerURLsKey: @[@"https://google.com"], // required for adapter to initialize
-                                  kClickTrackerURLKey: @"https://google.com", // required for adapter to initialize
+    NSDictionary *properties = @{ kClickTrackerURLKey: @"https://google.com", // required for adapter to initialize
                                   kNativeAdConfigKey: configValues,
                                   };
     MPMoPubNativeAdAdapter *adapter = [[MPMoPubNativeAdAdapter alloc] initWithAdProperties:[NSMutableDictionary dictionaryWithDictionary:properties]];
@@ -146,8 +213,7 @@
     MPNativeAdConfigValues *configValues = [[MPNativeAdConfigValues alloc] initWithImpressionMinVisiblePixels:-1.0
                                                                                   impressionMinVisiblePercent:-1
                                                                                   impressionMinVisibleSeconds:30.0];
-    NSDictionary *properties = @{ kImpressionTrackerURLsKey: @[@"https://google.com"], // required for adapter to initialize
-                                  kClickTrackerURLKey: @"https://google.com", // required for adapter to initialize
+    NSDictionary *properties = @{ kClickTrackerURLKey: @"https://google.com", // required for adapter to initialize
                                   kNativeAdConfigKey: configValues,
                                   };
     MPMoPubNativeAdAdapter *adapter = [[MPMoPubNativeAdAdapter alloc] initWithAdProperties:[NSMutableDictionary dictionaryWithDictionary:properties]];

@@ -1,3 +1,229 @@
+## Version 5.15.0 (November 18, 2020)
+- **Features**
+  - The MoPub iOS SDK now includes Swift 5.
+  - Updated countdown animation background color to black for better visibility.
+  - Enforce HTTPS for base URLs.
+  - Removed native video support.
+  - Add support for Snap Audience Network.
+
+- **Bug Fixes**
+  - Fixed bug where app foregrounding was requesting a new banner ad instead of resuming the refresh timer.
+  - Fixed bug with animated GIFs in VAST end cards.
+  - Fixed bug with scheduled deallocation of HTML Viewability trackers.
+  - Fixed `SKStoreProductViewController` causing freezes on iOS 13.0 and 13.1 devices.
+  - Fixed bug where attempting to instantiate a mediation adapter that does not exist at runtime will not fire the failure callback.
+
+## Version 5.14.1 (October 5, 2020)
+- **Bug Fixes**
+  - Fixed a bug where delegate methods `interstitialWillDisappear:`, `interstitialDidDisappear:`, `rewardedVideoAdWillDisappearForAdUnitID:`, and `rewardedVideoAdDidDisappearForAdUnitID:` did not fire.
+
+## Version 5.14.0 (October 1, 2020)
+- **Features**
+  - Add beta support for OMSDK version 1.3.4.
+  - iOS14 support for `SKAdNetwork`, `ATTrackingManagerAuthorizationStatus`, and location changes.
+  - Support Pangle as a certified mediation network.
+  - Remove Mintegral as a certified mediation network.
+  - Bump minimum Xcode version to Xcode 12.
+
+- **Bug Fixes**
+  - Cleaned up the MoPub Xcode project to properly mark files as public or private.
+  - Fixed a bug where an ad may become frozen when `SKStoreProductViewController` is shown.
+  - Fixed a multithreaded crash in `MPVastModel`.
+  - Fixed a bug where videos slightly longer than 15 seconds were skippable. Videos with duration less than 16 seconds are considered unskippable.
+
+## Version 5.13.1 (July 9, 2020)
+- **Bug Fixes**
+  - Fixed bug with where mediated network rewards were given back instead of the selected reward.
+  
+## Version 5.13.0 (June 15, 2020)
+- **Features**
+  - Remove Moat and IAS measurement SDKs.
+  - Consolidate interstitials and rewarded ads into one container. Third party network adapters for these formats should now extend `MPFullscreenAdAdapter` and conform to `MPThirdPartyFullscreenAdAdapter`.
+  - Upped the minimum version to iOS 10.
+
+- **Bug Fixes**
+  - Various bug fixes.
+  - Fixed multithreading crash in `MPTimer` due to null reference exception.
+  - Fixed bug where interstitial ads returning from `SKStoreProductViewController` are accidentally closed.
+  - Fixed bug where VAST companion ad clickthrough trackers were fired even when no clickthrough URL was spcified.
+  - Fixed bug where 302 redirects from https sources were not followed to the end of the redirect chain.
+
+## Version 5.12.1 (April 16, 2020)
+- **Bug Fixes**
+  - Fixed banner click trackers not firing for mediated networks that do not use MoPub's auto click tracking.
+
+## Version 5.12.0 (April 6, 2020)
+- **Features**
+  - Location setters for all formats are marked deprecated and will be removed in a future release.
+  - Added Mintegral as a supported network.
+  - A new field `appVersion` has been added to `MPImpressionData`.
+  - Update the Sample app to 64-bit architectures only.
+  - Added ad load history to the Saved Ads section in the Sample app.
+
+- **Bug Fixes**
+  - Fixed potential multithreading crash in `MPAdServerURLBuilder`.
+
+## Version 5.11.0 (February 4, 2020)
+- **Features**
+  - Update GDPR logic to allow MoPub to reacquire consent for new vendors.
+  - Update our support for OpenRTB Native Ads to version 1.2 and add an optional `sponsored` text field for native ads.
+  - Removed deprecated custom event method `requestAdWithSize:customEventInfo:` in `MPBannerCustomEvent`, `requestInterstitialWithCustomEventInfo:` in `MPInterstitialCustomEvent`, `requestRewardedVideoWithCustomEventInfo:` in `MPRewardedVideoCustomEvent`, and `requestAdWithCustomEventInfo:` in `MPNativeCustomEvent`.
+
+- **Bug Fixes**
+  - Fixed non-native SDK target compilation error.
+  - Fixed potential deadlock in `MPConsentManager` when scheduling `MPTimer`. 
+  - Fixed potential crash in `MPTableViewAdPlacer` and `MPCollectionViewAdPlacer`.
+
+## Version 5.10.0 (October 30, 2019)
+- **Features**
+  - Added support for the Verizon native ad renderer.
+  - Deprecated base custom event `requestAd` calls without the `adMarkup` parameter.
+
+- **Bug Fixes**
+  - Fixed non-native SDK target compilation error.
+  - Fixed potential crash in `MPTableViewAdPlacer` and `MPCollectionViewAdPlacer`.
+  - Removed extraneous `NSLog` statements for Release build configuration.
+  - Fixed VAST error code macro replacement in tracking URLs.
+
+## Version 5.9.0 (September 16, 2019)
+- **Features**
+  - Add iOS 13 support to both SDK and MoPub Sample app. 
+  - Totally remove `UIWebView` implementation and comments in MoPub SDK and MoPub Sample app.
+  - Add multi-window support for MoPub Sample app in iPadOS 13. New window can be opened by Drag & Dropping an ad cell in the ad list.
+  - Remove support for `tel` and `sms` functions for MRAID ads.
+  - Add Dark Mode support for MoPub Sample app in iOS 13.
+  - Remove the Objective C sample app project.
+  - Adopt `XCFramework` and the new Xcode build system with fastlane script updates, and thus require Xcode 11 to build instead of Xcode 9.
+  - Remove deprecated VAST extension `MoPubViewabilityTracker`.
+  - Replace deprecated `MPMoviePlayerViewController` with `AVPlayerViewController`. This affects MRAID videos.
+  - Replace deprecated `UIAlertView` with `UIAlertViewController`.
+
+- **Bug Fixes**
+  - Update `MPRealTimeTimer` so that it can properly handle foreground notifications that aren't balanced with backgrounding notifications.
+  - Fix an assertion crash in GDPR Sync that only happens in debug builds.
+  - Present `SKStoreProductViewController` only in portrait mode, so that we can prevent a `SKStoreProductViewController` crash in landscape mode (as designed by Apple).
+  - Fix an infinite load ad bug that happens when the ad URL to retry is the same as the failed ad URL.
+  - Fix a bug where location information is not sent to Ad Server when location permission has been allowed, the app can collect PII, and no app-specified location is set.
+  
+  ## Version 5.8.0 (July 22, 2019)
+- **Features**
+  - Minimum version of the MoPub SDK bumped to iOS 9.
+  - StoreKit Improvement: New Apple URL schemes for apps.apple.com, books.apple.com, and music.apple.com are now parsed for `SKStoreProductViewController`.
+  - StoreKit Improvement: Affiliate token and campagin token are now parsed for `SKStoreProductViewController`.
+  - Existing banner constants are deprecated in favor of new, configurable height-based constants. To use these, `MPAdView`'s frame must be set before an ad load is attempted.
+  - Updated `MPAdView`'s `initWithAdUnitId:size:`, `loadAd`, and `adViewDidLoadAd:` APIs by providing overloads `initWithAdUnitId:`, `loadAdWithMaxAdSize:`, and `adViewDidLoadAd:adSize:` which move the requested ad size to load time instead of at initialization time.
+  - `SFSafariViewController` is now exclusively used for in-app clickthrough destinations.
+  - Disallow the sending of empty ad unit IDs for consent.
+
+- **Bug Fixes**
+  - iOS 13 fixes: Explicitly set `modalPresentationStyle` for all modals in the MoPubSDK to `UIModalPresentationFullSCreen` since iOS 13 beta 1 changed the default modal presentation behavior.
+  - Fixed occasional crash due with `MPTimer` by ensuring it is always run on the main runloop.
+  - Fixed bug where banner and medium rectangle auto refresh timer was being fired even if the refresh interval was zero.
+  - Fixed bug where updated ad targeting parameters were not sent when banners were auto refreshing.
+  - Fixed a bug where the `UIButton+MPAdditions` category was impacting all `UIButton`s in the app. MoPub-specific `UIButton` customization is now contained in a subclass.
+
+## Version 5.7.1 (June 3, 2019)
+- **Features**
+  - Impression Level Revenue Data can now be received via a notification
+
+- **Bug Fixes**
+  - Fixed occasional crash due to multithreading bug
+
+## Version 5.7.0 (May 20, 2019)
+- **Features**
+  - Impression Level Revenue Data: A data object that includes revenue information associated with each impression
+  - Verizon Ads SDK now supported as a mediated network
+  - Native ad renderer registration for FacebookNativeCustomEvent and MillennialNativeCustomEvent is removed from the SDK. Pubishers must register renderers in their app.
+
+- **Bug Fixes**
+  - Fixed bug where native video fires an impression when main image asset is missing
+  - Fixed MRAID off-screen compliance for resized ads on tablets
+  - Fixed crash in Canary App when tapping on the `+` on iPad
+  - Replaced deprecated usage of `openURL:` with `openURL:options:completionHandler:` for iOS10+
+  - Fixed bug where click trackers can fire more than once on HTML banners and HTML interstitials
+  - Fixed bug in Canary App where ad units that were read using the QR code reader were not being saved
+  - Fixed bug where GDPR consent dialog was allowed to be presented twice in a row
+
+## Version 5.6.0 (March 18, 2019)
+- **Features**
+  - Added `+` button to the Canary sample app allowing manual entry of custom ad units
+
+- **Bug Fixes**
+  - MRAID orientation, expansion, and resizing edge case bug fixes
+  - MRAID expansion will no longer trigger a click tracking event
+  - MRAID logging no longer spams the device console
+  - Fixed position bug of the Rewarded Video countdown timer when rotating the device after the ad loads
+
+## Version 5.5.0 (January 28, 2019)
+- **Features**
+  - Advanced Bidding automatically initializes
+  - GDPR legitimate interest API now available; publishers may opt into allowing supported networks to collect user information on the basis of legitimate interest.
+  - We now distribute separate frameworks for simulator, device, and universal architectures
+
+- **Bug Fixes**
+  - Fixed rewarded video state occasionally not being reset correctly upon load failure
+  - Tweaked MRAID `ready` event timing so that it's in-spec
+  - Canary test app improvements and bug fixes
+
+## Version 5.4.1 (November 28, 2018)
+- **Bug Fixes**
+  - Changed the MoPubSampleApp+Framework target to MoPubSampleApp in the Objective-C Sample App.
+  - Fixed crash when `MPTableViewAdPlacer` makes multiple ad requests within a short amount of time.
+  - Fixed bug with the internal state of rewarded video when the video fails to play.
+
+## Version 5.4.0 (October 3, 2018)
+- **Features**
+  - SDK distribution as a dynamic framework is now available.
+  - Local extras are now supported for all ad formats.
+
+- **Bug Fixes**
+  - HTTP error codes now include the localized error description.
+  - Added missing mraid.js file protections when showing MRAID ads.
+  - Fixed native video crash.
+  - Fixed native ad timeout timer invalidation.
+
+## Version 5.3.0 (August 15, 2018)
+- **Features**
+  - Laying the foundation for platform optimization work that enables the SDK to receive multiple ad responses per ad request, reducing the number of round trips between the server and the client required to fill the requests.
+
+## Version 5.2.0 (July 9, 2018)
+- **Features**
+  - SDK initialization is required for ads to load.
+  - Added callback to the consent dialog when it is dismissed.
+
+- **Bug Fixes**
+  - Synchronized access to shared `NSMutableDictionary` in `MPHTTPNetworkSession`.
+  - Video ads using Device orientation now appear aligned correctly on iPhone X.
+
+## Version 5.1.0 (June 5, 2018)
+- **Features**
+  - Updated `MPReachability` to be IPv6 compliant.
+  - Allow publishers to determine which users should be treated as GDPR compliant users through the new API `forceGDPRApplicable`.
+  - Alert a publisher (through logs) when they are trying to use the new GDPR consent flow without being whitelisted.
+  - Banner refresh will only occur after an impression.
+
+## Version 5.0.0 (May 14, 2018)
+- **Features**
+  - General Data Protection Regulation (GDPR) update to support a way for publishers to determine GDPR applicability and to obtain and manage consent from users in European Economic Area, the United Kingdom, or Switzerland to serve personalize ads.
+  - New SDK initialization method to initialize consent management and rewarded video ad networks. Required for receiving personalized ads. In future versions of the SDK, initialization will be required to receive ads.
+  - Updated the networking stack to use `NSURLSession` in place of the deprecated `NSURLConnection`.
+  - Updated ad requests to use POST instead of GET.
+
+- **Bug Fixes**
+  - Renamed the `/MoPubSDK/Native Ads/` folder to `/MoPubSDK/NativeAds/`.
+  - Removed the usage of deprecated `shouldAutorotateToInterfaceOrientation`.
+
+## Version 4.20.1 (March 12, 2018)
+- **Bug Fixes**
+  - Fixes compatibility issues with some fullscreen ads on iPhone X
+
+## Version 4.20.0 (February 20, 2018)
+- **Bug Fixes**
+  - Fixed ad expiration check for rewarded ad formats
+
+- **Ad Network Mediation Updates**
+  - Network mediation adapters are now in a separate repository to enable an independent release cadence and faster updates to the adapters. Please find the new location [here](https://github.com/mopub/mopub-ios-mediation).
+
 ## Version 4.19.0 (December 11, 2017)
 - **Bug Fixes**
   - Ensure proper viewability initialization before ad content is loaded
@@ -6,9 +232,9 @@
   - Resolve WKWebView sizing and alignment issues on iPhoneX
 
 - **Ad Network Mediation Updates**
-  - Facebook Audience Network 4.26.1
-  - Flurry 8.1.0
-  - Millennial/AOL 6.6.0
+  - Certified Facebook Audience Network 4.26.1
+  - Certified Flurry 8.1.0
+  - Added support for Millennial/AOL Rewarded Video adapters for 6.6.0
 
 ## Version 4.18.0 (November 1, 2017)
 - **Features**

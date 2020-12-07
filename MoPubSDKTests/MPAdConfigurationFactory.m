@@ -1,8 +1,9 @@
 //
 //  MPAdConfigurationFactory.m
-//  MoPub
 //
-//  Copyright (c) 2013 MoPub. All rights reserved.
+//  Copyright 2018-2020 Twitter, Inc.
+//  Licensed under the MoPub SDK License Agreement
+//  http://www.mopub.com/legal/sdk-license-agreement/
 //
 
 #import "MPAdConfigurationFactory.h"
@@ -12,17 +13,22 @@
 #define kClickTrackerURLKey         @"clktracker"
 #define kDefaultActionURLKey        @"clk"
 
-
 @implementation MPAdConfigurationFactory
+
++ (MPAdConfiguration *)clearResponse
+{
+    NSDictionary * metadata = @{ kAdTypeMetadataKey: kAdTypeClear };
+    return [[MPAdConfiguration alloc] initWithMetadata:metadata data:nil isFullscreenAd:YES];
+}
 
 #pragma mark - Native
 
 + (NSMutableDictionary *)defaultNativeAdHeaders
 {
     return [@{
-              kAdTypeHeaderKey: kAdTypeNative,
-              kFailUrlHeaderKey: @"http://ads.mopub.com/m/failURL",
-              kRefreshTimeHeaderKey: @"61",
+              kAdTypeMetadataKey: kAdTypeNative,
+              kNextUrlMetadataKey: @"http://ads.mopub.com/m/failURL",
+              kRefreshTimeMetadataKey: @"61",
               } mutableCopy];
 }
 
@@ -46,15 +52,24 @@
 
 + (MPAdConfiguration *)defaultNativeAdConfigurationWithNetworkType:(NSString *)type
 {
-    return [self defaultNativeAdConfigurationWithHeaders:@{kAdTypeHeaderKey: type}
+    return [self defaultNativeAdConfigurationWithHeaders:@{kAdTypeMetadataKey: type}
                                               properties:nil];
 }
 
 + (MPAdConfiguration *)defaultNativeAdConfigurationWithCustomEventClassName:(NSString *)eventClassName
 {
-    return [MPAdConfigurationFactory defaultNativeAdConfigurationWithHeaders:@{
-                                                                               kCustomEventClassNameHeaderKey: eventClassName,
-                                                                               kAdTypeHeaderKey: @"custom"}
+    return [self defaultNativeAdConfigurationWithCustomEventClassName:eventClassName additionalMetadata:nil];
+}
+
++ (MPAdConfiguration *)defaultNativeAdConfigurationWithCustomEventClassName:(NSString *)eventClassName
+                                                         additionalMetadata:(NSDictionary *)additionalMetadata
+{
+    NSMutableDictionary * metadata = [NSMutableDictionary dictionaryWithDictionary:@{ kCustomEventClassNameMetadataKey: eventClassName, kAdTypeMetadataKey: @"custom"}];
+    if (additionalMetadata.count > 0) {
+        [metadata addEntriesFromDictionary:additionalMetadata];
+    }
+
+    return [MPAdConfigurationFactory defaultNativeAdConfigurationWithHeaders:metadata
                                                                   properties:nil];
 }
 
@@ -70,7 +85,11 @@
         [allProperties addEntriesFromDictionary:properties];
     }
 
-    return [[MPAdConfiguration alloc] initWithHeaders:headers data:[NSJSONSerialization dataWithJSONObject:allProperties options:NSJSONWritingPrettyPrinted error:nil]];
+    return [[MPAdConfiguration alloc] initWithMetadata:headers
+                                                  data:[NSJSONSerialization dataWithJSONObject:allProperties
+                                                                                       options:NSJSONWritingPrettyPrinted
+                                                                                         error:nil]
+                                        isFullscreenAd:NO];
 }
 
 #pragma mark - Banners
@@ -78,15 +97,13 @@
 + (NSMutableDictionary *)defaultBannerHeaders
 {
     return [@{
-              kAdTypeHeaderKey: kAdTypeHtml,
-              kClickthroughHeaderKey: @"http://ads.mopub.com/m/clickThroughTracker?a=1",
-              kFailUrlHeaderKey: @"http://ads.mopub.com/m/failURL",
-              kHeightHeaderKey: @"50",
-              kImpressionTrackerHeaderKey: @"http://ads.mopub.com/m/impressionTracker",
-              kInterceptLinksHeaderKey: @"1",
-              kLaunchpageHeaderKey: @"http://publisher.com",
-              kRefreshTimeHeaderKey: @"30",
-              kWidthHeaderKey: @"320"
+              kAdTypeMetadataKey: kAdTypeHtml,
+              kClickthroughMetadataKey: @"http://ads.mopub.com/m/clickThroughTracker?a=1",
+              kNextUrlMetadataKey: @"http://ads.mopub.com/m/failURL",
+              kHeightMetadataKey: @"50",
+              kImpressionTrackerMetadataKey: @"http://ads.mopub.com/m/impressionTracker",
+              kRefreshTimeMetadataKey: @"30",
+              kWidthMetadataKey: @"320"
               } mutableCopy];
 }
 
@@ -97,16 +114,23 @@
 
 + (MPAdConfiguration *)defaultBannerConfigurationWithNetworkType:(NSString *)type
 {
-    return [self defaultBannerConfigurationWithHeaders:@{kAdTypeHeaderKey: type}
+    return [self defaultBannerConfigurationWithHeaders:@{kAdTypeMetadataKey: type}
                                             HTMLString:nil];
 }
 
 + (MPAdConfiguration *)defaultBannerConfigurationWithCustomEventClassName:(NSString *)eventClassName
 {
-    return [MPAdConfigurationFactory defaultBannerConfigurationWithHeaders:@{
-                                                                             kCustomEventClassNameHeaderKey: eventClassName,
-                                                                             kAdTypeHeaderKey: @"custom"}
-                                                                HTMLString:nil];
+    return [self defaultBannerConfigurationWithCustomEventClassName:eventClassName additionalMetadata:nil];
+}
+
++ (MPAdConfiguration *)defaultBannerConfigurationWithCustomEventClassName:(NSString *)eventClassName additionalMetadata:(NSDictionary *)additionalMetadata
+{
+    NSMutableDictionary * metadata = [NSMutableDictionary dictionaryWithDictionary:@{ kCustomEventClassNameMetadataKey: eventClassName, kAdTypeMetadataKey: @"custom"}];
+    if (additionalMetadata.count > 0) {
+        [metadata addEntriesFromDictionary:additionalMetadata];
+    }
+
+    return [MPAdConfigurationFactory defaultBannerConfigurationWithHeaders:metadata HTMLString:nil];
 }
 
 
@@ -118,8 +142,9 @@
 
     HTMLString = HTMLString ? HTMLString : @"Publisher's Ad";
 
-    return [[MPAdConfiguration alloc] initWithHeaders:headers
-                                                 data:[HTMLString dataUsingEncoding:NSUTF8StringEncoding]];
+    return [[MPAdConfiguration alloc] initWithMetadata:headers
+                                                  data:[HTMLString dataUsingEncoding:NSUTF8StringEncoding]
+                                        isFullscreenAd:NO];
 }
 
 #pragma mark - Interstitials
@@ -127,14 +152,12 @@
 + (NSMutableDictionary *)defaultInterstitialHeaders
 {
     return [@{
-              kAdTypeHeaderKey: kAdTypeInterstitial,
-              kClickthroughHeaderKey: @"http://ads.mopub.com/m/clickThroughTracker?a=1",
-              kFailUrlHeaderKey: @"http://ads.mopub.com/m/failURL",
-              kImpressionTrackerHeaderKey: @"http://ads.mopub.com/m/impressionTracker",
-              kInterceptLinksHeaderKey: @"1",
-              kLaunchpageHeaderKey: @"http://publisher.com",
-              kInterstitialAdTypeHeaderKey: kAdTypeHtml,
-              kOrientationTypeHeaderKey: @"p"
+              kAdTypeMetadataKey: kAdTypeInterstitial,
+              kClickthroughMetadataKey: @"http://ads.mopub.com/m/clickThroughTracker?a=1",
+              kNextUrlMetadataKey: @"http://ads.mopub.com/m/failURL",
+              kImpressionTrackerMetadataKey: @"http://ads.mopub.com/m/impressionTracker",
+              kFullAdTypeMetadataKey: kAdTypeHtml,
+              kOrientationTypeMetadataKey: @"p"
               } mutableCopy];
 }
 
@@ -145,10 +168,20 @@
 
 + (MPAdConfiguration *)defaultMRAIDInterstitialConfiguration
 {
-    NSDictionary *headers = @{
-                              kAdTypeHeaderKey: @"mraid",
-                              kOrientationTypeHeaderKey: @"p"
-                              };
+    return [self defaultMRAIDInterstitialConfigurationWithAdditionalHeaders:nil];
+}
+
++ (MPAdConfiguration *)defaultMRAIDInterstitialConfigurationWithAdditionalHeaders:(NSDictionary *)additionalHeaders
+{
+    NSMutableDictionary *headers = [@{
+                              kAdTypeMetadataKey: @"mraid",
+                              kOrientationTypeMetadataKey: @"p"
+                              } mutableCopy];
+
+    // Merge the headers if needed
+    if (additionalHeaders != nil) {
+        [headers addEntriesFromDictionary:additionalHeaders];
+    }
 
     return [self defaultInterstitialConfigurationWithHeaders:headers
                                                   HTMLString:nil];
@@ -164,7 +197,7 @@
         data[@"location"] = location;
     }
 
-    configuration.customEventClassData = data;
+    configuration.adapterClassData = data;
     return configuration;
 }
 
@@ -175,15 +208,33 @@
 
 + (MPAdConfiguration *)defaultInterstitialConfigurationWithNetworkType:(NSString *)type
 {
-    return [self defaultInterstitialConfigurationWithHeaders:@{kInterstitialAdTypeHeaderKey: type}
+    return [self defaultInterstitialConfigurationWithHeaders:@{kFullAdTypeMetadataKey: type}
                                                   HTMLString:nil];
+}
+
++ (MPAdConfiguration *)defaultFullscreenConfigWithAdapterClass:(Class)class
+{
+    return [self defaultFullscreenConfigWithAdapterClass:class additionalMetadata:nil];
+}
+
++ (MPAdConfiguration *)defaultFullscreenConfigWithAdapterClass:(Class)class additionalMetadata:(NSDictionary *)additionalMetadata
+{
+    return [self defaultInterstitialConfigurationWithCustomEventClassName:NSStringFromClass(class) additionalMetadata:additionalMetadata];
 }
 
 + (MPAdConfiguration *)defaultInterstitialConfigurationWithCustomEventClassName:(NSString *)eventClassName
 {
-    return [MPAdConfigurationFactory defaultInterstitialConfigurationWithHeaders:@{
-                                                                                   kCustomEventClassNameHeaderKey: eventClassName,
-                                                                                   kInterstitialAdTypeHeaderKey: @"custom"}
+    return [self defaultInterstitialConfigurationWithCustomEventClassName:eventClassName additionalMetadata:nil];
+}
+
++ (MPAdConfiguration *)defaultInterstitialConfigurationWithCustomEventClassName:(NSString *)eventClassName additionalMetadata:(NSDictionary *)additionalMetadata
+{
+    NSMutableDictionary * metadata = [NSMutableDictionary dictionaryWithDictionary:@{ kCustomEventClassNameMetadataKey: eventClassName, kAdTypeMetadataKey: @"custom"}];
+    if (additionalMetadata.count > 0) {
+        [metadata addEntriesFromDictionary:additionalMetadata];
+    }
+
+    return [MPAdConfigurationFactory defaultInterstitialConfigurationWithHeaders:metadata
                                                                       HTMLString:nil];
 }
 
@@ -195,67 +246,90 @@
 
     HTMLString = HTMLString ? HTMLString : @"Publisher's Interstitial";
 
-    return [[MPAdConfiguration alloc] initWithHeaders:headers
-                                                 data:[HTMLString dataUsingEncoding:NSUTF8StringEncoding]];
+    return [[MPAdConfiguration alloc] initWithMetadata:headers
+                                                  data:[HTMLString dataUsingEncoding:NSUTF8StringEncoding]
+                                        isFullscreenAd:YES];
 }
 
 #pragma mark - Rewarded Video
 + (NSMutableDictionary *)defaultRewardedVideoHeaders
 {
     return [@{
-              kAdTypeHeaderKey: @"custom",
-              kClickthroughHeaderKey: @"http://ads.mopub.com/m/clickThroughTracker?a=1",
-              kFailUrlHeaderKey: @"http://ads.mopub.com/m/failURL",
-              kImpressionTrackerHeaderKey: @"http://ads.mopub.com/m/impressionTracker",
-              kInterceptLinksHeaderKey: @"1",
-              kLaunchpageHeaderKey: @"http://publisher.com",
-              kInterstitialAdTypeHeaderKey: kAdTypeHtml,
+              kFormatMetadataKey: kAdTypeRewardedVideo,
+              kAdTypeMetadataKey: @"custom",
+              kClickthroughMetadataKey: @"http://ads.mopub.com/m/clickThroughTracker?a=1",
+              kNextUrlMetadataKey: @"http://ads.mopub.com/m/failURL",
+              kImpressionTrackerMetadataKey: @"http://ads.mopub.com/m/impressionTracker",
+              kFullAdTypeMetadataKey: kAdTypeHtml,
+              kViewabilityVerificationResourcesKey: @[@{
+                                                          @"apiFramework": @"omid",
+                                                          @"vendorKey": @"doubleverify.com-omid",
+                                                          @"javascriptResourceUrl": @"https://cdn.doubleverify.com/dvtp_src.js",
+                                                          @"verificationParameters": @"ctx=13337537&cmp=DV330341&sid=iOS-Display-Native&plc=video&advid=3819603&adsrv=189&tagtype=&dvtagver=6.1.src&DVP_PP_BUNDLE_ID=%%BUNDLE%%&DVP_PP_APP_ID=%%PLACEMENTID%%&DVP_PP_APP_NAME=%%APPNAME%%&DVP_MP_2=%%PUBID%%&DVP_MP_3=%%ADUNITID%%&DVP_MP_4=%%ADGROUPID%%&DVPX_PP_IMP_ID=%%REQUESTID%%&DVP_PP_AUCTION_IP=%%IPADDRESS%%&DVPX_PP_AUCTION_UA=%%USERAGENT%%"
+                                                      }]
               } mutableCopy];
 }
 
 + (NSMutableDictionary *)defaultRewardedVideoHeadersWithReward
 {
     NSMutableDictionary *dict = [[self defaultRewardedVideoHeaders] mutableCopy];
-    dict[kRewardedVideoCurrencyNameHeaderKey] = @"gold";
-    dict[kRewardedVideoCurrencyAmountHeaderKey] = @"12";
+    dict[kRewardedVideoCurrencyNameMetadataKey] = @"gold";
+    dict[kRewardedVideoCurrencyAmountMetadataKey] = @"12";
     return dict;
 }
 
 + (NSMutableDictionary *)defaultRewardedVideoHeadersServerToServer
 {
     NSMutableDictionary *dict = [[self defaultRewardedVideoHeaders] mutableCopy];
-    dict[kRewardedVideoCompletionUrlHeaderKey] = @"http://ads.mopub.com/m/rewarded_video_completion?req=332dbe5798d644309d9d950321d37e3c&reqt=1460590468.0&id=54c94899972a4d4fb00c9cbf0fd08141&cid=303d4529ee3b42e7ac1f5c19caf73515&udid=ifa%3A3E67D059-6F94-4C88-AD2A-72539FE13795&cppck=09CCC";
+    dict[kRewardedVideoCompletionUrlMetadataKey] = @"http://ads.mopub.com/m/rewarded_video_completion?req=332dbe5798d644309d9d950321d37e3c&reqt=1460590468.0&id=54c94899972a4d4fb00c9cbf0fd08141&cid=303d4529ee3b42e7ac1f5c19caf73515&udid=ifa%3A3E67D059-6F94-4C88-AD2A-72539FE13795&cppck=09CCC";
     return dict;
 }
 
-+ (NSMutableDictionary *)defaultNativeVideoHeadersWithTrackers
++ (NSMutableDictionary *)defaultVASTHeadersWithTrackers
 {
-    NSMutableDictionary *dict = [[self defaultNativeAdHeaders] mutableCopy];
-    dict[@"X-Video-Trackers"] = @"{\"urls\": [\"http://mopub.com/%%VIDEO_EVENT%%/foo\", \"http://mopub.com/%%VIDEO_EVENT%%/bar\"],\"events\": [\"start\", \"firstQuartile\", \"midpoint\", \"thirdQuartile\", \"complete\"]}";
+    NSMutableDictionary *dict = [[NSMutableDictionary alloc] init];
+    dict[kVASTVideoTrackersMetadataKey] = @"{\"urls\": [\"http://mopub.com/%%VIDEO_EVENT%%/foo\", \"http://mopub.com/%%VIDEO_EVENT%%/bar\"],\"events\": [\"start\", \"firstQuartile\", \"midpoint\", \"thirdQuartile\", \"complete\"]}";
     return dict;
 }
 
 + (MPAdConfiguration *)defaultRewardedVideoConfiguration
 {
-    MPAdConfiguration *adConfiguration = [[MPAdConfiguration alloc] initWithHeaders:[self defaultRewardedVideoHeaders] data:nil];
+    MPAdConfiguration *adConfiguration = [[MPAdConfiguration alloc] initWithMetadata:[self defaultRewardedVideoHeaders] data:nil isFullscreenAd:YES];
+    return adConfiguration;
+}
+
++ (MPAdConfiguration *)defaultRewardedVideoConfigurationWithCustomEventClassName:(NSString *)eventClassName
+{
+    return [self defaultInterstitialConfigurationWithCustomEventClassName:eventClassName additionalMetadata:nil];
+}
+
++ (MPAdConfiguration *)defaultRewardedVideoConfigurationWithCustomEventClassName:(NSString *)eventClassName additionalMetadata:(NSDictionary *)additionalMetadata
+{
+    NSMutableDictionary * metadata = [NSMutableDictionary dictionaryWithDictionary:[self defaultRewardedVideoHeaders]];
+    metadata[kCustomEventClassNameMetadataKey] = eventClassName;
+    if (additionalMetadata.count > 0) {
+        [metadata addEntriesFromDictionary:additionalMetadata];
+    }
+
+    MPAdConfiguration *adConfiguration = [[MPAdConfiguration alloc] initWithMetadata:metadata data:nil isFullscreenAd:YES];
     return adConfiguration;
 }
 
 + (MPAdConfiguration *)defaultRewardedVideoConfigurationWithReward
 {
-    MPAdConfiguration *adConfiguration = [[MPAdConfiguration alloc] initWithHeaders:[self defaultRewardedVideoHeadersWithReward] data:nil];
+    MPAdConfiguration *adConfiguration = [[MPAdConfiguration alloc] initWithMetadata:[self defaultRewardedVideoHeadersWithReward] data:nil isFullscreenAd:YES];
     return adConfiguration;
 }
 
 + (MPAdConfiguration *)defaultRewardedVideoConfigurationServerToServer
 {
-    MPAdConfiguration *adConfiguration = [[MPAdConfiguration alloc] initWithHeaders:[self defaultRewardedVideoHeadersServerToServer] data:nil];
+    MPAdConfiguration *adConfiguration = [[MPAdConfiguration alloc] initWithMetadata:[self defaultRewardedVideoHeadersServerToServer] data:nil isFullscreenAd:YES];
     return adConfiguration;
 }
 
-+ (MPAdConfiguration *)defaultNativeVideoConfigurationWithVideoTrackers
++ (MPAdConfiguration *)defaultVASTConfigurationWithVideoTrackers
 {
-    MPAdConfiguration *adConfiguration = [[MPAdConfiguration alloc] initWithHeaders:[self defaultNativeVideoHeadersWithTrackers] data:nil];
+    MPAdConfiguration *adConfiguration = [[MPAdConfiguration alloc] initWithMetadata:[self defaultVASTHeadersWithTrackers] data:nil isFullscreenAd:YES];
     return adConfiguration;
 }
 

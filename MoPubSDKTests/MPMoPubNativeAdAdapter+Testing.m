@@ -1,14 +1,19 @@
 //
 //  MPMoPubNativeAdAdapter+Testing.m
-//  MoPubSDKTests
 //
-//  Copyright © 2017 MoPub. All rights reserved.
+//  Copyright 2018-2020 Twitter, Inc.
+//  Licensed under the MoPub SDK License Agreement
+//  http://www.mopub.com/legal/sdk-license-agreement/
 //
 
 #import "MPMoPubNativeAdAdapter+Testing.h"
 
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wincomplete-implementation"
 @implementation MPMoPubNativeAdAdapter (Testing)
 
 @dynamic impressionTimer;
+@dynamic destinationDisplayAgent;
 
 @end
+#pragma clang diagnostic pop

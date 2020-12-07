@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<VAST xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="vast_2.0.1-creativeView.xsd" version="4.1">
+  <Ad id="WrapperAdWrapper">
+    <Wrapper>
+      <AdSystem>WrapperAdSystem</AdSystem>
+      <Impression><![CDATA[https://px.moatads.com/pixel.gif?pingImpressionWrapper]]></Impression>
+      <VASTAdTagURI><![CDATA[https://raw.githubusercontent.com/jeffreycarlson/vast-test-ads/master/vast_4.1_inline_1.xml]]></VASTAdTagURI>
+      <AdVerifications>
+        <Verification vendor="doubleverify.com-omid">
+            <JavaScriptResource apiFramework="omid" browserOptional="true"><![CDATA[https://cdn.doubleverify.com/dvtp_src.js]]></JavaScriptResource>
+            <VerificationParameters><![CDATA[ctx=13337537&cmp=DV330341&sid=iOS-Video-Webview&plc=video&advid=3819603&adsrv=189&tagtype=video&msrapi=jsOmid&DVP_PP_BUNDLE_ID=%%BUNDLE%%&DVP_PP_APP_ID=%%PLACEMENTID%%&DVP_PP_APP_NAME=%%APPNAME%%&DVP_MP_2=%%PUBID%%&DVP_MP_3=%%ADUNITID%%&DVP_MP_4=%%ADGROUPID%%&DVPX_PP_IMP_ID=%%REQUESTID%%&DVP_PP_AUCTION_IP=%%IPADDRESS%%&DVPX_PP_AUCTION_UA=%%USERAGENT%%&dvtagver=6.1.src]]></VerificationParameters>
+          <TrackingEvents>
+              <Tracking event="verificationNotExecuted">
+                  <![CDATA[https://www.doubleverify.com/not-executed?reason=[REASON]]]>
+              </Tracking>
+          </TrackingEvents>
+        </Verification>
+      </AdVerifications>
+    </Wrapper>
+  </Ad>
+</VAST>

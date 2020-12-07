@@ -1,13 +1,17 @@
 //
 //  MPMockChartboostRewardedVideoCustomEvent.h
-//  MoPubSDK
 //
-//  Copyright © 2017 MoPub. All rights reserved.
+//  Copyright 2018-2020 Twitter, Inc.
+//  Licensed under the MoPub SDK License Agreement
+//  http://www.mopub.com/legal/sdk-license-agreement/
 //
 
-#import "MPRewardedVideoCustomEvent.h"
+#import "MPFullscreenAdAdapter.h"
 
-@interface MPMockChartboostRewardedVideoCustomEvent : MPRewardedVideoCustomEvent
-+ (BOOL)isSdkInitialized;
-+ (void)reset;
+NS_ASSUME_NONNULL_BEGIN
+
+@interface MPMockChartboostRewardedVideoCustomEvent : MPFullscreenAdAdapter <MPThirdPartyFullscreenAdAdapter>
+
 @end
+
+NS_ASSUME_NONNULL_END
