@@ -130,7 +130,7 @@
  *
  * Default value is YES.
  */
-@property (nonatomic, assign) BOOL truncateLocationData;
+@property (nonatomic, assign, readwrite) BOOL truncateLocationData;
 
 /**
  * Maximum number of decimal places for latitude and longitude if  `truncateLocationData` is YES.
@@ -140,7 +140,7 @@
  *
  * Default value is 1.
  */
-@property (nonatomic, assign) NSInteger locationPrecision;
+@property (nonatomic, assign, readwrite) short locationPrecision;
 
 @end
 
