@@ -141,6 +141,9 @@ static NSString * const kMacroReplaceLanguageCode = @"%%LANGUAGE%%";
         // Initializing the timer must be done last since it depends on the
         // value of _syncFrequency
         _nextUpdateTimer = [self newNextUpdateTimer];
+
+        _truncateLocationData = YES;
+        _locationPrecision = 1;
     }
 
     return self;
@@ -155,6 +158,7 @@ static NSString * const kMacroReplaceLanguageCode = @"%%LANGUAGE%%";
 }
 
 #pragma mark - Properties
+
 
 - (BOOL)canCollectPersonalInfo {
     // We can collection information under the following conditions:

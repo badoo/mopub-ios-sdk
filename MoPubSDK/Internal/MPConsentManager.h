@@ -121,6 +121,27 @@
                                     didShow:(void (^ _Nullable)(void))didShow
                                  didDismiss:(void (^ _Nullable)(void))didDismiss;
 
+
+/**
+ * Whether latitude or longitude should be truncated before posting location data to MoPub.
+ *
+ * Added by Bumble as a quick fix to be able to reduce location data accuracy while waiting for
+ * official support from MoPub.
+ *
+ * Default value is YES.
+ */
+@property (nonatomic, assign) BOOL truncateLocationData;
+
+/**
+ * Maximum number of decimal places for latitude and longitude if  `truncateLocationData` is YES.
+ *
+ * Added by Bumble as quick fix to be able to reduce location data accuracy while waiting for official support
+ * from MoPub.
+ *
+ * Default value is 1.
+ */
+@property (nonatomic, assign) NSInteger locationPrecision;
+
 @end
 
 @interface MPConsentManager (State)
@@ -277,5 +298,10 @@
  * App conversion request will only be fired when MoPub obtains consent.
  */
 - (void)updateAppConversionTracking;
+
+@end
+
+@interface MPConsentManager (BadooLocationPrecision)
+
 
 @end
