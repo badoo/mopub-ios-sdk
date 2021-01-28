@@ -344,6 +344,26 @@ NS_ASSUME_NONNULL_BEGIN
  */
 @property (nonatomic, copy, readonly, nullable) NSString * previouslyConsentedVendorListVersion;
 
+/**
+ * Whether latitude or longitude should be truncated before posting location data to MoPub.
+ *
+ * Added by Bumble as a quick fix to be able to reduce location data accuracy while waiting for
+ * official support from MoPub.
+ *
+ * Default value is YES.
+ */
+@property (nonatomic, assign, readwrite) BOOL truncateLocationData;
+
+/**
+ * Maximum number of decimal places for latitude and longitude if  `truncateLocationData` is YES.
+ *
+ * Added by Bumble as quick fix to be able to reduce location data accuracy while waiting for official support
+ * from MoPub.
+ *
+ * Default value is 1.
+ */
+@property (nonatomic, assign, readwrite) short locationPrecision;
+
 @end
 
 NS_ASSUME_NONNULL_END

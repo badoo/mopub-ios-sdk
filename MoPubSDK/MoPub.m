@@ -348,4 +348,20 @@ static NSString * const kPublisherEnteredAdUnitIdStorageKey = @"com.mopub.mopub-
     return [[MPConsentManager sharedManager] vendorListUrlWithISOLanguageCode:isoLanguageCode];
 }
 
+- (BOOL)truncateLocationData {
+    return [[MPConsentManager sharedManager] truncateLocationData];
+}
+
+- (void)setTruncateLocationData:(BOOL)truncateLocationData {
+    [[MPConsentManager sharedManager] setTruncateLocationData:truncateLocationData];
+}
+
+- (short)locationPrecision {
+    return [[MPConsentManager sharedManager] locationPrecision];
+}
+
+- (void)setLocationPrecision:(short)locationPrecision {
+    [[MPConsentManager sharedManager] setLocationPrecision:locationPrecision];
+}
+
 @end
