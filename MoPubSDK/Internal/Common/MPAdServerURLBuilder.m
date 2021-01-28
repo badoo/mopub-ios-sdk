@@ -384,6 +384,33 @@ static MPEngineInfo * _engineInfo = nil;
     return MPMediationManager.sharedManager.adRequestPayload;
 }
 
++ (CLLocationDegrees)truncatedLocationCoordinate:(CLLocationDegrees)locationCoordinate decimalPlaces:(short)decimalPlaces {
+    NSDecimalNumber *originalLocationCoordinate = [NSDecimalNumber decimalNumberWithDecimal: [NSNumber numberWithDouble: locationCoordinate].decimalValue];
+    NSDecimalNumberHandler *numberHandler = [NSDecimalNumberHandler decimalNumberHandlerWithRoundingMode:NSRoundPlain
+                                                                                                   scale:decimalPlaces
+                                                                                        raiseOnExactness:NO
+                                                                                         raiseOnOverflow:NO
+                                                                                        raiseOnUnderflow:NO
+                                                                                     raiseOnDivideByZero:NO];
+    NSDecimalNumber *truncatedCoordinate = [originalLocationCoordinate decimalNumberByRoundingAccordingToBehavior:numberHandler];
+
+    return truncatedCoordinate.doubleValue;
+}
+
++ (CLLocation *)locationWithAdjustedAccuracy:(CLLocation *)receivedLocation {
+    if ([MPConsentManager.sharedManager truncateLocationData] && receivedLocation.horizontalAccuracy >=0) {
+        CLLocationDegrees truncatedLatitude = [MPAdServerURLBuilder truncatedLocationCoordinate:receivedLocation.coordinate.latitude
+                                                                                  decimalPlaces:[MPConsentManager.sharedManager locationPrecision]];
+        CLLocationDegrees truncatedLongitude = [MPAdServerURLBuilder truncatedLocationCoordinate:receivedLocation.coordinate.longitude
+                                                                                   decimalPlaces:[MPConsentManager.sharedManager locationPrecision]];
+
+        // This creates a CLLocation struct with horizontalAccuracy set to zero.
+        return [[CLLocation alloc] initWithLatitude:truncatedLatitude longitude:truncatedLongitude];
+    } else {
+        return receivedLocation;
+    }
+}
+
 + (NSDictionary *)locationInformationDictionary:(CLLocation *)location {
     // Not allowed to collect location because it is PII
     if (![MPConsentManager.sharedManager canCollectPersonalInfo]) {
@@ -399,6 +426,8 @@ static MPEngineInfo * _engineInfo = nil;
     if (locationFromProvider) {
         bestLocation = locationFromProvider;
     }
+
+    bestLocation = [MPAdServerURLBuilder locationWithAdjustedAccuracy:bestLocation];
 
     if (bestLocation && bestLocation.horizontalAccuracy >= 0) {
         locationDict[kLocationLatitudeLongitudeKey] = [NSString stringWithFormat:@"%@,%@",
