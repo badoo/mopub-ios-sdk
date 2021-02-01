@@ -437,6 +437,7 @@
 		2AFEE726225BC38400DD82C8 /* MPImpressionData.m in Sources */ = {isa = PBXBuildFile; fileRef = 2AFEE722225BC38400DD82C8 /* MPImpressionData.m */; };
 		2AFEE727225C130B00DD82C8 /* MPMoPubAd.h in Headers */ = {isa = PBXBuildFile; fileRef = 2AFEE720225BC22300DD82C8 /* MPMoPubAd.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		2AFF1BA71EC289E600495994 /* MPRealTimeTimerTests.m in Sources */ = {isa = PBXBuildFile; fileRef = 2AFF1BA61EC289E600495994 /* MPRealTimeTimerTests.m */; };
+		6A2CAAE325C8303C00EC5D44 /* SimulatorOverrides.xcconfig in Resources */ = {isa = PBXBuildFile; fileRef = 6A2CAAE225C8303C00EC5D44 /* SimulatorOverrides.xcconfig */; };
 		B23C3B4F1E353DD90003D79E /* MPVideoConfigTests.m in Sources */ = {isa = PBXBuildFile; fileRef = B23C3B4E1E353DD90003D79E /* MPVideoConfigTests.m */; };
 		B23C3B581E3544590003D79E /* linear-tracking.xml in Resources */ = {isa = PBXBuildFile; fileRef = B23C3B521E353FD20003D79E /* linear-tracking.xml */; };
 		B23C3B5B1E35709D0003D79E /* linear-tracking-no-event.xml in Resources */ = {isa = PBXBuildFile; fileRef = B23C3B5A1E35709D0003D79E /* linear-tracking-no-event.xml */; };
@@ -1027,6 +1028,7 @@
 		57EAA4DB1A1F3BE300923851 /* MRExpandModalViewController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = MRExpandModalViewController.h; sourceTree = "<group>"; };
 		57EAA4DC1A1F3BE300923851 /* MRExpandModalViewController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = MRExpandModalViewController.m; sourceTree = "<group>"; };
 		57FEAA4B1BD974B9005A94B6 /* WebKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = WebKit.framework; path = System/Library/Frameworks/WebKit.framework; sourceTree = SDKROOT; };
+		6A2CAAE225C8303C00EC5D44 /* SimulatorOverrides.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; path = SimulatorOverrides.xcconfig; sourceTree = "<group>"; };
 		873B37ED1BA8CBE000D57423 /* MPVASTTracking.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = MPVASTTracking.h; sourceTree = "<group>"; };
 		873B37EE1BA8CBE000D57423 /* MPVASTTracking.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = MPVASTTracking.m; sourceTree = "<group>"; };
 		875390C21B04073F001F0550 /* MPActivityViewControllerHelper.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = MPActivityViewControllerHelper.h; sourceTree = "<group>"; };
@@ -1839,6 +1841,7 @@
 		AEF1F31F16EF9AD700273462 = {
 			isa = PBXGroup;
 			children = (
+				6A2CAAE225C8303C00EC5D44 /* SimulatorOverrides.xcconfig */,
 				AEF9D4C6171CA895005AAA5A /* MoPubSDK */,
 				2AAA8DFA1D95C77B006962E8 /* MoPubSDKTests */,
 				AEF1F32A16EF9AD700273462 /* Frameworks */,
@@ -3039,6 +3042,7 @@
 				2A711FDE202267B6007A2412 /* MPCloseBtn@2x.png in Resources */,
 				2A711FDF202267B6007A2412 /* MPCloseBtn@3x.png in Resources */,
 				2A711FE0202267B6007A2412 /* MPMutedBtn.png in Resources */,
+				6A2CAAE325C8303C00EC5D44 /* SimulatorOverrides.xcconfig in Resources */,
 				2A711FE1202267B6007A2412 /* MPMutedBtn@2x.png in Resources */,
 				2A711FE2202267B6007A2412 /* MPMutedBtn@3x.png in Resources */,
 				2A711FE3202267B6007A2412 /* MPPlayBtn.png in Resources */,
@@ -3669,6 +3673,7 @@
 		};
 		2AF030C62016723700909F29 /* Debug */ = {
 			isa = XCBuildConfiguration;
+			baseConfigurationReference = 6A2CAAE225C8303C00EC5D44 /* SimulatorOverrides.xcconfig */;
 			buildSettings = {
 				BITCODE_GENERATION_MODE = bitcode;
 				BUILD_LIBRARY_FOR_DISTRIBUTION = YES;
@@ -3715,6 +3720,7 @@
 		};
 		2AF030C72016723700909F29 /* Release */ = {
 			isa = XCBuildConfiguration;
+			baseConfigurationReference = 6A2CAAE225C8303C00EC5D44 /* SimulatorOverrides.xcconfig */;
 			buildSettings = {
 				BITCODE_GENERATION_MODE = bitcode;
 				BUILD_LIBRARY_FOR_DISTRIBUTION = YES;
@@ -3862,6 +3868,7 @@
 		};
 		BCA00B951EF47A91006FF762 /* Debug */ = {
 			isa = XCBuildConfiguration;
+			baseConfigurationReference = 6A2CAAE225C8303C00EC5D44 /* SimulatorOverrides.xcconfig */;
 			buildSettings = {
 				CURRENT_PROJECT_VERSION = 5.11.0;
 				DSTROOT = /tmp/MoPubSDK.dst;
@@ -3879,6 +3886,7 @@
 		};
 		BCA00B961EF47A91006FF762 /* Release */ = {
 			isa = XCBuildConfiguration;
+			baseConfigurationReference = 6A2CAAE225C8303C00EC5D44 /* SimulatorOverrides.xcconfig */;
 			buildSettings = {
 				CURRENT_PROJECT_VERSION = 5.11.0;
 				DSTROOT = /tmp/MoPubSDK.dst;
