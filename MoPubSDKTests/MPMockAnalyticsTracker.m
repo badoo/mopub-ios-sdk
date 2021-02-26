@@ -10,7 +10,8 @@
 
 @interface MPMockAnalyticsTracker ()
 
-@property (nonatomic, strong) MPSelectorCounter *selectotCounter;
+@property (nonatomic, strong) MPSelectorCounter *selectorCounter;
+@property (nonatomic, strong, readwrite) NSArray<NSURL *> *lastTrackedUrls;
 
 @end
 
@@ -18,33 +19,44 @@
 
 - (instancetype)init {
     if ([super init]) {
-        _selectotCounter = [MPSelectorCounter new];
+        _selectorCounter = [MPSelectorCounter new];
+        _lastTrackedUrls = nil;
     }
     return self;
+}
+
+- (void)reset {
+    self.lastTrackedUrls = nil;
+    [self resetSelectorCounter];
 }
 
 #pragma mark - MPAnalyticsTracker
 
 - (void)sendTrackingRequestForURLs:(NSArray<NSURL *> *)URLs {
-    [self.selectotCounter incrementCountForSelector:@selector(sendTrackingRequestForURLs:)];
+    [self.selectorCounter incrementCountForSelector:@selector(sendTrackingRequestForURLs:)];
+    if (self.lastTrackedUrls == nil) {
+        self.lastTrackedUrls = URLs;
+    } else {
+        self.lastTrackedUrls = [self.lastTrackedUrls arrayByAddingObjectsFromArray:URLs];
+    }
 }
 
 - (void)trackClickForConfiguration:(MPAdConfiguration *)configuration {
-    [self.selectotCounter incrementCountForSelector:@selector(trackClickForConfiguration:)];
+    [self.selectorCounter incrementCountForSelector:@selector(trackClickForConfiguration:)];
 }
 
 - (void)trackImpressionForConfiguration:(MPAdConfiguration *)configuration {
-    [self.selectotCounter incrementCountForSelector:@selector(trackImpressionForConfiguration:)];
+    [self.selectorCounter incrementCountForSelector:@selector(trackImpressionForConfiguration:)];
 }
 
 #pragma mark - MPSelectorCountable
 
 - (NSUInteger)countOfSelectorCalls:(SEL)selector {
-    return [self.selectotCounter countOfSelectorCalls:selector];
+    return [self.selectorCounter countOfSelectorCalls:selector];
 }
 
 - (void)resetSelectorCounter {
-    [self.selectotCounter resetSelectorCounter];
+    [self.selectorCounter resetSelectorCounter];
 }
 
 @end

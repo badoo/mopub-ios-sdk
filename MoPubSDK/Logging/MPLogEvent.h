@@ -11,7 +11,9 @@
 #import "MPBLogLevel.h"
 
 @protocol MPAdapterConfiguration;
-@class MPRewardedVideoReward;
+@protocol MPViewabilityObstruction;
+@protocol MPViewabilityTracker;
+@class MPReward;
 @class MPURLRequest;
 
 NS_ASSUME_NONNULL_BEGIN
@@ -88,7 +90,7 @@ NS_ASSUME_NONNULL_BEGIN
 + (instancetype)adDidAppear;
 + (instancetype)adWillDisappear;
 + (instancetype)adDidDisappear;
-+ (instancetype)adShouldRewardUserWithReward:(MPRewardedVideoReward *)reward;
++ (instancetype)adShouldRewardUserWithReward:(MPReward *)reward;
 + (instancetype)adWillLeaveApplication;
 @end
 
@@ -129,6 +131,19 @@ NS_ASSUME_NONNULL_BEGIN
 
 @interface MPLogEvent (Javascript)
 + (instancetype)javascriptConsoleLogWithMessage:(NSString *)message;
+@end
+
+@interface MPLogEvent (Viewability)
++ (instancetype)viewabilityDisabled;
++ (instancetype)viewabilityTrackerCreated:(id<MPViewabilityTracker>)tracker;
++ (instancetype)viewabilityTrackerDeallocated:(id<MPViewabilityTracker>)tracker;
++ (instancetype)viewabilityTrackerSessionStarted:(id<MPViewabilityTracker>)tracker;
++ (instancetype)viewabilityTrackerSessionStopped:(id<MPViewabilityTracker>)tracker;
++ (instancetype)viewabilityTrackerUpdatedTrackingView:(id<MPViewabilityTracker>)tracker;
++ (instancetype)viewabilityTrackerTrackedAdLoaded:(id<MPViewabilityTracker>)tracker;
++ (instancetype)viewabilityTrackerTrackedImpression:(id<MPViewabilityTracker>)tracker;
++ (instancetype)viewabilityTracker:(id<MPViewabilityTracker>)tracker trackedVideoEvent:(NSString *)event;
++ (instancetype)viewabilityTracker:(id<MPViewabilityTracker>)tracker addedFriendlyObstruction:(id<MPViewabilityObstruction>)obstruction;
 @end
 
 NS_ASSUME_NONNULL_END

@@ -16,7 +16,7 @@ static NSString * const kLogFormat = @"\n\t[MoPub][%@] %@";
 
 // Cached IDFA strings used to obfuscate the real IDFA with a sanitized version.
 static NSString * sIdentifier;
-static NSString * sObfuscatedIdentifier;
+static NSString * const sObfuscatedIfa = @"XXXX";
 
 @interface MPLogManager()
 
@@ -90,16 +90,14 @@ static NSString * sObfuscatedIdentifier;
 
     // Lazily retrieve the IDFA
     if (sIdentifier == nil) {
-        sIdentifier = [[MPIdentityProvider identifier] copy];
+        sIdentifier = MPIdentityProvider.ifa;
     }
 
-    // Lazily retrieve the sanitized IDFA
-    if (sObfuscatedIdentifier == nil) {
-        sObfuscatedIdentifier = [[MPIdentityProvider obfuscatedIdentifier] copy];
+    // Obfuscate the identifier when logging.
+    NSString * logMessage = message;
+    if (sIdentifier != nil) {
+        logMessage = [logMessage stringByReplacingOccurrencesOfString:sIdentifier withString:sObfuscatedIfa];
     }
-
-    // Replace identifier with a obfuscated version when logging.
-    NSString * logMessage = [message stringByReplacingOccurrencesOfString:sIdentifier withString:sObfuscatedIdentifier];
 
     // Queue up the message for logging.
     __weak __typeof__(self) weakSelf = self;

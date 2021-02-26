@@ -215,6 +215,8 @@ class NativeAdDataSource: BaseNativeAdDataSource, AdDataSource {
                 }
             } // strongSelf
         } // start
+        
+        SavedAdsManager.sharedInstance.addLoadedAds(adUnit: adUnit)
     }
 }
 

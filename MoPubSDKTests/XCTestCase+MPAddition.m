@@ -28,7 +28,7 @@
         [expectation fulfill];
     }];
 
-    [self waitForExpectationsWithTimeout:1 handler:^(NSError * _Nullable error) {
+    [self waitForExpectationsWithTimeout:2 handler:^(NSError * _Nullable error) {
         XCTAssertNil(error);
     }];
 

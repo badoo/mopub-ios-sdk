@@ -12,15 +12,6 @@
       selectedLauncherIdentifier = "Xcode.DebuggerFoundation.Launcher.LLDB"
       shouldUseLaunchSchemeArgsEnv = "YES"
       codeCoverageEnabled = "YES">
-      <MacroExpansion>
-         <BuildableReference
-            BuildableIdentifier = "primary"
-            BlueprintIdentifier = "BC33E04A1FBB63260060ECBE"
-            BuildableName = "Canary.app"
-            BlueprintName = "Internal Application"
-            ReferencedContainer = "container:Canary.xcodeproj">
-         </BuildableReference>
-      </MacroExpansion>
       <Testables>
          <TestableReference
             skipped = "NO">
@@ -50,7 +41,7 @@
             BuildableIdentifier = "primary"
             BlueprintIdentifier = "BC33E04A1FBB63260060ECBE"
             BuildableName = "Canary.app"
-            BlueprintName = "Internal Application"
+            BlueprintName = "Canary"
             ReferencedContainer = "container:Canary.xcodeproj">
          </BuildableReference>
       </BuildableProductRunnable>
@@ -66,7 +57,7 @@
             BuildableIdentifier = "primary"
             BlueprintIdentifier = "BC33E04A1FBB63260060ECBE"
             BuildableName = "Canary.app"
-            BlueprintName = "Internal Application"
+            BlueprintName = "Canary"
             ReferencedContainer = "container:Canary.xcodeproj">
          </BuildableReference>
       </MacroExpansion>

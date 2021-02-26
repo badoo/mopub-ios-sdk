@@ -15,62 +15,68 @@ static NSTimeInterval const kTestTooLong = 10000;
 
 @interface MPRealTimeTimerTests : XCTestCase
 
-@property (strong, nonatomic) MPRealTimeTimer *timer;
-
 @end
 
 @implementation MPRealTimeTimerTests
 
-- (void)tearDown {
-    [super tearDown];
-    self.timer = nil;
-}
-
 - (void)testBasicTimerFunction {
-    XCTestExpectation *expectation = [self expectationWithDescription:@"Expect timer to fire"];
-    self.timer = [[MPRealTimeTimer alloc] initWithInterval:kTestLength block:^(MPRealTimeTimer *timer){
+    // Create an expectation waiting for the expected number of expectation triggers to fire.
+    __weak XCTestExpectation *expectation = [self expectationWithDescription:@"Wait for timer to fire"];
+    expectation.expectedFulfillmentCount = 1;
+
+    // Test timer
+    MPRealTimeTimer *timer = [[MPRealTimeTimer alloc] initWithInterval:kTestLength block:^(MPRealTimeTimer *timer) {
         [expectation fulfill];
     }];
-    [self.timer scheduleNow];
 
-    XCTAssertTrue(self.timer.isScheduled);
+    [timer scheduleNow];
+    XCTAssertTrue(timer.isScheduled);
 
     [self waitForExpectationsWithTimeout:kTestTimeout handler:^(NSError *error) {
         XCTAssertNil(error);
     }];
 
-    XCTAssertFalse(self.timer.isScheduled);
+    XCTAssertFalse(timer.isScheduled);
 }
 
 - (void)testImmediateFire {
-    XCTestExpectation *expectation = [self expectationWithDescription:@"Expect timer to fire"];
-    self.timer = [[MPRealTimeTimer alloc] initWithInterval:kTestTooLong block:^(MPRealTimeTimer *timer){
+    // Create an expectation waiting for the expected number of expectation triggers to fire.
+    __weak XCTestExpectation *expectation = [self expectationWithDescription:@"Wait for timer to fire"];
+    expectation.expectedFulfillmentCount = 1;
+
+    // Test timer
+    MPRealTimeTimer *timer = [[MPRealTimeTimer alloc] initWithInterval:kTestTooLong block:^(MPRealTimeTimer *timer) {
         [expectation fulfill];
     }];
-    [self.timer scheduleNow];
 
-    XCTAssertTrue(self.timer.isScheduled);
+    [timer scheduleNow];
+    XCTAssertTrue(timer.isScheduled);
 
-    [self.timer fire];
+    [timer fire];
 
     [self waitForExpectationsWithTimeout:kTestTimeout handler:^(NSError *error) {
         XCTAssertNil(error);
     }];
 
-    XCTAssertFalse(self.timer.isScheduled);
+    XCTAssertFalse(timer.isScheduled);
 }
 
 - (void)testInvalidate {
-    XCTestExpectation *expectation = [self expectationWithDescription:@"Expect time to pass"];
+    // Create an expectation waiting for the expected number of expectation triggers to fire.
+    __weak XCTestExpectation *expectation = [self expectationWithDescription:@"Wait for timer to fire"];
+    expectation.expectedFulfillmentCount = 1;
 
+    // Test timer
     __block BOOL timerFired = NO;
-    self.timer = [[MPRealTimeTimer alloc] initWithInterval:kTestLength block:^(MPRealTimeTimer *timer){
+    MPRealTimeTimer *timer = [[MPRealTimeTimer alloc] initWithInterval:kTestLength block:^(MPRealTimeTimer *timer) {
         timerFired = YES;
+        [expectation fulfill];
     }];
-    [self.timer scheduleNow];
-    XCTAssertTrue(self.timer.isScheduled);
 
-    [self.timer invalidate];
+    [timer scheduleNow];
+    XCTAssertTrue(timer.isScheduled);
+
+    [timer invalidate];
 
     dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(kTestTimeout * NSEC_PER_SEC)), dispatch_get_main_queue(), ^{
         [expectation fulfill];
@@ -82,20 +88,21 @@ static NSTimeInterval const kTestTooLong = 10000;
         XCTAssertNil(error);
     }];
 
-    XCTAssertFalse(self.timer.isScheduled);
+    XCTAssertFalse(timer.isScheduled);
 }
 
 - (void)testTimerStillFiresAfterBackgroundingWithTimeLeftUponForeground {
-    XCTestExpectation *fireExpectation = [self expectationWithDescription:@"Expect timer to fire"];
-    XCTestExpectation *foregroundExpectation = [self expectationWithDescription:@"Expect foreground event"];
+    __weak XCTestExpectation *fireExpectation = [self expectationWithDescription:@"Expect timer to fire"];
+    __weak XCTestExpectation *foregroundExpectation = [self expectationWithDescription:@"Expect foreground event"];
 
     __block BOOL timerFired = NO;
-    self.timer = [[MPRealTimeTimer alloc] initWithInterval:kTestLength block:^(MPRealTimeTimer *timer){
+    MPRealTimeTimer *timer = [[MPRealTimeTimer alloc] initWithInterval:kTestLength block:^(MPRealTimeTimer *timer) {
         timerFired = YES;
         [fireExpectation fulfill];
     }];
-    [self.timer scheduleNow];
-    XCTAssertTrue(self.timer.isScheduled);
+
+    [timer scheduleNow];
+    XCTAssertTrue(timer.isScheduled);
 
     [[NSNotificationCenter defaultCenter] postNotificationName:UIApplicationDidEnterBackgroundNotification object:nil];
     XCTAssertFalse(timerFired);
@@ -112,20 +119,21 @@ static NSTimeInterval const kTestTooLong = 10000;
     }];
 
     XCTAssertTrue(timerFired);
-    XCTAssertFalse(self.timer.isScheduled);
+    XCTAssertFalse(timer.isScheduled);
 }
 
 - (void)testTimerStillFiresAfterBackgroundingWithNoTimeLeftUponForeground {
-    XCTestExpectation *fireExpectation = [self expectationWithDescription:@"Expect timer to fire"];
-    XCTestExpectation *foregroundExpectation = [self expectationWithDescription:@"Expect foreground event"];
+    __weak XCTestExpectation *fireExpectation = [self expectationWithDescription:@"Expect timer to fire"];
+    __weak XCTestExpectation *foregroundExpectation = [self expectationWithDescription:@"Expect foreground event"];
 
     __block BOOL timerFired = NO;
-    self.timer = [[MPRealTimeTimer alloc] initWithInterval:kTestLength block:^(MPRealTimeTimer *timer){
+    MPRealTimeTimer *timer = [[MPRealTimeTimer alloc] initWithInterval:kTestLength block:^(MPRealTimeTimer *timer) {
         timerFired = YES;
         [fireExpectation fulfill];
     }];
-    [self.timer scheduleNow];
-    XCTAssertTrue(self.timer.isScheduled);
+
+    [timer scheduleNow];
+    XCTAssertTrue(timer.isScheduled);
 
     [[NSNotificationCenter defaultCenter] postNotificationName:UIApplicationDidEnterBackgroundNotification object:nil];
     XCTAssertFalse(timerFired);
@@ -141,20 +149,21 @@ static NSTimeInterval const kTestTooLong = 10000;
     }];
 
     XCTAssertTrue(timerFired);
-    XCTAssertFalse(self.timer.isScheduled);
+    XCTAssertFalse(timer.isScheduled);
 }
 
 - (void)testTimerDoesNotGetResetOnNewWindow {
-    XCTestExpectation *fireExpectation = [self expectationWithDescription:@"Expect timer to fire"];
+    __weak XCTestExpectation *fireExpectation = [self expectationWithDescription:@"Expect timer to fire"];
 
     __block BOOL timerFired = NO;
-    self.timer = [[MPRealTimeTimer alloc] initWithInterval:kTestLength block:^(MPRealTimeTimer *timer){
+    MPRealTimeTimer *timer = [[MPRealTimeTimer alloc] initWithInterval:kTestLength block:^(MPRealTimeTimer *timer) {
         timerFired = YES;
         [fireExpectation fulfill];
     }];
-    [self.timer scheduleNow];
-    MPTimer * backingTimer = self.timer.timer;
-    XCTAssertTrue(self.timer.isScheduled);
+
+    [timer scheduleNow];
+    MPTimer *backingTimer = timer.timer;
+    XCTAssertTrue(timer.isScheduled);
 
     XCTAssertFalse(timerFired);
 
@@ -162,14 +171,14 @@ static NSTimeInterval const kTestTooLong = 10000;
     [[NSNotificationCenter defaultCenter] postNotificationName:UIApplicationWillEnterForegroundNotification object:nil];
     [[NSNotificationCenter defaultCenter] postNotificationName:UIApplicationWillEnterForegroundNotification object:nil];
 
-    XCTAssertEqual(backingTimer, self.timer.timer); // Intentionally compare references to be sure the backing timer instance did not change
+    XCTAssertEqual(backingTimer, timer.timer); // Intentionally compare references to be sure the backing timer instance did not change
 
     [self waitForExpectationsWithTimeout:kTestTimeout handler:^(NSError *error) {
         XCTAssertNil(error);
     }];
 
     XCTAssertTrue(timerFired);
-    XCTAssertFalse(self.timer.isScheduled);
+    XCTAssertFalse(timer.isScheduled);
 }
 
 @end

@@ -12,18 +12,47 @@
 #import "NSString+MPAdditions.h"
 
 const NSTimeInterval kMPVASTMacroProcessorUnknownTimeOffset = -1;
+const NSInteger kMPVASTMacroProcessorUnknownVerificationErrorReason = 0;
 
 @implementation MPVASTMacroProcessor
+
+#pragma mark - Public
 
 + (NSURL *)macroExpandedURLForURL:(NSURL *)URL errorCode:(NSString *)errorCode
 {
     return [self macroExpandedURLForURL:URL
                               errorCode:errorCode
                         videoTimeOffset:kMPVASTMacroProcessorUnknownTimeOffset
-                          videoAssetURL:nil];
+                          videoAssetURL:nil
+                verificationErrorReason:kMPVASTMacroProcessorUnknownVerificationErrorReason];
 }
 
 + (NSURL *)macroExpandedURLForURL:(NSURL *)URL errorCode:(NSString *)errorCode videoTimeOffset:(NSTimeInterval)timeOffset videoAssetURL:(NSURL *)assetURL
+{
+    return [self macroExpandedURLForURL:URL
+                              errorCode:errorCode
+                        videoTimeOffset:timeOffset
+                          videoAssetURL:assetURL
+                verificationErrorReason:kMPVASTMacroProcessorUnknownVerificationErrorReason];
+}
+
++ (NSURL *)macroExpandedURLForURL:(NSURL *)URL verificationErrorReason:(MPVASTVerificationErrorReason)reason
+{
+    return [self macroExpandedURLForURL:URL
+                              errorCode:nil
+                        videoTimeOffset:kMPVASTMacroProcessorUnknownTimeOffset
+                          videoAssetURL:nil
+                verificationErrorReason:reason];
+}
+
+#pragma mark - Private
+
+// Handles all macro replacement
++ (NSURL *)macroExpandedURLForURL:(NSURL *)URL
+                        errorCode:(NSString *)errorCode
+                  videoTimeOffset:(NSTimeInterval)timeOffset
+                    videoAssetURL:(NSURL *)assetURL
+          verificationErrorReason:(MPVASTVerificationErrorReason)verificationErrorReason
 {
     NSMutableString *URLString = [[URL absoluteString] mutableCopy];
 
@@ -34,7 +63,7 @@ const NSTimeInterval kMPVASTMacroProcessorUnknownTimeOffset = -1;
     }
 
     if (timeOffset >= 0) {
-        NSString *timeOffsetString = [MPVASTStringUtilities stringFromTimeInterval:timeOffset];
+        NSString *timeOffsetString = [MPVASTStringUtilities durationStringFromTimeInterval:timeOffset];
         [URLString replaceOccurrencesOfString:@"[CONTENTPLAYHEAD]" withString:timeOffsetString options:0 range:NSMakeRange(0, [URLString length])];
         [URLString replaceOccurrencesOfString:@"%5BCONTENTPLAYHEAD%5D" withString:timeOffsetString options:0 range:NSMakeRange(0, [URLString length])];
     }
@@ -48,6 +77,13 @@ const NSTimeInterval kMPVASTMacroProcessorUnknownTimeOffset = -1;
     NSString *cachebuster = [NSString stringWithFormat:@"%u", arc4random() % 90000000 + 10000000];
     [URLString replaceOccurrencesOfString:@"[CACHEBUSTING]" withString:cachebuster options:0 range:NSMakeRange(0, [URLString length])];
     [URLString replaceOccurrencesOfString:@"%5BCACHEBUSTING%5D" withString:cachebuster options:0 range:NSMakeRange(0, [URLString length])];
+
+    if (verificationErrorReason >= MPVASTVerificationErrorReasonResourceRejected &&
+        verificationErrorReason <= MPVASTVerificationErrorReasonResourceLoadError) {
+        NSString *encodedErrorReason = [NSString stringWithFormat:@"%ld", (long)verificationErrorReason];
+        [URLString replaceOccurrencesOfString:@"[REASON]" withString:encodedErrorReason options:0 range:NSMakeRange(0, [URLString length])];
+        [URLString replaceOccurrencesOfString:@"%5BREASON%5D" withString:encodedErrorReason options:0 range:NSMakeRange(0, [URLString length])];
+    }
 
     return [NSURL URLWithString:URLString];
 }

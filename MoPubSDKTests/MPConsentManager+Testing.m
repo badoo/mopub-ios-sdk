@@ -29,6 +29,7 @@ static NSString * const kPrivacyPolicyVersionStorageKey          = @"com.mopub.m
 static NSString * const kShouldReacquireConsentStorageKey        = @"com.mopub.mopub-ios-sdk.should.reacquire.consent";
 static NSString * const kVendorListUrlStorageKey                 = @"com.mopub.mopub-ios-sdk.vendor.list.url";
 static NSString * const kVendorListVersionStorageKey             = @"com.mopub.mopub-ios-sdk.vendor.list.version";
+static NSString * const kLastATTAuthorizationStatusStorageKey    = @"com.mopub.mopub-ios-sdk.last.ATT.authorization.status";
 
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wincomplete-implementation"
@@ -57,10 +58,26 @@ static NSString * const kVendorListVersionStorageKey             = @"com.mopub.m
     [defaults setObject:nil forKey:kLastChangedReasonStorageKey];
     [defaults setObject:nil forKey:kShouldReacquireConsentStorageKey];
     [defaults setObject:nil forKey:kForceGDPRAppliesStorageKey];
+    [defaults setObject:nil forKey:kLastATTAuthorizationStatusStorageKey];
+
+    // Clear out overridden properties
+    sRawIfa = nil;
 }
 
 - (void)setIsGDPRApplicable:(MPBool)isGDPRApplicable {
     [[NSUserDefaults standardUserDefaults] setInteger:isGDPRApplicable forKey:kGDPRAppliesStorageKey];
+}
+
+#pragma mark - Overridden Private Properties
+
+static NSString *sRawIfa = nil;
+
+- (NSString *)rawIfa {
+    return sRawIfa;
+}
+
+- (void)setRawIfa:(NSString *)rawIfa {
+    sRawIfa = rawIfa;
 }
 
 @end

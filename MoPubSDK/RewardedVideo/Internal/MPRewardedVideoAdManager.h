@@ -10,12 +10,12 @@
 #import "MPAdTargeting.h"
 #import "MPImpressionData.h"
 
-@class MPRewardedVideoReward;
+@class MPReward;
 @protocol MPRewardedVideoAdManagerDelegate;
 
 /**
- * `MPRewardedVideoAdManager` represents a rewarded video for a single ad unit ID. This is the object that
- * `MPRewardedVideo` uses to load and present the ad.
+ `MPRewardedVideoAdManager` represents a rewarded video for a single ad unit ID. This is the object that
+ `MPRewardedVideo` uses to load and present the ad.
  */
 @interface MPRewardedVideoAdManager : NSObject
 
@@ -26,55 +26,55 @@
 @property (nonatomic, strong) MPAdTargeting *targeting;
 
 /**
- * An array of rewards that are available for the rewarded ad that can be selected when presenting the ad.
+ An array of @c MPReward that are available for the rewarded ad that can be selected when presenting the ad.
  */
-@property (nonatomic, readonly) NSArray *availableRewards;
+@property (nonatomic, readonly) NSArray<MPReward *> *availableRewards;
 
 /**
- * The currently selected reward that will be awarded to the user upon completion of the ad. By default,
- * this corresponds to the first reward in `availableRewards`.
+ The currently selected reward that will be awarded to the user upon completion of the ad. By default,
+ this corresponds to the first reward in `availableRewards`.
  */
-@property (nonatomic, readonly) MPRewardedVideoReward *selectedReward;
+@property (nonatomic, readonly) MPReward *selectedReward;
 
 - (instancetype)initWithAdUnitID:(NSString *)adUnitID delegate:(id<MPRewardedVideoAdManagerDelegate>)delegate;
 
 /**
- * Returns the custom event class type.
+ Returns the adapter class type.
  */
-- (Class)customEventClass;
+- (Class)adapterClass;
 
 /**
- * Loads a rewarded video ad with the ad manager's ad unit ID.
- *
- * @param customerId The user's id within the app.
- * @param targeting Optional ad targeting parameters.
- *
- * However, if an ad has been played for the last time a load was issued and load is called again, the method will request a new ad.
+ Loads a rewarded video ad with the ad manager's ad unit ID.
+
+ @param customerId The user's id within the app.
+ @param targeting Optional ad targeting parameters.
+
+ However, if an ad has been played for the last time a load was issued and load is called again, the method will request a new ad.
  */
 - (void)loadRewardedVideoAdWithCustomerId:(NSString *)customerId targeting:(MPAdTargeting *)targeting;
 
 /**
- * Tells the caller whether the underlying ad network currently has an ad available for presentation.
+ Tells the caller whether the underlying ad network currently has an ad available for presentation.
  */
 - (BOOL)hasAdAvailable;
 
 /**
- * Plays a rewarded video ad.
- *
- * @param viewController Presents the rewarded video ad from viewController.
- * @param reward A reward chosen from `availableRewards` to award the user upon completion.
- * This value should not be `nil`. If the reward that is passed in did not come from `availableRewards`,
- * this method will not present the rewarded ad and invoke `rewardedVideoDidFailToPlayForAdManager:error:`.
- * @param customData Optional custom data string to include in the server-to-server callback. If a server-to-server callback
- * is not used, or if the ad unit is configured for local rewarding, this value will not be persisted.
+ Plays a rewarded video ad.
+
+ @param viewController Presents the rewarded video ad from viewController.
+ @param reward A reward chosen from `availableRewards` to award the user upon completion.
+ This value should not be `nil`. If the reward that is passed in did not come from `availableRewards`,
+ this method will not present the rewarded ad and invoke `rewardedVideoDidFailToPlayForAdManager:error:`.
+ @param customData Optional custom data string to include in the server-to-server callback. If a server-to-server callback
+ is not used, or if the ad unit is configured for local rewarding, this value will not be persisted.
  */
-- (void)presentRewardedVideoAdFromViewController:(UIViewController *)viewController withReward:(MPRewardedVideoReward *)reward customData:(NSString *)customData;
+- (void)presentRewardedVideoAdFromViewController:(UIViewController *)viewController withReward:(MPReward *)reward customData:(NSString *)customData;
 
 /**
- * This method is called when another ad unit has played a rewarded video from the same network this ad manager's custom event
- * represents.
+ This method is called when another ad unit has played a rewarded video from the same network this ad manager's adapter
+ represents.
  */
-- (void)handleAdPlayedForCustomEventNetwork;
+- (void)handleAdPlayedForAdapterNetwork;
 
 @end
 
@@ -91,6 +91,6 @@
 - (void)rewardedVideoDidReceiveTapEventForAdManager:(MPRewardedVideoAdManager *)manager;
 - (void)rewardedVideoAdManager:(MPRewardedVideoAdManager *)manager didReceiveImpressionEventWithImpressionData:(MPImpressionData *)impressionData;
 - (void)rewardedVideoWillLeaveApplicationForAdManager:(MPRewardedVideoAdManager *)manager;
-- (void)rewardedVideoShouldRewardUserForAdManager:(MPRewardedVideoAdManager *)manager reward:(MPRewardedVideoReward *)reward;
+- (void)rewardedVideoShouldRewardUserForAdManager:(MPRewardedVideoAdManager *)manager reward:(MPReward *)reward;
 
 @end

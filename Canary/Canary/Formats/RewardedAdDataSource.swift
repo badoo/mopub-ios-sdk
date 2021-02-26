@@ -177,7 +177,9 @@ class RewardedAdDataSource: NSObject, AdDataSource {
         selectedReward = nil
         
         // Load the rewarded ad.
-        MPRewardedVideo.loadAd(withAdUnitID: adUnit.id, keywords: adUnit.keywords, userDataKeywords: adUnit.userDataKeywords, location: nil, mediationSettings: nil)
+        MPRewardedVideo.loadAd(withAdUnitID: adUnit.id, keywords: adUnit.keywords, userDataKeywords: adUnit.userDataKeywords, mediationSettings: nil)
+        
+        SavedAdsManager.sharedInstance.addLoadedAds(adUnit: adUnit)
     }
     
     private func showAd(sender: Any) {

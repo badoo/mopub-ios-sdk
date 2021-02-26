@@ -16,6 +16,7 @@ extern NSString * const kConsentedChangedReasonPublisherDenied;
 extern NSString * const kConsentedChangedReasonDoNotTrackEnabled;
 extern NSString * const kConsentedChangedReasonDoNotTrackDisabled;
 extern NSString * const kConsentedChangedReasonDoNotTrackDisabledNeedConsent;
+extern NSString * const kConsentedChangedReasonDoNotTrackDisabledPreserveConsent;
 extern NSString * const kConsentedChangedReasonIfaChanged;
 extern NSString * const kConsentedChangedReasonPrivacyPolicyChange;
 extern NSString * const kConsentedChangedReasonVendorListChange;

@@ -9,6 +9,7 @@
 #import "MPNativeAdRequest.h"
 #import "MPAdServerCommunicator.h"
 #import "MPNativeCustomEvent.h"
+#import "MPViewabilityTracker.h"
 
 @interface MPNativeAdRequest (Testing) <MPAdServerCommunicatorDelegate>
 @property (nonatomic, strong) MPAdConfiguration *adConfiguration;
@@ -16,4 +17,5 @@
 @property (nonatomic, strong) MPNativeCustomEvent *nativeCustomEvent;
 
 - (void)startTimeoutTimer;
+- (id<MPViewabilityTracker>)viewabilityTrackerForView:(UIView *)view context:(MPViewabilityContext *)context;
 @end

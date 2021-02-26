@@ -6,8 +6,12 @@
 //  http://www.mopub.com/legal/sdk-license-agreement/
 //
 
+#if __has_include(<MoPub/MoPub-Swift.h>)
+    #import <MoPub/MoPub-Swift.h>
+#else
+    #import "MoPub-Swift.h"
+#endif
 #import "MPContentBlocker.h"
-#import "MPAPIEndpoints.h"
 
 @interface MPContentBlocker()
 @property (class, nonatomic, readonly) NSArray<NSString *> * blockedResources;

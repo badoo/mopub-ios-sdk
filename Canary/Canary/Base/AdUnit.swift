@@ -65,7 +65,7 @@ public class AdUnit : NSObject, Codable {
      Initializes an ad unit from a dictionary and a default rendering view controller.
      */
     required public init?(info: [String: String], defaultViewControllerClassName: String) {
-        guard let adUnitId = info[AdUnitKey.Id] else {
+        guard let adUnitId = info[AdUnitKey.Id], adUnitId.count > 0 else {
             return nil
         }
         

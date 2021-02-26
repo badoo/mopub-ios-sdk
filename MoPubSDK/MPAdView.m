@@ -11,7 +11,7 @@
 #import "MPAdTargeting.h"
 #import "MPBannerAdManager.h"
 #import "MPBannerAdManagerDelegate.h"
-#import "MPClosableView.h"
+#import "MPAdContainerView.h"
 #import "MPCoreInstanceProvider.h"
 #import "MPError.h"
 #import "MPGlobal.h"
@@ -35,13 +35,11 @@
 {
     if (self = [super initWithFrame:CGRectZero])
     {
-        self.backgroundColor = [UIColor clearColor];
-        self.clipsToBounds = YES;
-        self.maxAdSize = kMPPresetMaxAdSizeMatchFrame;
-        self.allowedNativeAdOrientation = MPNativeAdOrientationAny;
-        self.adUnitId = (adUnitId) ? adUnitId : DEFAULT_PUB_ID;
-        self.adManager = [[MPBannerAdManager alloc] initWithDelegate:self];
-        self.userInteractionEnabled = NO;
+        [self commonInit];
+
+        if (adUnitId.length > 0) {
+            self.adUnitId = adUnitId;
+        }
     }
     return self;
 }
@@ -56,6 +54,26 @@
     });
     adView.maxAdSize = size;
     return adView;
+}
+
+- (instancetype)initWithCoder:(NSCoder *)coder
+{
+    if (self = [super initWithCoder:coder]) {
+        [self commonInit];
+    }
+
+    return self;
+}
+
+- (void)commonInit
+{
+    self.backgroundColor = [UIColor clearColor];
+    self.clipsToBounds = YES;
+    self.maxAdSize = kMPPresetMaxAdSizeMatchFrame;
+    self.allowedNativeAdOrientation = MPNativeAdOrientationAny;
+    self.adUnitId = DEFAULT_PUB_ID;
+    self.adManager = [[MPBannerAdManager alloc] initWithDelegate:self];
+    self.userInteractionEnabled = NO;
 }
 
 - (void)dealloc
@@ -97,8 +115,8 @@
 
 - (CGSize)adContentViewSize
 {
-    // MPClosableView represents an MRAID ad.
-    if (!self.adContentView || [self.adContentView isKindOfClass:[MPClosableView class]]) {
+    // MPAdContainerView represents an MRAID ad.
+    if (!self.adContentView || [self.adContentView isKindOfClass:[MPAdContainerView class]]) {
         return [MPAdView sizeForContainer:self adSize:self.maxAdSize adUnitId:self.adUnitId];
     } else {
         return self.adContentView.bounds.size;
@@ -229,7 +247,6 @@
     MPAdTargeting * targeting = [MPAdTargeting targetingWithCreativeSafeSize:realSize];
     targeting.keywords = self.keywords;
     targeting.localExtras = self.localExtras;
-    targeting.location = self.location;
     targeting.userDataKeywords = self.userDataKeywords;
 
     return targeting;

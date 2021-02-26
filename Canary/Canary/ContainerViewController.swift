@@ -45,11 +45,11 @@ class ContainerViewController: UIViewController {
      */
     private(set) var menuViewController: MenuViewController? = nil
     
-    var savedAdSplitViewController: UISplitViewController {
+    var savedAdsNavigationController: UINavigationController {
         guard let mainTabBarController = mainTabBarController else {
             fatalError()
         }
-        return mainTabBarController.savedAdSplitViewController
+        return mainTabBarController.savedAdsNavigationController
     }
     
     // MARK: - Forced Traits

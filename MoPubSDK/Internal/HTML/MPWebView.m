@@ -11,7 +11,6 @@
 #import <WebKit/WebKit.h>
 
 static BOOL const kMoPubAllowsInlineMediaPlaybackDefault = YES;
-static BOOL const kMoPubRequiresUserActionForMediaPlaybackDefault = NO;
 
 // Set defaults for this as its default differs between different iOS versions.
 static BOOL const kMoPubAllowsLinkPreviewDefault = NO;
@@ -34,7 +33,7 @@ static NSString *const kMoPubFrameKeyPathString = @"frame";
 
 - (instancetype)init {
     if (self = [super init]) {
-        [self setUp];
+        [self setUpWithScripts:nil];
     }
 
     return self;
@@ -42,25 +41,33 @@ static NSString *const kMoPubFrameKeyPathString = @"frame";
 
 - (instancetype)initWithCoder:(NSCoder *)aDecoder {
     if (self = [super initWithCoder:aDecoder]) {
-        [self setUp];
+        [self setUpWithScripts:nil];
     }
 
     return self;
 }
 
 - (instancetype)initWithFrame:(CGRect)frame {
+    return [self initWithFrame:frame scripts:nil];
+}
+
+- (instancetype)initWithFrame:(CGRect)frame scripts:(NSArray<WKUserScript *> *)scripts {
     if (self = [super initWithFrame:frame]) {
-        [self setUp];
+        [self setUpWithScripts:scripts];
     }
 
     return self;
 }
 
-- (void)setUp {
+- (void)setUpWithScripts:(NSArray<WKUserScript *> *)scripts {
     WKUserContentController *contentController = [[WKUserContentController alloc] init];
+    [scripts enumerateObjectsUsingBlock:^(WKUserScript * _Nonnull script, NSUInteger idx, BOOL * _Nonnull stop) {
+        [contentController addUserScript:script];
+    }];
+
     WKWebViewConfiguration *config = [[WKWebViewConfiguration alloc] init];
     config.allowsInlineMediaPlayback = kMoPubAllowsInlineMediaPlaybackDefault;
-    config.requiresUserActionForMediaPlayback = kMoPubRequiresUserActionForMediaPlaybackDefault;
+    config.mediaTypesRequiringUserActionForPlayback = WKAudiovisualMediaTypeNone;
     config.userContentController = contentController;
 
     if (@available(iOS 11, *)) {
@@ -327,10 +334,6 @@ textEncodingName:(NSString *)encodingName
 
 - (BOOL)allowsInlineMediaPlayback {
     return self.wkWebView.configuration.allowsInlineMediaPlayback;
-}
-
-- (BOOL)mediaPlaybackRequiresUserAction {
-    return self.wkWebView.configuration.requiresUserActionForMediaPlayback;
 }
 
 - (BOOL)mediaPlaybackAllowsAirPlay {

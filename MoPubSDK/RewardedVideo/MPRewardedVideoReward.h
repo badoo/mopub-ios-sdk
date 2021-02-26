@@ -7,54 +7,27 @@
 //
 
 #import <Foundation/Foundation.h>
+#import "MPReward.h"
 
 /**
- * A constant that indicates that no currency type was specified with the reward.
+ A constant that indicates that no currency type was specified with the reward.
  */
-extern NSString *const kMPRewardedVideoRewardCurrencyTypeUnspecified;
+extern NSString *const kMPRewardedVideoRewardCurrencyTypeUnspecified __deprecated_msg("Use `kMPRewardCurrencyTypeUnspecified` instead.");
 
 /**
- * A constant that indicates that no currency amount was specified with the reward.
+ A constant that indicates that no currency amount was specified with the reward.
  */
-extern NSInteger const kMPRewardedVideoRewardCurrencyAmountUnspecified;
-
+extern NSInteger const kMPRewardedVideoRewardCurrencyAmountUnspecified __deprecated_msg("Use `kMPRewardCurrencyAmountUnspecified` instead.");
 
 /**
- * `MPRewardedVideoReward` contains all the information needed to reward the user for watching
- * a rewarded video ad. The class provides a currency amount and currency type.
- */
+ @c MPRewardedVideoReward is about to be deprecated after the public API @c MPRewardedVideo is
+ updated to use @c MPReward instead. Internally in the SDK, use Use `MPReward` instead.
 
-@interface MPRewardedVideoReward : NSObject
-
-/**
- * The type of currency that should be rewarded to the user.
- *
- * An undefined currency type should be specified as `kMPRewardedVideoRewardCurrencyTypeUnspecified`.
+ `MPRewardedVideoReward` contains all the information needed to reward the user for watching
+ a rewarded video ad. The class provides a currency amount and currency type.
  */
-@property (nonatomic, readonly) NSString *currencyType;
+@interface MPRewardedVideoReward : MPReward
 
-/**
- * The amount of currency to reward to the user.
- *
- * An undefined currency amount should be specified as `kMPRewardedVideoRewardCurrencyAmountUnspecified`
- * wrapped as an NSNumber.
- */
-@property (nonatomic, readonly) NSNumber *amount;
-
-/**
- * Initializes the object with an undefined currency type (`kMPRewardedVideoRewardCurrencyTypeUnspecified`) and
- * the amount passed in.
- *
- * @param amount The amount of currency the user is receiving.
- */
-- (instancetype)initWithCurrencyAmount:(NSNumber *)amount;
-
-/**
- * Initializes the object's properties with the currencyType and amount.
- *
- * @param currencyType The type of currency the user is receiving.
- * @param amount The amount of currency the user is receiving.
- */
-- (instancetype)initWithCurrencyType:(NSString *)currencyType amount:(NSNumber *)amount;
++ (MPRewardedVideoReward *)rewardWithReward:(MPReward *)reward;
 
 @end

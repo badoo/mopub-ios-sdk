@@ -11,13 +11,13 @@
 @interface NSString (MPAdditions)
 
 /*
- * Returns string with reserved/unsafe characters encoded.
+ Returns string with reserved/unsafe characters encoded.
  */
 - (NSString *)mp_URLEncodedString;
 
 /**
- * Attempts to convert the string into an integer value.
- * @return A valid integer or `nil` if the string is not valid.
+ Attempts to convert the string into an integer value.
+ @return A valid integer or `nil` if the string is not valid.
  */
 - (NSNumber *)safeIntegerValue;
 

@@ -7,7 +7,7 @@
 //
 
 #import <XCTest/XCTest.h>
-#import "MPClosableView.h"
+#import "MPAdViewConstant.h"
 #import "MRController+Testing.h"
 
 #pragma mark - Test Utility (Resize Ad Frame Validation)
@@ -114,7 +114,7 @@
  This class is for the test subject of Close button frame validation tests.
  */
 @interface MRControllerCloseButtonFrameValidationTestSubject : NSObject
-@property (nonatomic, assign) MPClosableViewCloseButtonLocation closeButtonLocation;
+@property (nonatomic, assign) MPAdViewCloseButtonLocation closeButtonLocation;
 @property (nonatomic, assign) CGRect adFrame;
 @property (nonatomic, assign) CGRect applicationSafeArea;
 @property (nonatomic, assign) BOOL expectedToBeValid;
@@ -122,7 +122,7 @@
 
 @implementation MRControllerCloseButtonFrameValidationTestSubject
 
-- (instancetype)initWithCloseButtonLocation:(MPClosableViewCloseButtonLocation)closeButtonLocation
+- (instancetype)initWithCloseButtonLocation:(MPAdViewCloseButtonLocation)closeButtonLocation
                                     adFrame:(CGRect)adFrame
                         applicationSafeArea:(CGRect)applicationSafeArea
                           expectedToBeValid:(BOOL)expectedToBeValid {
@@ -140,31 +140,31 @@
     CGRect appSafeArea = CGRectMake(0, 20, 320, 460);
 
     return @[// ad fully off screen (including its Close button)
-             [[MRControllerCloseButtonFrameValidationTestSubject alloc] initWithCloseButtonLocation:MPClosableViewCloseButtonLocationTopLeft
+             [[MRControllerCloseButtonFrameValidationTestSubject alloc] initWithCloseButtonLocation:MPAdViewCloseButtonLocationTopLeft
                                                                                             adFrame:CGRectOffset(appSafeArea, appSafeArea.size.width * 2, appSafeArea.size.height * 2)
                                                                                 applicationSafeArea:appSafeArea
                                                                                   expectedToBeValid:NO],
 
              // ad partially off screen, and its Close button fully off screen
-             [[MRControllerCloseButtonFrameValidationTestSubject alloc] initWithCloseButtonLocation:MPClosableViewCloseButtonLocationTopRight
-                                                                                            adFrame:CGRectOffset(appSafeArea, kCloseRegionSize.width * 2, kCloseRegionSize.height * 2)
+             [[MRControllerCloseButtonFrameValidationTestSubject alloc] initWithCloseButtonLocation:MPAdViewCloseButtonLocationTopRight
+                                                                                            adFrame:CGRectOffset(appSafeArea, kMPAdViewCloseButtonSize.width * 2, kMPAdViewCloseButtonSize.height * 2)
                                                                                 applicationSafeArea:appSafeArea
                                                                                   expectedToBeValid:NO],
 
              // ad partially off screen, and its Close button partially off screen
-             [[MRControllerCloseButtonFrameValidationTestSubject alloc] initWithCloseButtonLocation:MPClosableViewCloseButtonLocationBottomLeft
-                                                                                            adFrame:CGRectOffset(appSafeArea, -kCloseRegionSize.width / 2, -kCloseRegionSize.height / 2)
+             [[MRControllerCloseButtonFrameValidationTestSubject alloc] initWithCloseButtonLocation:MPAdViewCloseButtonLocationBottomLeft
+                                                                                            adFrame:CGRectOffset(appSafeArea, -kMPAdViewCloseButtonSize.width / 2, -kMPAdViewCloseButtonSize.height / 2)
                                                                                 applicationSafeArea:appSafeArea
                                                                                   expectedToBeValid:NO],
 
              // ad partially off screen, and its Close button full on screen
-             [[MRControllerCloseButtonFrameValidationTestSubject alloc] initWithCloseButtonLocation:MPClosableViewCloseButtonLocationBottomLeft
-                                                                                            adFrame:CGRectOffset(appSafeArea, kCloseRegionSize.width, 0)
+             [[MRControllerCloseButtonFrameValidationTestSubject alloc] initWithCloseButtonLocation:MPAdViewCloseButtonLocationBottomLeft
+                                                                                            adFrame:CGRectOffset(appSafeArea, kMPAdViewCloseButtonSize.width, 0)
                                                                                 applicationSafeArea:appSafeArea
                                                                                   expectedToBeValid:YES],
 
              // ad fully on screen (including its Close button)
-             [[MRControllerCloseButtonFrameValidationTestSubject alloc] initWithCloseButtonLocation:MPClosableViewCloseButtonLocationCenter
+             [[MRControllerCloseButtonFrameValidationTestSubject alloc] initWithCloseButtonLocation:MPAdViewCloseButtonLocationCenter
                                                                                             adFrame:appSafeArea
                                                                                 applicationSafeArea:appSafeArea
                                                                                   expectedToBeValid:YES]

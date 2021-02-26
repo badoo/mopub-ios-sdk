@@ -34,9 +34,12 @@
 + (NSMutableDictionary *)defaultInterstitialHeaders;
 + (MPAdConfiguration *)defaultInterstitialConfiguration;
 + (MPAdConfiguration *)defaultMRAIDInterstitialConfiguration;
++ (MPAdConfiguration *)defaultMRAIDInterstitialConfigurationWithAdditionalHeaders:(NSDictionary *)additionalHeaders;
 + (MPAdConfiguration *)defaultFakeInterstitialConfiguration;
 + (MPAdConfiguration *)defaultInterstitialConfigurationWithNetworkType:(NSString *)type;
 + (MPAdConfiguration *)defaultChartboostInterstitialConfigurationWithLocation:(NSString *)location;
++ (MPAdConfiguration *)defaultFullscreenConfigWithAdapterClass:(Class)class;
++ (MPAdConfiguration *)defaultFullscreenConfigWithAdapterClass:(Class)class additionalMetadata:(NSDictionary *)additionalMetadata;
 + (MPAdConfiguration *)defaultInterstitialConfigurationWithCustomEventClassName:(NSString *)eventClassName;
 + (MPAdConfiguration *)defaultInterstitialConfigurationWithCustomEventClassName:(NSString *)eventClassName
                                                              additionalMetadata:(NSDictionary *)additionalMetadata;
@@ -50,6 +53,6 @@
                                                               additionalMetadata:(NSDictionary *)additionalMetadata;
 + (MPAdConfiguration *)defaultRewardedVideoConfigurationWithReward;
 + (MPAdConfiguration *)defaultRewardedVideoConfigurationServerToServer;
-+ (MPAdConfiguration *)defaultNativeVideoConfigurationWithVideoTrackers;
++ (MPAdConfiguration *)defaultVASTConfigurationWithVideoTrackers;
 
 @end

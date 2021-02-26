@@ -9,8 +9,8 @@
 #import "MPActivityViewControllerHelper.h"
 
 /**
- * MPActivityItemProviderWithSubject subclasses UIActivityItemProvider
- * to provide a subject for email activity types.
+ MPActivityItemProviderWithSubject subclasses UIActivityItemProvider
+ to provide a subject for email activity types.
  */
 
 @interface MPActivityItemProviderWithSubject : UIActivityItemProvider

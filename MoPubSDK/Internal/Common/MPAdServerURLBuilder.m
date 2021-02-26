@@ -9,21 +9,26 @@
 #import "MPAdServerURLBuilder.h"
 
 #import <CoreLocation/CoreLocation.h>
+#if __has_include(<MoPub/MoPub-Swift.h>)
+    #import <MoPub/MoPub-Swift.h>
+#else
+    #import "MoPub-Swift.h"
+#endif
 
 #import "MPAdServerKeys.h"
-#import "MPAPIEndpoints.h"
 #import "MPConsentManager.h"
 #import "MPConstants.h"
 #import "MPCoreInstanceProvider+MRAID.h"
+#import "MPDeviceInformation.h"
 #import "MPError.h"
-#import "MPGeolocationProvider.h"
 #import "MPGlobal.h"
 #import "MPIdentityProvider.h"
 #import "MPLogging.h"
 #import "MPMediationManager.h"
 #import "MPRateLimitManager.h"
 #import "MPReachabilityManager.h"
-#import "MPViewabilityTracker.h"
+#import "MPSKAdNetworkManager.h"
+#import "MPViewabilityManager.h"
 #import "NSString+MPAdditions.h"
 #import "NSString+MPConsentStatus.h"
 
@@ -34,30 +39,43 @@ static NSInteger const kAdSequenceNone = -1;
 @interface MPAdServerURLBuilder ()
 
 /**
- * Builds an NSMutableDictionary with all generic URL parameters and their values. The `id` URL parameter is gathered from
- * the `idParameter` method parameter because it has different uses depending on the URL. This base set of parameters
- * includes the following:
- * - ID Parameter (`id`)
- * - Server API Version Used (`v`)
- * - SDK Version (`nv`)
- * - Application Version (`av`)
- * - GDPR Region Applicable (`gdpr_applies`)
- * - Current Consent Status (`current_consent_status`)
- * - Limit Ad Tracking Status (`dnt`)
- * - Bundle Identifier (`bundle`)
- * - IF AVAILABLE: Consented Privacy Policy Version (`consented_privacy_policy_version`)
- * - IF AVAILABLE: Consented Vendor List Version (`consented_vendor_list_version`)
+ Builds an NSMutableDictionary with all generic URL parameters and their values. This base set of parameters
+ includes the following:
+ - Server API Version Used (`v`)
+ - SDK Version (`nv`)
+ - Engine Name (`e_name`)
+ - Engine Version (`e_ver`)
+ - Application Version (`av`)
+ - GDPR Region Applicable (`gdpr_applies`)
+ - Current Consent Status (`current_consent_status`)
+ - Limit Ad Tracking Status (`dnt`)
+ - Tracking Authorization Status Description String (`tas`)
+ - Bundle Identifier (`bundle`)
+ - MoPub ID (`mid`)
+ - IF AVAILABLE: Consented Privacy Policy Version (`consented_privacy_policy_version`)
+ - IF AVAILABLE: Consented Vendor List Version (`consented_vendor_list_version`)
+ */
++ (NSMutableDictionary *)baseParametersDictionary;
+
+/**
+ Builds an NSMutableDictionary with all generic URL parameters and their values, as well as an `id` parameter.
+ The `id` URL parameter is gathered from the @c idParameter` method parameter because it has different uses
+ depending on the URL.
  */
 + (NSMutableDictionary *)baseParametersDictionaryWithIDParameter:(NSString *)idParameter;
 
-/**
- * Builds an NSMutableDictionary with all generic URL parameters above and their values, but with the addition of IDFA.
- * If @c usingIDFAForConsent is @c YES, the IDFA will be gathered from MPConsentManager (which may be nil without
- * consent). Otherwise, the IDFA will be taken from MPIdentityProvider, which will always have a value, but may be
- * MoPub's value.
- */
-+ (NSMutableDictionary *)baseParametersDictionaryWithIDFAUsingIDFAForConsent:(BOOL)usingIDFAForConsent
-                                                             withIDParameter:(NSString *)idParameter;
+// Location authorization status is specified as a class property to facilitate
+// unit testing.
++ (MPLocationAuthorizationStatus)locationAuthorizationStatus;
+
+// Identifier for vendor is specified as a class property to facilitate unit testing.
++ (NSString *)ifv;
+
+// Identifier for advertiser is specified as a class property to facilitate unit testing.
++ (NSString *)ifa;
+
+// MoPub identifier is specified as a class property to facilitate unit testing.
++ (NSString *)mopubId;
 
 @end
 
@@ -77,18 +95,14 @@ static MPEngineInfo * _engineInfo = nil;
 
 #pragma mark - URL Building
 
-+ (MPURL *)URLWithEndpointPath:(NSString *)endpointPath postData:(NSDictionary *)parameters {
++ (MPURL *)URLWithComponents:(NSURLComponents *)components postData:(NSDictionary *)parameters {
     // Build the full URL string
-    NSURLComponents * components = [MPAPIEndpoints baseURLComponentsWithPath:endpointPath];
     return [MPURL URLWithComponents:components postData:parameters];
 }
 
-+ (NSMutableDictionary *)baseParametersDictionaryWithIDParameter:(NSString *)idParameter {
++ (NSMutableDictionary *)baseParametersDictionary {
     MPConsentManager * manager = MPConsentManager.sharedManager;
     NSMutableDictionary * queryParameters = [NSMutableDictionary dictionary];
-
-    // REQUIRED: ID Parameter (used for different things depending on which URL, take from method parameter)
-    queryParameters[kAdServerIDKey] = idParameter;
 
     // REQUIRED: Server API Version
     queryParameters[kServerAPIVersionKey] = MP_SERVER_VERSION;
@@ -114,45 +128,51 @@ static MPEngineInfo * _engineInfo = nil;
     // REQUIRED: Current consent status
     queryParameters[kCurrentConsentStatusKey] = [NSString stringFromConsentStatus:manager.currentStatus];
 
-    // REQUIRED: DNT, Bundle
+    // REQUIRED: DNT, Tracking Authorization Status, Bundle
     queryParameters[kDoNotTrackIdKey] = [MPIdentityProvider advertisingTrackingEnabled] ? nil : @"1";
+
+    queryParameters[kTrackingAuthorizationStatusKey] = MPIdentityProvider.trackingAuthorizationStatusDescription;
+
     queryParameters[kBundleKey] = [[NSBundle mainBundle] bundleIdentifier];
 
     // REQUIRED: MoPub ID
     // After user consented IDFA access, UDID uses IDFA and thus different from MoPub ID.
     // Otherwise, UDID is the same as MoPub ID.
-    queryParameters[kMoPubIDKey] = [MPIdentityProvider unobfuscatedMoPubIdentifier];
+    queryParameters[kMoPubIDKey] = [self mopubId];
+
+    // REQUIRED: Identifier for Vendor
+    queryParameters[kIdentifierForVendorKey] = [self ifv];
+
+    // OPTIONAL: Identifier for Advertiser if available.
+    queryParameters[kIdentifierForAdvertiserKey] = [self ifa];
 
     // OPTIONAL: Consented versions
     queryParameters[kConsentedPrivacyPolicyVersionKey] = manager.consentedPrivacyPolicyVersion;
     queryParameters[kConsentedVendorListVersionKey] = manager.consentedVendorListVersion;
 
+    // OPTIONAL: Additional device information for debugging
+    queryParameters[kOSKey] = @"ios";
+    queryParameters[kDeviceNameKey] = [self deviceNameValue];
+    queryParameters[kAdUnitKey] = [MPConsentManager sharedManager].adUnitIdUsedForConsent;
+
+    // REQUIRED: Location authorization status
+    MPLocationAuthorizationStatus locationAuthorizationStatus = [self locationAuthorizationStatus];
+    queryParameters[kLocationAuthorizationStatusKey] = NSStringFromMPLocationAuthorizationStatus(locationAuthorizationStatus);
+
     return queryParameters;
 }
 
-+ (NSMutableDictionary *)baseParametersDictionaryWithIDFAUsingIDFAForConsent:(BOOL)usingIDFAForConsent
-                                                             withIDParameter:(NSString *)idParameter {
-    MPConsentManager * manager = MPConsentManager.sharedManager;
-    NSMutableDictionary * queryParameters = [self baseParametersDictionaryWithIDParameter:idParameter];
++ (NSMutableDictionary *)baseParametersDictionaryWithIDParameter:(NSString *)idParameter {
+    NSMutableDictionary * queryParameters = [self baseParametersDictionary];
 
-    // OPTIONAL: IDFA if available
-    if (usingIDFAForConsent) {
-        queryParameters[kIdfaKey] = manager.ifaForConsent;
-    } else {
-        queryParameters[kIdfaKey] = [MPIdentityProvider identifier];
-    }
+    // REQUIRED: ID Parameter (used for different things depending on which URL, take from method parameter)
+    queryParameters[kAdServerIDKey] = idParameter;
 
     return queryParameters;
 }
 
 + (NSString *)applicationVersion {
-    static NSString * gApplicationVersion;
-    static dispatch_once_t onceToken;
-    dispatch_once(&onceToken, ^{
-        gApplicationVersion = [[[NSBundle mainBundle] infoDictionary] objectForKey:@"CFBundleShortVersionString"];
-    });
-
-    return gApplicationVersion;
+    return MPDeviceInformation.applicationVersion;
 }
 
 + (NSString *)engineNameValue {
@@ -161,6 +181,28 @@ static MPEngineInfo * _engineInfo = nil;
 
 + (NSString *)engineVersionValue {
     return self.engineInformation.version;
+}
+
++ (NSString *)deviceNameValue
+{
+    NSString *deviceName = [[UIDevice currentDevice] mp_hardwareDeviceName];
+    return deviceName;
+}
+
++ (MPLocationAuthorizationStatus)locationAuthorizationStatus {
+    return MPDeviceInformation.locationAuthorizationStatus;
+}
+
++ (NSString *)ifv {
+    return MPIdentityProvider.ifv;
+}
+
++ (NSString *)ifa {
+    return MPIdentityProvider.ifa;
+}
+
++ (NSString *)mopubId {
+    return MPIdentityProvider.mopubId;
 }
 
 @end
@@ -172,59 +214,57 @@ static MPEngineInfo * _engineInfo = nil;
 {
     return [self URLWithAdUnitID:adUnitID
                        targeting:targeting
-                   desiredAssets:nil
-                     viewability:YES];
+                   desiredAssets:nil];
 }
 
 + (MPURL *)URLWithAdUnitID:(NSString *)adUnitID
                  targeting:(MPAdTargeting *)targeting
              desiredAssets:(NSArray *)assets
-               viewability:(BOOL)viewability
 {
 
 
     return [self URLWithAdUnitID:adUnitID
                        targeting:targeting
                    desiredAssets:assets
-                      adSequence:kAdSequenceNone
-                     viewability:viewability];
+                      adSequence:kAdSequenceNone];
 }
 
 + (MPURL *)URLWithAdUnitID:(NSString *)adUnitID
                  targeting:(MPAdTargeting *)targeting
              desiredAssets:(NSArray *)assets
                 adSequence:(NSInteger)adSequence
-               viewability:(BOOL)viewability
 {
-    NSMutableDictionary * queryParams = [self baseParametersDictionaryWithIDFAUsingIDFAForConsent:NO
-                                                                                  withIDParameter:adUnitID];
+    NSMutableDictionary * queryParams = [self baseParametersDictionaryWithIDParameter:adUnitID];
 
-    queryParams[kOrientationKey]                = [self orientationValue];
-    queryParams[kScaleFactorKey]                = [self scaleFactorValue];
-    queryParams[kTimeZoneKey]                   = [self timeZoneValue];
-    queryParams[kIsMRAIDEnabledSDKKey]          = [self isMRAIDEnabledSDKValue];
-    queryParams[kConnectionTypeKey]             = [self connectionTypeValue];
-    queryParams[kCarrierNameKey]                = [self carrierNameValue];
-    queryParams[kISOCountryCodeKey]             = [self isoCountryCodeValue];
-    queryParams[kMobileNetworkCodeKey]          = [self mobileNetworkCodeValue];
-    queryParams[kMobileCountryCodeKey]          = [self mobileCountryCodeValue];
-    queryParams[kDeviceNameKey]                 = [self deviceNameValue];
-    queryParams[kDesiredAdAssetsKey]            = [self desiredAdAssetsValue:assets];
-    queryParams[kAdSequenceKey]                 = [self adSequenceValue:adSequence];
-    queryParams[kScreenResolutionWidthKey]      = [self physicalScreenResolutionWidthValue];
-    queryParams[kScreenResolutionHeightKey]     = [self physicalScreenResolutionHeightValue];
-    queryParams[kCreativeSafeWidthKey]          = [self creativeSafeWidthValue:targeting.creativeSafeSize];
-    queryParams[kCreativeSafeHeightKey]         = [self creativeSafeHeightValue:targeting.creativeSafeSize];
-    queryParams[kAppTransportSecurityStatusKey] = [self appTransportSecurityStatusValue];
-    queryParams[kKeywordsKey]                   = [self keywordsValue:targeting.keywords];
-    queryParams[kUserDataKeywordsKey]           = [self userDataKeywordsValue:targeting.userDataKeywords];
-    queryParams[kViewabilityStatusKey]          = [self viewabilityStatusValue:viewability];
-    queryParams[kAdvancedBiddingKey]            = [self advancedBiddingValue];
-    queryParams[kBackoffMsKey]                  = [self backoffMillisecondsValueForAdUnitID:adUnitID];
-    queryParams[kBackoffReasonKey]              = [[MPRateLimitManager sharedInstance] lastRateLimitReasonForAdUnitId:adUnitID];
-    [queryParams addEntriesFromDictionary:[self locationInformationDictionary:targeting.location]];
+    queryParams[kOrientationKey]                   = [self orientationValue];
+    queryParams[kScaleFactorKey]                   = [self scaleFactorValue];
+    queryParams[kTimeZoneKey]                      = [self timeZoneValue];
+    queryParams[kIsMRAIDEnabledSDKKey]             = [self isMRAIDEnabledSDKValue];
+    queryParams[kConnectionTypeKey]                = [self connectionTypeValue];
+    queryParams[kCarrierNameKey]                   = MPDeviceInformation.carrierName;
+    queryParams[kISOCountryCodeKey]                = MPDeviceInformation.isoCountryCode;
+    queryParams[kMobileNetworkCodeKey]             = MPDeviceInformation.mobileNetworkCode;
+    queryParams[kMobileCountryCodeKey]             = MPDeviceInformation.mobileCountryCode;
+    queryParams[kDesiredAdAssetsKey]               = [self desiredAdAssetsValue:assets];
+    queryParams[kAdSequenceKey]                    = [self adSequenceValue:adSequence];
+    queryParams[kScreenResolutionWidthKey]         = [self physicalScreenResolutionWidthValue];
+    queryParams[kScreenResolutionHeightKey]        = [self physicalScreenResolutionHeightValue];
+    queryParams[kCreativeSafeWidthKey]             = [self creativeSafeWidthValue:targeting.creativeSafeSize];
+    queryParams[kCreativeSafeHeightKey]            = [self creativeSafeHeightValue:targeting.creativeSafeSize];
+    queryParams[kAppTransportSecurityStatusKey]    = [self appTransportSecurityStatusValue];
+    queryParams[kKeywordsKey]                      = [self keywordsValue:targeting.keywords];
+    queryParams[kUserDataKeywordsKey]              = [self userDataKeywordsValue:targeting.userDataKeywords];
+    queryParams[kViewabilityStatusKey]             = [self viewabilityStatusValue];
+    queryParams[kViewabilityVersionKey]            = MPViewabilityManager.sharedManager.omidVersion;
+    queryParams[kAdvancedBiddingKey]               = [self advancedBiddingValue];
+    queryParams[kBackoffMsKey]                     = [self backoffMillisecondsValueForAdUnitID:adUnitID];
+    queryParams[kBackoffReasonKey]                 = [[MPRateLimitManager sharedInstance] lastRateLimitReasonForAdUnitId:adUnitID];
+    queryParams[kSKAdNetworkHashKey]               = MPSKAdNetworkManager.sharedManager.lastSyncHash;
+    queryParams[kSKAdNetworkLastSyncTimestampKey]  = MPSKAdNetworkManager.sharedManager.lastSyncTimestampEpochSeconds;
+    queryParams[kSKAdNetworkLastSyncAppVersionKey] = MPSKAdNetworkManager.sharedManager.lastSyncAppVersion;
+    [queryParams addEntriesFromDictionary:self.locationInformation];
 
-    return [self URLWithEndpointPath:MOPUB_API_PATH_AD_REQUEST postData:queryParams];
+    return [self URLWithComponents:MPAPIEndpoints.adRequestURLComponents postData:queryParams];
 }
 
 + (NSString *)orientationValue
@@ -255,44 +295,14 @@ static MPEngineInfo * _engineInfo = nil;
 + (NSString *)isMRAIDEnabledSDKValue
 {
     BOOL isMRAIDEnabled = [[MPCoreInstanceProvider sharedProvider] isMraidJavascriptAvailable] &&
-                          NSClassFromString(@"MPMRAIDBannerCustomEvent") != Nil &&
-                          NSClassFromString(@"MPMRAIDInterstitialCustomEvent") != Nil;
+                          NSClassFromString(@"MPMoPubInlineAdAdapter") != Nil &&
+                          NSClassFromString(@"MPFullscreenAdAdapter") != Nil;
     return isMRAIDEnabled ? @"1" : nil;
 }
 
 + (NSString *)connectionTypeValue
 {
     return [NSString stringWithFormat:@"%ld", (long)MPReachabilityManager.sharedManager.currentStatus];
-}
-
-+ (NSString *)carrierNameValue
-{
-    NSString *carrierName = [[[MPCoreInstanceProvider sharedProvider] sharedCarrierInfo] objectForKey:@"carrierName"];
-    return carrierName;
-}
-
-+ (NSString *)isoCountryCodeValue
-{
-    NSString *code = [[[MPCoreInstanceProvider sharedProvider] sharedCarrierInfo] objectForKey:@"isoCountryCode"];
-    return code;
-}
-
-+ (NSString *)mobileNetworkCodeValue
-{
-    NSString *code = [[[MPCoreInstanceProvider sharedProvider] sharedCarrierInfo] objectForKey:@"mobileNetworkCode"];
-    return code;
-}
-
-+ (NSString *)mobileCountryCodeValue
-{
-    NSString *code = [[[MPCoreInstanceProvider sharedProvider] sharedCarrierInfo] objectForKey:@"mobileCountryCode"];
-    return code;
-}
-
-+ (NSString *)deviceNameValue
-{
-    NSString *deviceName = [[UIDevice currentDevice] mp_hardwareDeviceName];
-    return deviceName;
 }
 
 + (NSString *)desiredAdAssetsValue:(NSArray *)assets
@@ -330,7 +340,7 @@ static MPEngineInfo * _engineInfo = nil;
 
 + (NSString *)appTransportSecurityStatusValue
 {
-    return [NSString stringWithFormat:@"%@", @([[MPCoreInstanceProvider sharedProvider] appTransportSecuritySettings])];
+    return [NSString stringWithFormat:@"%@", @(MPDeviceInformation.appTransportSecuritySettings)];
 }
 
 + (NSString *)keywordsValue:(NSString *)keywords
@@ -348,12 +358,14 @@ static MPEngineInfo * _engineInfo = nil;
     return userDataKeywords;
 }
 
-+ (NSString *)viewabilityStatusValue:(BOOL)isViewabilityEnabled {
-    if (!isViewabilityEnabled) {
-        return nil;
-    }
++ (NSString *)viewabilityStatusValue {
+    BOOL isViewabilityEnabled = MPViewabilityManager.sharedManager.isEnabled;
 
-    return [NSString stringWithFormat:@"%d", (int)[MPViewabilityTracker enabledViewabilityVendors]];
+    // The value of the `vv` parameter is a bitmask describing which Viewability
+    // vendors are enabled.
+    // The only valid value post Open Measurement integration is 0x100 (4) which
+    // represents that Open Measurement Viewability collection is enabled.
+    return isViewabilityEnabled ? @"4" : @"0";
 }
 
 + (NSString *)advancedBiddingValue {
@@ -384,7 +396,7 @@ static MPEngineInfo * _engineInfo = nil;
     return MPMediationManager.sharedManager.adRequestPayload;
 }
 
-+ (NSDictionary *)locationInformationDictionary:(CLLocation *)location {
++ (NSDictionary *)locationInformation {
     // Not allowed to collect location because it is PII
     if (![MPConsentManager.sharedManager canCollectPersonalInfo]) {
         return @{};
@@ -392,15 +404,8 @@ static MPEngineInfo * _engineInfo = nil;
 
     NSMutableDictionary *locationDict = [NSMutableDictionary dictionary];
 
-    CLLocation *bestLocation = location;
-    CLLocation *locationFromProvider = [[[MPCoreInstanceProvider sharedProvider] sharedMPGeolocationProvider] lastKnownLocation];
-
-    // Location determined by CoreLocation is given priority over the Publisher-specified location.
-    if (locationFromProvider) {
-        bestLocation = locationFromProvider;
-    }
-
-    if (bestLocation && bestLocation.horizontalAccuracy >= 0) {
+    CLLocation *bestLocation = MPDeviceInformation.lastLocation;
+    if (bestLocation != nil && bestLocation.horizontalAccuracy >= 0) {
         locationDict[kLocationLatitudeLongitudeKey] = [NSString stringWithFormat:@"%@,%@",
                                                        @(bestLocation.coordinate.latitude),
                                                        @(bestLocation.coordinate.longitude)];
@@ -408,9 +413,8 @@ static MPEngineInfo * _engineInfo = nil;
             locationDict[kLocationHorizontalAccuracy] = [NSString stringWithFormat:@"%@", @(bestLocation.horizontalAccuracy)];
         }
 
-        if (bestLocation == locationFromProvider) {
-            locationDict[kLocationIsFromSDK] = @"1";
-        }
+        // Only SDK-specified locations are allowed.
+        locationDict[kLocationIsFromSDK] = @"1";
 
         NSTimeInterval locationLastUpdatedMillis = [[NSDate date] timeIntervalSinceDate:bestLocation.timestamp] * 1000.0;
         locationDict[kLocationLastUpdatedMilliseconds] = [NSString stringWithFormat:@"%.0f", locationLastUpdatedMillis];
@@ -433,15 +437,14 @@ static MPEngineInfo * _engineInfo = nil;
 }
 
 + (MPURL *)openEndpointURLWithIDParameter:(NSString *)idParameter isSessionTracking:(BOOL)isSessionTracking {
-    NSMutableDictionary * queryParameters = [self baseParametersDictionaryWithIDFAUsingIDFAForConsent:NO
-                                                                                      withIDParameter:idParameter];
+    NSMutableDictionary * queryParameters = [self baseParametersDictionaryWithIDParameter:idParameter];
 
     // OPTIONAL: Include Session Tracking Parameter if needed
     if (isSessionTracking) {
         queryParameters[kOpenEndpointSessionTrackingKey] = @"1";
     }
 
-    return [self URLWithEndpointPath:MOPUB_API_PATH_OPEN postData:queryParameters];
+    return [self URLWithComponents:MPAPIEndpoints.openURLComponents postData:queryParameters];
 }
 
 @end
@@ -455,8 +458,10 @@ static MPEngineInfo * _engineInfo = nil;
 
     // REQUIRED: Ad unit ID for consent may be empty if the publisher
     // never initialized the SDK.
-    NSMutableDictionary * postData = [self baseParametersDictionaryWithIDFAUsingIDFAForConsent:YES
-                                                                               withIDParameter:manager.adUnitIdUsedForConsent];
+    NSMutableDictionary * postData = [self baseParametersDictionaryWithIDParameter:manager.adUnitIdUsedForConsent];
+
+    // OPTIONAL: Cached IFA used for consent, if available.
+    postData[kCachedIfaForConsentKey] = manager.ifaForConsent;
 
     // OPTIONAL: Last synchronized consent status, last changed reason,
     // last changed timestamp in milliseconds
@@ -473,7 +478,7 @@ static MPEngineInfo * _engineInfo = nil;
     // OPTIONAL: Force GDPR appliciability has changed
     postData[kForcedGDPRAppliesChangedKey] = manager.isForcedGDPRAppliesTransition ? @"1" : nil;
 
-    return [self URLWithEndpointPath:MOPUB_API_PATH_CONSENT_SYNC postData:postData];
+    return [self URLWithComponents:MPAPIEndpoints.consentSyncURLComponents postData:postData];
 }
 
 + (MPURL *)consentDialogURL {
@@ -486,7 +491,7 @@ static MPEngineInfo * _engineInfo = nil;
     // REQUIRED: Language
     postData[kLanguageKey] = manager.currentLanguageCode;
 
-    return [self URLWithEndpointPath:MOPUB_API_PATH_CONSENT_DIALOG postData:postData];
+    return [self URLWithComponents:MPAPIEndpoints.consentDialogURLComponents postData:postData];
 }
 
 @end
@@ -499,8 +504,8 @@ static MPEngineInfo * _engineInfo = nil;
         return nil;
     }
 
-    NSDictionary * queryItems = [self baseParametersDictionaryWithIDFAUsingIDFAForConsent:NO withIDParameter:adUnitId];
-    return [self URLWithEndpointPath:MOPUB_API_PATH_NATIVE_POSITIONING postData:queryItems];
+    NSDictionary * queryItems = [self baseParametersDictionaryWithIDParameter:adUnitId];
+    return [self URLWithComponents:MPAPIEndpoints.nativePositioningURLComponents postData:queryItems];
 }
 
 @end
@@ -511,7 +516,7 @@ static MPEngineInfo * _engineInfo = nil;
                   withCustomerId:(NSString *)customerId
                       rewardType:(NSString *)rewardType
                     rewardAmount:(NSNumber *)rewardAmount
-                 customEventName:(NSString *)customEventName
+                adapterClassName:(NSString *)adapterClassName
                   additionalData:(NSString *)additionalData {
 
     NSURLComponents * components = [NSURLComponents componentsWithString:sourceUrl];
@@ -536,9 +541,9 @@ static MPEngineInfo * _engineInfo = nil;
         postData[kRewardedCurrencyAmountKey] = [NSString stringWithFormat:@"%i", rewardAmount.intValue];
     }
 
-    // OPTIONAL: Rewarded custom event name
-    if (customEventName != nil) {
-        postData[kRewardedCustomEventNameKey] = customEventName;
+    // OPTIONAL: Rewarded adapter name
+    if (adapterClassName != nil) {
+        postData[kRewardedAdapterClassNameKey] = adapterClassName;
     }
 
     // OPTIONAL: Additional publisher data
@@ -551,3 +556,24 @@ static MPEngineInfo * _engineInfo = nil;
 
 @end
 
+@implementation MPAdServerURLBuilder (SKAdNetwork)
+
++ (MPURL *)skAdNetworkSynchronizationURLWithSkAdNetworkIds:(NSArray <NSString *> *)skAdNetworkIds {
+    if (skAdNetworkIds.count == 0) {
+        return nil;
+    }
+
+    // Get URL components
+    NSURLComponents * components = MPAPIEndpoints.skAdNetworkSyncURLComponents;
+
+    // Get base parameters dictionary
+    NSMutableDictionary <NSString *, __kindof NSObject *> * queryParameters = [self baseParametersDictionary];
+
+    // Append supported networks to base parameters
+    queryParameters[kSKAdNetworkSupportedNetworksKey] = skAdNetworkIds;
+
+    // Return URL with post data
+    return [MPURL URLWithComponents:components postData:queryParameters];
+}
+
+@end

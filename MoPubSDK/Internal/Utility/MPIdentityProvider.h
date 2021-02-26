@@ -6,42 +6,54 @@
 //  http://www.mopub.com/legal/sdk-license-agreement/
 //
 
+#import <AppTrackingTransparency/AppTrackingTransparency.h>
 #import <Foundation/Foundation.h>
+
+NS_ASSUME_NONNULL_BEGIN
 
 @interface MPIdentityProvider : NSObject
 
 /**
- * Return IDFA if it's available. If IDFA is not available or contains only 0s, return MoPub rotation ID that changes every 24 hours.
+ Returns @c YES if Limit Ad Tracking is OFF (including if
+ @c trackingAuthorizationStatus reports as
+ @c ATTrackingManagerAuthorizationStatusAuthorized in iOS 14)
+
+ Returns @c NO if Limit Ad Tracking is ON
  */
-+ (NSString *)identifier;
+@property (class, nonatomic, assign, readonly) BOOL advertisingTrackingEnabled;
 
 /**
- * Return IDFA if it's available. If IDFA is not available or contains only 0s, return nil.
+ Return IDFA from @c ASIdentiferManager if it's allowed by @c advertisingTrackingEnabled and @c canCollectPersonalInfo.
+ Otherwise the value will be @c nil.
+ @Note The all zero IDFA @c 00000000-0000-0000-0000-000000000000 will be translated to @c nil.
  */
-+ (NSString *)identifierFromASIdentifierManager:(BOOL)obfuscate;
+@property (class, nonatomic, copy, readonly, nullable) NSString *ifa;
 
 /**
-* Return MoPub UUID
-*/
-+ (NSString *)obfuscatedIdentifier;
+ Return IDFV from @c UIDevice.
+ */
+@property (class, nonatomic, copy, readonly) NSString *ifv;
 
 /**
- * Return the unobfuscated MoPub UUID, without the "mopub:" prefix.
+ Return the MoPub ID. This ID does not rotate as of version 5.14.0 and is not considered PII.
  */
-+ (NSString *)unobfuscatedMoPubIdentifier;
-
-+ (BOOL)advertisingTrackingEnabled;
+@property (class, nonatomic, copy, readonly) NSString *mopubId;
 
 /**
- * A Boolean value indicating whether the MoPub SDK should create a MoPub ID that can be used
- * for frequency capping when Limit ad tracking is on & the IDFA we get is
- * 00000000-0000-0000-0000-000000000000.
- *
- * When set to NO, the SDK will not create a MoPub ID in the above case. When set to YES, the
- * SDK will generate a MoPub ID. The default value is YES.
- *
+ Returns the present @c trackingAuthorizationStatus of the application.
+
+ Only available on iOS 14.
  */
-+ (void)setFrequencyCappingIdUsageEnabled:(BOOL)frequencyCappingIdUsageEnabled;
-+ (BOOL)frequencyCappingIdUsageEnabled;
+@property (class, nonatomic, assign, readonly) ATTrackingManagerAuthorizationStatus trackingAuthorizationStatus API_AVAILABLE(ios(14.0));
+
+/**
+ Returns a string description describing the tracking authorization status.
+
+ For iOS 13 and before, this will convert the present @c advertisingTrackingEnabled status
+ to a comparable tracking authorization status description.
+ */
+@property (class, nonatomic, copy, readonly) NSString *trackingAuthorizationStatusDescription;
 
 @end
+
+NS_ASSUME_NONNULL_END

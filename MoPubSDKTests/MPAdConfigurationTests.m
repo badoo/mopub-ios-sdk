@@ -9,11 +9,11 @@
 #import <XCTest/XCTest.h>
 #import "MPAdConfiguration.h"
 #import "MPAdConfigurationFactory.h"
-#import "MPRewardedVideoReward.h"
+#import "MPReward.h"
 #import "MOPUBExperimentProvider.h"
 #import "MPAdConfiguration+Testing.h"
 #import "MPVASTTracking.h"
-#import "MPViewabilityTracker.h"
+#import "MPViewabilityManager+Testing.h"
 #import "MPAdServerKeys.h"
 
 extern NSString * const kNativeImpressionVisibleMsMetadataKey;
@@ -28,30 +28,32 @@ extern NSString * const kNativeImpressionMinVisiblePixelsMetadataKey;
 
 - (void)setUp {
     [super setUp];
-    [MPViewabilityTracker initialize];
+
+    // Reset Viewability state.
+    MPViewabilityManager.sharedManager.isEnabled = YES;
 }
 
 #pragma mark - Rewarded Ads
 
-- (void)testRewardedPlayableDurationParseStringInputSuccess {
-    NSDictionary * headers = @{ kRewardedPlayableDurationMetadataKey: @"30" };
+- (void)testRewardedDurationParseStringInputSuccess {
+    NSDictionary * headers = @{ kRewardedDurationMetadataKey: @"30" };
     MPAdConfiguration * config = [[MPAdConfiguration alloc] initWithMetadata:headers data:nil isFullscreenAd:YES];
 
-    XCTAssertEqual(config.rewardedPlayableDuration, 30);
+    XCTAssertEqual(config.rewardedDuration, 30);
 }
 
 - (void)testRewardedPlayableDurationParseNumberInputSuccess {
-    NSDictionary * headers = @{ kRewardedPlayableDurationMetadataKey: @(30) };
+    NSDictionary * headers = @{ kRewardedDurationMetadataKey: @(30) };
     MPAdConfiguration * config = [[MPAdConfiguration alloc] initWithMetadata:headers data:nil isFullscreenAd:YES];
 
-    XCTAssertEqual(config.rewardedPlayableDuration, 30);
+    XCTAssertEqual(config.rewardedDuration, 30);
 }
 
 - (void)testRewardedPlayableDurationParseNoHeader {
     NSDictionary * headers = @{ };
     MPAdConfiguration * config = [[MPAdConfiguration alloc] initWithMetadata:headers data:nil isFullscreenAd:YES];
 
-    XCTAssertEqual(config.rewardedPlayableDuration, -1);
+    XCTAssertEqual(config.rewardedDuration, -1);
 }
 
 - (void)testRewardedPlayableRewardOnClickParseSuccess {
@@ -112,8 +114,8 @@ extern NSString * const kNativeImpressionMinVisiblePixelsMetadataKey;
     XCTAssertNotNil(config.selectedReward);
     XCTAssertEqual(config.availableRewards.count, 1);
     XCTAssertEqual(config.availableRewards[0], config.selectedReward);
-    XCTAssert([config.selectedReward.currencyType isEqualToString:kMPRewardedVideoRewardCurrencyTypeUnspecified]);
-    XCTAssert(config.selectedReward.amount.integerValue == kMPRewardedVideoRewardCurrencyAmountUnspecified);
+    XCTAssert([config.selectedReward.currencyType isEqualToString:kMPRewardCurrencyTypeUnspecified]);
+    XCTAssert(config.selectedReward.amount.integerValue == kMPRewardCurrencyAmountUnspecified);
 }
 
 - (void)testRewardedMultiCurrencyParseFailureMalconfiguredReward {
@@ -127,8 +129,8 @@ extern NSString * const kNativeImpressionMinVisiblePixelsMetadataKey;
     XCTAssertNotNil(config.selectedReward);
     XCTAssertEqual(config.availableRewards.count, 1);
     XCTAssertEqual(config.availableRewards[0], config.selectedReward);
-    XCTAssert([config.selectedReward.currencyType isEqualToString:kMPRewardedVideoRewardCurrencyTypeUnspecified]);
-    XCTAssert(config.selectedReward.amount.integerValue == kMPRewardedVideoRewardCurrencyAmountUnspecified);
+    XCTAssert([config.selectedReward.currencyType isEqualToString:kMPRewardCurrencyTypeUnspecified]);
+    XCTAssert(config.selectedReward.amount.integerValue == kMPRewardCurrencyAmountUnspecified);
 }
 
 - (void)testRewardedMultiCurrencyParseFailoverToSingleCurrencySuccess {
@@ -146,35 +148,53 @@ extern NSString * const kNativeImpressionMinVisiblePixelsMetadataKey;
     XCTAssert(config.selectedReward.amount.integerValue == 3);
 }
 
-#pragma mark - Native Trackers
+#pragma mark - VAST Trackers
 
-- (void)testNativeVideoTrackersNoHeader
+- (void)testVASTVideoTrackersNoHeader
 {
     MPAdConfiguration *config = [MPAdConfigurationFactory defaultNativeAdConfiguration];
-    XCTAssertNil(config.nativeVideoTrackers);
+    XCTAssertNil(config.vastVideoTrackers);
 }
 
 // @"{
 //    "urls": ["http://mopub.com/%%VIDEO_EVENT%%/foo", "http://mopub.com/%%VIDEO_EVENT%%/bar"],
 //    "events": ["start", "firstQuartile", "midpoint", "thirdQuartile", "complete"]
 //   }"
-- (void)testNaiveVideoTrackers {
-    MPAdConfiguration *config = [MPAdConfigurationFactory defaultNativeVideoConfigurationWithVideoTrackers];
-    XCTAssertNotNil(config.nativeVideoTrackers);
-    XCTAssertEqual(config.nativeVideoTrackers.count, 5);
-    XCTAssertEqual(((NSArray *)config.nativeVideoTrackers[MPVideoEventStart]).count, 2);
-    XCTAssertEqual(((NSArray *)config.nativeVideoTrackers[MPVideoEventFirstQuartile]).count, 2);
-    XCTAssertEqual(((NSArray *)config.nativeVideoTrackers[MPVideoEventMidpoint]).count, 2);
-    XCTAssertEqual(((NSArray *)config.nativeVideoTrackers[MPVideoEventThirdQuartile]).count, 2);
-    XCTAssertEqual(((NSArray *)config.nativeVideoTrackers[MPVideoEventComplete]).count, 2);
+- (void)testVASTVideoTrackers {
+    MPAdConfiguration *config = [MPAdConfigurationFactory defaultVASTConfigurationWithVideoTrackers];
+    XCTAssertNotNil(config.vastVideoTrackers);
+    XCTAssertEqual(config.vastVideoTrackers.count, 5);
+    XCTAssertEqual(((NSArray *)config.vastVideoTrackers[MPVideoEventStart]).count, 2);
+    XCTAssertEqual(((NSArray *)config.vastVideoTrackers[MPVideoEventFirstQuartile]).count, 2);
+    XCTAssertEqual(((NSArray *)config.vastVideoTrackers[MPVideoEventMidpoint]).count, 2);
+    XCTAssertEqual(((NSArray *)config.vastVideoTrackers[MPVideoEventThirdQuartile]).count, 2);
+    XCTAssertEqual(((NSArray *)config.vastVideoTrackers[MPVideoEventComplete]).count, 2);
+}
+
+#pragma mark - MRAID
+
+- (void)testNoAllowCustomClose {
+    MPAdConfiguration *config = [MPAdConfigurationFactory defaultMRAIDInterstitialConfiguration];
+    XCTAssertFalse(config.mraidAllowCustomClose);
+}
+
+- (void)testAllowCustomClose {
+    NSDictionary *headers = @{
+        @"allow-custom-close": @(1)
+    };
+    MPAdConfiguration *config = [MPAdConfigurationFactory defaultMRAIDInterstitialConfigurationWithAdditionalHeaders: headers];
+    XCTAssertTrue(config.mraidAllowCustomClose);
 }
 
 #pragma mark - Viewability
 
-- (void)testDisableAllViewability {
-    // IAS should be initially enabled
-    XCTAssertTrue([MPViewabilityTracker enabledViewabilityVendors] == MPViewabilityOptionIAS);
+// This test makes sure that receiving a legacy disable IAS and Moat bitmask value will still
+// disable all of Viewability.
+- (void)testDisableViewabilityUsingLegacyBitmask {
+    // Viewability should be initially enabled
+    XCTAssertTrue(MPViewabilityManager.sharedManager.isEnabled);
 
+    // Disable IAS and Moat Viewability even though those integrations are not present
     // {
     //   "X-Disable-Viewability": 3
     // }
@@ -183,13 +203,70 @@ extern NSString * const kNativeImpressionMinVisiblePixelsMetadataKey;
 
     XCTAssertNotNil(config);
 
-    // All viewability vendors should be disabled
-    XCTAssertTrue([MPViewabilityTracker enabledViewabilityVendors] == MPViewabilityOptionNone);
+    // Viewability should be disabled
+    XCTAssertFalse(MPViewabilityManager.sharedManager.isEnabled);
+}
+
+// This test makes sure that receiving a legacy disable IAS bitmask value will still
+// disable all of Viewability.
+- (void)testDisableIASViewability {
+    // Viewability should be initially enabled
+    XCTAssertTrue(MPViewabilityManager.sharedManager.isEnabled);
+
+    // Disable IAS even though that integration is not present
+    // {
+    //   "X-Disable-Viewability": 1
+    // }
+    NSDictionary * headers = @{ kViewabilityDisableMetadataKey: @"1" };
+    MPAdConfiguration * config = [[MPAdConfiguration alloc] initWithMetadata:headers data:nil isFullscreenAd:YES];
+
+    XCTAssertNotNil(config);
+
+    // Viewability should be disabled
+    XCTAssertFalse(MPViewabilityManager.sharedManager.isEnabled);
+}
+
+// This test makes sure that receiving a legacy disable Moat bitmask value will still
+// disable all of Viewability.
+- (void)testDisableMoatViewability {
+    // Viewability should be initially enabled
+    XCTAssertTrue(MPViewabilityManager.sharedManager.isEnabled);
+
+    // Disable Moat even though that integration is not present
+    // {
+    //   "X-Disable-Viewability": 2
+    // }
+    NSDictionary * headers = @{ kViewabilityDisableMetadataKey: @"2" };
+    MPAdConfiguration * config = [[MPAdConfiguration alloc] initWithMetadata:headers data:nil isFullscreenAd:YES];
+
+    XCTAssertNotNil(config);
+
+    // Viewability should be disabled
+    XCTAssertFalse(MPViewabilityManager.sharedManager.isEnabled);
+}
+
+// This test makes sure that receiving a new disable OM bitmask value will
+// disable all of Viewability.
+- (void)testDisableOpenMeasurementViewability {
+    // Viewability should be initially enabled
+    XCTAssertTrue(MPViewabilityManager.sharedManager.isEnabled);
+
+    // Disable Open Measurement
+    // {
+    //   "X-Disable-Viewability": 4
+    // }
+    NSDictionary * headers = @{ kViewabilityDisableMetadataKey: @"4" };
+    MPAdConfiguration * config = [[MPAdConfiguration alloc] initWithMetadata:headers data:nil isFullscreenAd:YES];
+
+    XCTAssertNotNil(config);
+
+    // Viewability should be disabled
+    XCTAssertFalse(MPViewabilityManager.sharedManager.isEnabled);
 }
 
 - (void)testDisableNoViewability {
-    // IAS should be initially enabled
-    XCTAssertTrue([MPViewabilityTracker enabledViewabilityVendors] == MPViewabilityOptionIAS);
+    // Viewability should be initially enabled
+    XCTAssertTrue(MPViewabilityManager.sharedManager.isEnabled);
 
     // {
     //   "X-Disable-Viewability": 0
@@ -199,24 +276,24 @@ extern NSString * const kNativeImpressionMinVisiblePixelsMetadataKey;
 
     XCTAssertNotNil(config);
 
-    // IAS should still be enabled
-    XCTAssertTrue([MPViewabilityTracker enabledViewabilityVendors] == MPViewabilityOptionIAS);
+    // Viewability should still be enabled
+    XCTAssertTrue(MPViewabilityManager.sharedManager.isEnabled);
 }
 
 - (void)testEnableAlreadyDisabledViewability {
-    // IAS should be initially enabled
-    XCTAssertTrue([MPViewabilityTracker enabledViewabilityVendors] == MPViewabilityOptionIAS);
+    // Viewability should be initially enabled
+    XCTAssertTrue(MPViewabilityManager.sharedManager.isEnabled);
 
     // {
-    //   "X-Disable-Viewability": 3
+    //   "X-Disable-Viewability": 7
     // }
-    NSDictionary * headers = @{ kViewabilityDisableMetadataKey: @"3" };
+    NSDictionary * headers = @{ kViewabilityDisableMetadataKey: @"7" };
     MPAdConfiguration * config = [[MPAdConfiguration alloc] initWithMetadata:headers data:nil isFullscreenAd:YES];
 
     XCTAssertNotNil(config);
 
-    // All viewability vendors should be disabled
-    XCTAssertTrue([MPViewabilityTracker enabledViewabilityVendors] == MPViewabilityOptionNone);
+    // Viewability should be disabled
+    XCTAssertFalse(MPViewabilityManager.sharedManager.isEnabled);
 
     // Reset local variables for reuse.
     headers = nil;
@@ -230,13 +307,13 @@ extern NSString * const kNativeImpressionMinVisiblePixelsMetadataKey;
 
     XCTAssertNotNil(config);
 
-    // All viewability vendors should still be disabled
-    XCTAssertTrue([MPViewabilityTracker enabledViewabilityVendors] == MPViewabilityOptionNone);
+    // Viewability should still be disabled
+    XCTAssertFalse(MPViewabilityManager.sharedManager.isEnabled);
 }
 
 - (void)testInvalidViewabilityHeaderValue {
-    // IAS should be initially enabled
-    XCTAssertTrue([MPViewabilityTracker enabledViewabilityVendors] == MPViewabilityOptionIAS);
+    // Viewability should be initially enabled
+    XCTAssertTrue(MPViewabilityManager.sharedManager.isEnabled);
 
     // {
     //   "X-Disable-Viewability": 3aaaa
@@ -246,13 +323,13 @@ extern NSString * const kNativeImpressionMinVisiblePixelsMetadataKey;
 
     XCTAssertNotNil(config);
 
-    // IAS should still be enabled
-    XCTAssertTrue([MPViewabilityTracker enabledViewabilityVendors] == MPViewabilityOptionIAS);
+    // Viewability should still be enabled
+    XCTAssertTrue(MPViewabilityManager.sharedManager.isEnabled);
 }
 
 - (void)testEmptyViewabilityHeaderValue {
-    // IAS should be initially enabled
-    XCTAssertTrue([MPViewabilityTracker enabledViewabilityVendors] == MPViewabilityOptionIAS);
+    // Viewability should be initially enabled
+    XCTAssertTrue(MPViewabilityManager.sharedManager.isEnabled);
 
     // {
     //   "X-Disable-Viewability": ""
@@ -262,8 +339,8 @@ extern NSString * const kNativeImpressionMinVisiblePixelsMetadataKey;
 
     XCTAssertNotNil(config);
 
-    // IAS should still be enabled
-    XCTAssertTrue([MPViewabilityTracker enabledViewabilityVendors] == MPViewabilityOptionIAS);
+    // Viewability should still be enabled
+    XCTAssertTrue(MPViewabilityManager.sharedManager.isEnabled);
 }
 
 #pragma mark - Static Native Ads
@@ -317,24 +394,6 @@ extern NSString * const kNativeImpressionMinVisiblePixelsMetadataKey;
     MPAdConfiguration * config = [[MPAdConfiguration alloc] initWithMetadata:headers data:nil isFullscreenAd:YES];
     XCTAssertEqual(config.impressionMinVisiblePixels, 1);
     XCTAssertEqual(config.impressionMinVisibleTimeInSec, 0);
-}
-
-- (void)testVisibleImpressionEnabled {
-    NSDictionary * headers = @{ kBannerImpressionVisableMsMetadataKey: @"0", kBannerImpressionMinPixelMetadataKey:@"1"};
-    MPAdConfiguration * config = [[MPAdConfiguration alloc] initWithMetadata:headers data:nil isFullscreenAd:YES];
-    XCTAssertTrue(config.visibleImpressionTrackingEnabled);
-}
-
-- (void)testVisibleImpressionEnabledNoHeader {
-    NSDictionary * headers = @{};
-    MPAdConfiguration * config = [[MPAdConfiguration alloc] initWithMetadata:headers data:nil isFullscreenAd:YES];
-    XCTAssertFalse(config.visibleImpressionTrackingEnabled);
-}
-
-- (void)testVisibleImpressionNotEnabled {
-    NSDictionary * headers = @{kBannerImpressionVisableMsMetadataKey: @"0", kBannerImpressionMinPixelMetadataKey:@"0"};
-    MPAdConfiguration * config = [[MPAdConfiguration alloc] initWithMetadata:headers data:nil isFullscreenAd:YES];
-    XCTAssertFalse(config.visibleImpressionTrackingEnabled);
 }
 
 #pragma mark - Multiple Impression Tracking URLs
@@ -935,6 +994,223 @@ extern NSString * const kNativeImpressionMinVisiblePixelsMetadataKey;
     XCTAssert(![urls containsObject:[NSURL URLWithString:@"https://fakeurl2.com"]]);
     XCTAssert([urls containsObject:[NSURL URLWithString:@"https://twitter.com"]]);
     XCTAssert([urls containsObject:[NSURL URLWithString:@"https://test2.com"]]);
+}
+
+#pragma mark - Test beforeLoadURLs as single URL or array of URLs
+
+- (void)testBeforeLoadURLSingleURLString {
+    NSDictionary * metadata = @{
+                                kBeforeLoadUrlMetadataKey: @"https://google.com"
+                                };
+    MPAdConfiguration * config = [[MPAdConfiguration alloc] initWithMetadata:metadata data:nil isFullscreenAd:YES];
+
+    XCTAssertEqual(config.beforeLoadURLs.count, 1);
+    XCTAssert([config.beforeLoadURLs containsObject:[NSURL URLWithString:@"https://google.com"]]);
+}
+
+- (void)testBeforeLoadURLArrayOfURLStrings {
+    NSArray <NSString *> * arrayOfURLStrings = @[
+                                                 @"https://google.com",
+                                                 @"https://test.com",
+                                                 ];
+
+    NSDictionary * metadata = @{
+                                kBeforeLoadUrlMetadataKey: arrayOfURLStrings
+                                };
+    MPAdConfiguration * config = [[MPAdConfiguration alloc] initWithMetadata:metadata data:nil isFullscreenAd:YES];
+
+    XCTAssertEqual(config.beforeLoadURLs.count, arrayOfURLStrings.count);
+    XCTAssert([config.beforeLoadURLs containsObject:[NSURL URLWithString:@"https://google.com"]]);
+    XCTAssert([config.beforeLoadURLs containsObject:[NSURL URLWithString:@"https://test.com"]]);
+}
+
+- (void)testBeforeLoadURLEmptyArrayBecomesNil {
+    NSArray <NSString *> * arrayOfURLStrings = @[];
+
+    NSDictionary * metadata = @{
+                                kBeforeLoadUrlMetadataKey: arrayOfURLStrings
+                                };
+    MPAdConfiguration * config = [[MPAdConfiguration alloc] initWithMetadata:metadata data:nil isFullscreenAd:YES];
+
+    XCTAssertNil(config.beforeLoadURLs);
+}
+
+- (void)testBeforeLoadURLNoEntryBecomesNil {
+    NSDictionary * metadata = @{};
+    MPAdConfiguration * config = [[MPAdConfiguration alloc] initWithMetadata:metadata data:nil isFullscreenAd:YES];
+
+    XCTAssertNil(config.beforeLoadURLs);
+}
+
+#pragma mark - Test Rewarded completion URLs as single URL or array of URLs
+
+- (void)testRewardedCompletionURLSingleURLString {
+    NSDictionary * metadata = @{
+                                kRewardedVideoCompletionUrlMetadataKey: @"https://google.com"
+                                };
+
+    MPAdConfiguration * config = [[MPAdConfiguration alloc] initWithMetadata:metadata data:nil isFullscreenAd:YES];
+
+    XCTAssertEqual(1, config.rewardedVideoCompletionUrls.count);
+    XCTAssert([config.rewardedVideoCompletionUrls containsObject:@"https://google.com"]);
+}
+
+- (void)testRewardedVideoCompletionURLArrayOfURLStrings {
+    NSArray<NSString *> * urlArray = @[
+                                       @"https://google.com",
+                                       @"https://test.com",
+                                       ];
+
+    NSDictionary * metadata = @{
+                                kRewardedVideoCompletionUrlMetadataKey: urlArray
+                                };
+
+    MPAdConfiguration * config = [[MPAdConfiguration alloc] initWithMetadata:metadata data:nil isFullscreenAd:YES];
+
+    XCTAssertEqual(urlArray.count, config.rewardedVideoCompletionUrls.count);
+    XCTAssert([config.rewardedVideoCompletionUrls containsObject:@"https://google.com"]);
+    XCTAssert([config.rewardedVideoCompletionUrls containsObject:@"https://test.com"]);
+}
+
+- (void)testRewardedVideoEmptyArrayOfCompletionURLsBecomesNil {
+    NSArray<NSString *> * urlArray = @[];
+
+    NSDictionary * metadata = @{
+                                kRewardedVideoCompletionUrlMetadataKey: urlArray
+                                };
+
+    MPAdConfiguration * config = [[MPAdConfiguration alloc] initWithMetadata:metadata data:nil isFullscreenAd:YES];
+
+    XCTAssertNil(config.rewardedVideoCompletionUrls);
+}
+
+- (void)testRewardedVideoCompletionURLsNoEntryBecomesNil {
+    NSDictionary * metadata = @{};
+
+    MPAdConfiguration * config = [[MPAdConfiguration alloc] initWithMetadata:metadata data:nil isFullscreenAd:YES];
+
+    XCTAssertNil(config.rewardedVideoCompletionUrls);
+}
+
+#pragma mark - Test click tracker URLs as single URL or array of URLs
+
+- (void)testClickTrackerURLSingleURLString {
+    NSDictionary * metadata = @{
+                                kClickthroughMetadataKey: @"https://google.com"
+                                };
+
+    MPAdConfiguration * config = [[MPAdConfiguration alloc] initWithMetadata:metadata data:nil isFullscreenAd:YES];
+
+    XCTAssertEqual(1, config.clickTrackingURLs.count);
+    XCTAssert([config.clickTrackingURLs containsObject:[NSURL URLWithString:@"https://google.com"]]);
+}
+
+- (void)testClickTrackerCompletionURLArrayOfURLStrings {
+    NSArray<NSString *> * urlArray = @[
+                                       @"https://google.com",
+                                       @"https://test.com",
+                                       ];
+
+    NSDictionary * metadata = @{
+                                kClickthroughMetadataKey: urlArray
+                                };
+
+    MPAdConfiguration * config = [[MPAdConfiguration alloc] initWithMetadata:metadata data:nil isFullscreenAd:YES];
+
+    XCTAssertEqual(urlArray.count, config.clickTrackingURLs.count);
+    XCTAssert([config.clickTrackingURLs containsObject:[NSURL URLWithString:@"https://google.com"]]);
+    XCTAssert([config.clickTrackingURLs containsObject:[NSURL URLWithString:@"https://test.com"]]);
+}
+
+- (void)testClickTrackerEmptyArrayOfCompletionURLsBecomesNil {
+    NSArray<NSString *> * urlArray = @[];
+
+    NSDictionary * metadata = @{
+                                kClickthroughMetadataKey: urlArray
+                                };
+
+    MPAdConfiguration * config = [[MPAdConfiguration alloc] initWithMetadata:metadata data:nil isFullscreenAd:YES];
+
+    XCTAssertNil(config.clickTrackingURLs);
+}
+
+- (void)testClickTrackerCompletionURLsNoEntryBecomesNil {
+    NSDictionary * metadata = @{};
+
+    MPAdConfiguration * config = [[MPAdConfiguration alloc] initWithMetadata:metadata data:nil isFullscreenAd:YES];
+
+    XCTAssertNil(config.clickTrackingURLs);
+}
+
+#pragma mark - SKAdNetwork
+
+- (void)testNoSKAdNetworkDataGeneratedWhenNoneIsSent {
+    NSDictionary * metadata = @{};
+
+    MPAdConfiguration * config = [[MPAdConfiguration alloc] initWithMetadata:metadata data:nil isFullscreenAd:YES];
+
+    XCTAssertNil(config.skAdNetworkClickthroughData);
+}
+
+- (void)testNoSKAdNetworkDataGeneratedWhenEmptyIsSent {
+    NSDictionary * metadata = @{
+        @"skadn": @{}
+    };
+
+    MPAdConfiguration * config = [[MPAdConfiguration alloc] initWithMetadata:metadata data:nil isFullscreenAd:YES];
+
+    XCTAssertNil(config.skAdNetworkClickthroughData);
+}
+
+- (void)testNoSKAdNetworkDataGeneratedWhenIncompleteDataIsSent {
+    NSDictionary * metadata = @{
+        @"skadn": @{
+                @"version": @"2.0"
+        }
+    };
+
+    MPAdConfiguration * config = [[MPAdConfiguration alloc] initWithMetadata:metadata data:nil isFullscreenAd:YES];
+
+    XCTAssertNil(config.skAdNetworkClickthroughData);
+}
+
+- (void)testSKAdNetworkDataGeneratesCorrectlyWhenDataIsSent {
+    NSString * version = @"2.0";
+    NSString * network = @"cDkw7geQsH.skadnetwork";
+    NSString * campaign = @"45";
+    NSString * itunesitem = @"880047117";
+    NSString * nonce = @"473b1a16-b4ef-43ad-9591-fcf3aefa82a7";
+    NSString * sourceapp = @"123456789";
+    NSString * timestamp = @"1594406341";
+    NSString * signature = @"hi i'm a signature";
+
+    NSDictionary * metadata = @{
+        @"skadn": @{
+                @"version": version,
+                @"network": network,
+                @"campaign": campaign,
+                @"itunesitem": itunesitem,
+                @"nonce": nonce,
+                @"sourceapp": sourceapp,
+                @"timestamp": timestamp,
+                @"signature": signature,
+        }
+    };
+
+    MPAdConfiguration * config = [[MPAdConfiguration alloc] initWithMetadata:metadata data:nil isFullscreenAd:YES];
+    MPSKAdNetworkClickthroughData * data = config.skAdNetworkClickthroughData;
+
+    XCTAssertNotNil(data);
+
+    // Validate data was copied into properties correctly
+    XCTAssert([data.version isEqualToString:version]);
+    XCTAssert([data.networkIdentifier isEqualToString:network]);
+    XCTAssertEqual(data.campaignIdentifier.integerValue, campaign.integerValue);
+    XCTAssertEqual(data.destinationAppStoreIdentifier.integerValue, itunesitem.integerValue);
+    XCTAssert([data.nonce.UUIDString.lowercaseString isEqualToString:nonce.lowercaseString]);
+    XCTAssert([data.sourceAppStoreIdentifier integerValue] == [sourceapp integerValue]);
+    XCTAssertEqual(data.timestamp.integerValue, timestamp.integerValue);
+    XCTAssert([data.signature isEqualToString:signature]);
 }
 
 @end

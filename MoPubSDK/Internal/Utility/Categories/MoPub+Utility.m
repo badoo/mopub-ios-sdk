@@ -17,11 +17,7 @@
 + (void)openURL:(NSURL*)url
         options:(NSDictionary<UIApplicationOpenExternalURLOptionsKey, id> *)options
      completion:(void (^ __nullable)(BOOL success))completion {
-    if (@available(iOS 10, *)) {
-        [[UIApplication sharedApplication] openURL:url options:options completionHandler:completion];
-    } else {
-        completion([[UIApplication sharedApplication] openURL:url]);
-    }
+    [[UIApplication sharedApplication] openURL:url options:options completionHandler:completion];
 }
 
 + (void)sendImpressionNotificationFromAd:(id)ad

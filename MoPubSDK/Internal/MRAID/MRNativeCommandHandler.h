@@ -14,8 +14,8 @@
 @protocol MRNativeCommandHandlerDelegate;
 
 /**
- * The `MRNativeCommandHandler` class is an object that encapsulates functionality that processes,
- * and where possible, executes MRAID commands.
+ The `MRNativeCommandHandler` class is an object that encapsulates functionality that processes,
+ and where possible, executes MRAID commands.
  */
 @interface MRNativeCommandHandler : NSObject
 
@@ -25,10 +25,10 @@
 @end
 
 /**
- * The delegate of an `MRNativeCommandHandler` object that implements `MRNativeCommandHandlerDelegate`
- * must provide information and a view controller that allow the `MRNativeCommandHandler` to execute
- * MRAID commands. The `MRNativeCommandHandlerDelegate` is also notified of certain events and
- * expected to respond appropriately to them.
+ The delegate of an `MRNativeCommandHandler` object that implements `MRNativeCommandHandlerDelegate`
+ must provide information and a view controller that allow the `MRNativeCommandHandler` to execute
+ MRAID commands. The `MRNativeCommandHandlerDelegate` is also notified of certain events and
+ expected to respond appropriately to them.
  */
 @protocol MRNativeCommandHandlerDelegate <NSObject>
 

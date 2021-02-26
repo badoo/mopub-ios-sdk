@@ -16,7 +16,7 @@ static NSString * const kShareTweetURLTemplate = @"https://twitter.com/%@/status
 static NSString * const kShareTweetMessageTemplate = @"Check out @%@'s Tweet: %@";
 
 /**
- * MPSharedTweet parses an NSURL and stores the specified screenName and tweetURL.
+ MPSharedTweet parses an NSURL and stores the specified screenName and tweetURL.
  */
 
 @interface MPSharedTweet : NSObject

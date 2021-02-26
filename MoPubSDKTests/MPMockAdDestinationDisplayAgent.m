@@ -10,7 +10,7 @@
 
 @implementation MPMockAdDestinationDisplayAgent
 
-- (void)displayDestinationForURL:(NSURL *)URL {
+- (void)displayDestinationForURL:(NSURL *)URL skAdNetworkClickthroughData:(MPSKAdNetworkClickthroughData *)clickthroughData {
     self.lastDisplayDestinationUrl = URL;
 }
 

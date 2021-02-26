@@ -93,10 +93,6 @@ class AdTableViewController: UIViewController, AdViewController {
         // Update the title
         title = dataSource.adUnit.name
         
-        // Add split view controller collapse button if applicable
-        navigationItem.leftBarButtonItem = splitViewController?.displayModeButtonItem
-        navigationItem.leftItemsSupplementBackButton = true
-        
         // Set the background color for Dark Mode
         if #available(iOS 13.0, *) {
             view.backgroundColor = .systemBackground

@@ -7,11 +7,13 @@
 //
 
 #import <XCTest/XCTest.h>
+
 #import "MPAdServerKeys.h"
 #import "MPAdServerURLBuilder.h"
 #import "MPConsentManager.h"
 #import "MPConsentManager+Testing.h"
 #import "MPConsentError.h"
+#import "MPIdentityProvider+Testing.h"
 #import "MPURL.h"
 
 @interface MPConsentManagerTests : XCTestCase
@@ -29,6 +31,8 @@
 - (void)tearDown {
     // Put teardown code here. This method is called after the invocation of each test method in the class.
     [super tearDown];
+
+    [MPIdentityProvider resetTrackingAuthorizationStatusToDefault];
 }
 
 #pragma mark - Consent States
@@ -570,7 +574,7 @@
     XCTAssertFalse(manager.canCollectPersonalInfo);
 }
 
-- (void)testTransitionToDoNotTrackBackToUnknown {
+- (void)testTransitionFromConsentedToATTDeniedDoNotTrackBackToUnknown {
     NSDictionary * before = @{
                               @"is_whitelisted": @"1",
                               @"is_gdpr_region": @"1",
@@ -597,8 +601,13 @@
     XCTAssert([manager.consentedPrivacyPolicyVersion isEqualToString:@"3.0.0"]);
     XCTAssert([manager.consentedVendorListVersion isEqualToString:@"4.0.0"]);
 
+    // Set tracking authorization to denied
+    if (@available(iOS 14.0, *)) {
+        [MPIdentityProvider setTrackingAuthorizationStatus:ATTrackingManagerAuthorizationStatusDenied];
+    }
+
     // Do not track
-    [manager setCurrentStatus:MPConsentStatusDoNotTrack reason:@"stop tracking unit test" statusWasReacquired:NO shouldBroadcast:YES];
+    [manager checkForDoNotTrackAndTransition];
 
     XCTAssert(manager.currentStatus == MPConsentStatusDoNotTrack);
     XCTAssertNil(manager.consentedIabVendorList);
@@ -606,12 +615,17 @@
     XCTAssertNil(manager.consentedVendorListVersion);
     XCTAssertFalse(manager.canCollectPersonalInfo);
 
+    // Set tracking authorization to authorized
+    if (@available(iOS 14.0, *)) {
+        [MPIdentityProvider setTrackingAuthorizationStatus:ATTrackingManagerAuthorizationStatusAuthorized];
+    }
+
     // Transition to allow tracking
     [manager checkForDoNotTrackAndTransition];
     XCTAssert(manager.currentStatus == MPConsentStatusUnknown);
 }
 
-- (void)testTransitionToDoNotTrackBackToDenied {
+- (void)testTransitionFromDeniedToATTDeniedDoNotTrackBackToDenied {
     NSDictionary * before = @{
                               @"is_whitelisted": @"1",
                               @"is_gdpr_region": @"1",
@@ -639,8 +653,13 @@
     XCTAssert([manager.consentedPrivacyPolicyVersion isEqualToString:@"3.0.0"]);
     XCTAssert([manager.consentedVendorListVersion isEqualToString:@"4.0.0"]);
 
+    // Set tracking authorization to denied
+    if (@available(iOS 14.0, *)) {
+        [MPIdentityProvider setTrackingAuthorizationStatus:ATTrackingManagerAuthorizationStatusDenied];
+    }
+
     // Do not track
-    [manager setCurrentStatus:MPConsentStatusDoNotTrack reason:@"stop tracking unit test" statusWasReacquired:NO shouldBroadcast:YES];
+    [manager checkForDoNotTrackAndTransition];
 
     XCTAssert(manager.currentStatus == MPConsentStatusDoNotTrack);
     XCTAssertNil(manager.consentedIabVendorList);
@@ -648,9 +667,358 @@
     XCTAssertNil(manager.consentedVendorListVersion);
     XCTAssertFalse(manager.canCollectPersonalInfo);
 
+    // Set tracking authorization to authorized
+    if (@available(iOS 14.0, *)) {
+        [MPIdentityProvider setTrackingAuthorizationStatus:ATTrackingManagerAuthorizationStatusAuthorized];
+    }
+
     // Transition to allow tracking
     [manager checkForDoNotTrackAndTransition];
     XCTAssert(manager.currentStatus == MPConsentStatusDenied);
+}
+
+- (void)testTransitionFromUnknownToATTDeniedDoNotTrackBackToUnknown {
+    NSDictionary * before = @{
+                              @"is_whitelisted": @"1",
+                              @"is_gdpr_region": @"1",
+                              @"call_again_after_secs": @"10",
+                              @"current_privacy_policy_link": @"http://www.mopub.com/privacy",
+                              @"current_privacy_policy_version": @"3.0.0",
+                              @"current_vendor_list_link": @"http://www.mopub.com/vendors",
+                              @"current_vendor_list_version": @"4.0.0",
+                              @"current_vendor_list_iab_format": @"yyyyy",
+                              @"current_vendor_list_iab_hash": @"hash",
+                              };
+
+    // Update consent
+    MPConsentManager * manager = MPConsentManager.sharedManager;
+    BOOL success = [manager updateConsentStateWithParameters:before];
+    XCTAssertTrue(success);
+    XCTAssert(manager.currentStatus == MPConsentStatusUnknown);
+
+    // Do not modify consent; it should stay unknown here
+
+    // Set tracking authorization to denied
+    if (@available(iOS 14.0, *)) {
+        [MPIdentityProvider setTrackingAuthorizationStatus:ATTrackingManagerAuthorizationStatusDenied];
+    }
+
+    // Do not track
+    [manager checkForDoNotTrackAndTransition];
+
+    XCTAssert(manager.currentStatus == MPConsentStatusDoNotTrack);
+    XCTAssertNil(manager.consentedIabVendorList);
+    XCTAssertNil(manager.consentedPrivacyPolicyVersion);
+    XCTAssertNil(manager.consentedVendorListVersion);
+    XCTAssertFalse(manager.canCollectPersonalInfo);
+
+    // Set tracking authorization to authorized
+    if (@available(iOS 14.0, *)) {
+        [MPIdentityProvider setTrackingAuthorizationStatus:ATTrackingManagerAuthorizationStatusAuthorized];
+    }
+
+    // Transition to allow tracking
+    [manager checkForDoNotTrackAndTransition];
+    XCTAssert(manager.currentStatus == MPConsentStatusUnknown);
+}
+
+- (void)testTransitionFromConsentedToATTRestrictedDoNotTrackBackToUnknown {
+    NSDictionary * before = @{
+                              @"is_whitelisted": @"1",
+                              @"is_gdpr_region": @"1",
+                              @"call_again_after_secs": @"10",
+                              @"current_privacy_policy_link": @"http://www.mopub.com/privacy",
+                              @"current_privacy_policy_version": @"3.0.0",
+                              @"current_vendor_list_link": @"http://www.mopub.com/vendors",
+                              @"current_vendor_list_version": @"4.0.0",
+                              @"current_vendor_list_iab_format": @"yyyyy",
+                              @"current_vendor_list_iab_hash": @"hash",
+                              };
+
+    // Update consent
+    MPConsentManager * manager = MPConsentManager.sharedManager;
+    BOOL success = [manager updateConsentStateWithParameters:before];
+    XCTAssertTrue(success);
+    XCTAssert(manager.currentStatus == MPConsentStatusUnknown);
+
+    // Set consent to allowed.
+    [manager grantConsent];
+
+    XCTAssert(manager.currentStatus == MPConsentStatusConsented);
+    XCTAssert([manager.consentedIabVendorList isEqualToString:@"yyyyy"]);
+    XCTAssert([manager.consentedPrivacyPolicyVersion isEqualToString:@"3.0.0"]);
+    XCTAssert([manager.consentedVendorListVersion isEqualToString:@"4.0.0"]);
+
+    // Set tracking authorization to restricted
+    if (@available(iOS 14.0, *)) {
+        [MPIdentityProvider setTrackingAuthorizationStatus:ATTrackingManagerAuthorizationStatusRestricted];
+    }
+
+    // Do not track
+    [manager checkForDoNotTrackAndTransition];
+
+    XCTAssert(manager.currentStatus == MPConsentStatusDoNotTrack);
+    XCTAssertNil(manager.consentedIabVendorList);
+    XCTAssertNil(manager.consentedPrivacyPolicyVersion);
+    XCTAssertNil(manager.consentedVendorListVersion);
+    XCTAssertFalse(manager.canCollectPersonalInfo);
+
+    // Set tracking authorization to authorized
+    if (@available(iOS 14.0, *)) {
+        [MPIdentityProvider setTrackingAuthorizationStatus:ATTrackingManagerAuthorizationStatusAuthorized];
+    }
+
+    // Transition to allow tracking
+    [manager checkForDoNotTrackAndTransition];
+    XCTAssert(manager.currentStatus == MPConsentStatusUnknown);
+}
+
+- (void)testTransitionFromDeniedToATTRestrictedDoNotTrackBackToDenied {
+    NSDictionary * before = @{
+                              @"is_whitelisted": @"1",
+                              @"is_gdpr_region": @"1",
+                              @"call_again_after_secs": @"10",
+                              @"current_privacy_policy_link": @"http://www.mopub.com/privacy",
+                              @"current_privacy_policy_version": @"3.0.0",
+                              @"current_vendor_list_link": @"http://www.mopub.com/vendors",
+                              @"current_vendor_list_version": @"4.0.0",
+                              @"current_vendor_list_iab_format": @"yyyyy",
+                              @"current_vendor_list_iab_hash": @"hash",
+                              };
+
+    // Update consent
+    MPConsentManager * manager = MPConsentManager.sharedManager;
+    BOOL success = [manager updateConsentStateWithParameters:before];
+    XCTAssertTrue(success);
+    XCTAssert(manager.currentStatus == MPConsentStatusUnknown);
+
+    // Set consent to deny.
+    [manager revokeConsent];
+
+    // Due to incremental consent, the consented fields will be updated on a transition to denied.
+    XCTAssert(manager.currentStatus == MPConsentStatusDenied);
+    XCTAssert([manager.consentedIabVendorList isEqualToString:@"yyyyy"]);
+    XCTAssert([manager.consentedPrivacyPolicyVersion isEqualToString:@"3.0.0"]);
+    XCTAssert([manager.consentedVendorListVersion isEqualToString:@"4.0.0"]);
+
+    // Set tracking authorization to restricted
+    if (@available(iOS 14.0, *)) {
+        [MPIdentityProvider setTrackingAuthorizationStatus:ATTrackingManagerAuthorizationStatusRestricted];
+    }
+
+    // Do not track
+    [manager checkForDoNotTrackAndTransition];
+
+    XCTAssert(manager.currentStatus == MPConsentStatusDoNotTrack);
+    XCTAssertNil(manager.consentedIabVendorList);
+    XCTAssertNil(manager.consentedPrivacyPolicyVersion);
+    XCTAssertNil(manager.consentedVendorListVersion);
+    XCTAssertFalse(manager.canCollectPersonalInfo);
+
+    // Set tracking authorization to authorized
+    if (@available(iOS 14.0, *)) {
+        [MPIdentityProvider setTrackingAuthorizationStatus:ATTrackingManagerAuthorizationStatusAuthorized];
+    }
+
+    // Transition to allow tracking
+    [manager checkForDoNotTrackAndTransition];
+    XCTAssert(manager.currentStatus == MPConsentStatusDenied);
+}
+
+- (void)testTransitionFromUnknownToATTRestrictedDoNotTrackBackToUnknown {
+    NSDictionary * before = @{
+                              @"is_whitelisted": @"1",
+                              @"is_gdpr_region": @"1",
+                              @"call_again_after_secs": @"10",
+                              @"current_privacy_policy_link": @"http://www.mopub.com/privacy",
+                              @"current_privacy_policy_version": @"3.0.0",
+                              @"current_vendor_list_link": @"http://www.mopub.com/vendors",
+                              @"current_vendor_list_version": @"4.0.0",
+                              @"current_vendor_list_iab_format": @"yyyyy",
+                              @"current_vendor_list_iab_hash": @"hash",
+                              };
+
+    // Update consent
+    MPConsentManager * manager = MPConsentManager.sharedManager;
+    BOOL success = [manager updateConsentStateWithParameters:before];
+    XCTAssertTrue(success);
+    XCTAssert(manager.currentStatus == MPConsentStatusUnknown);
+
+    // Do not modify consent; it should stay unknown here
+
+    // Set tracking authorization to restricted
+    if (@available(iOS 14.0, *)) {
+        [MPIdentityProvider setTrackingAuthorizationStatus:ATTrackingManagerAuthorizationStatusRestricted];
+    }
+
+    // Do not track
+    [manager checkForDoNotTrackAndTransition];
+
+    XCTAssert(manager.currentStatus == MPConsentStatusDoNotTrack);
+    XCTAssertNil(manager.consentedIabVendorList);
+    XCTAssertNil(manager.consentedPrivacyPolicyVersion);
+    XCTAssertNil(manager.consentedVendorListVersion);
+    XCTAssertFalse(manager.canCollectPersonalInfo);
+
+    // Set tracking authorization to authorized
+    if (@available(iOS 14.0, *)) {
+        [MPIdentityProvider setTrackingAuthorizationStatus:ATTrackingManagerAuthorizationStatusAuthorized];
+    }
+
+    // Transition to allow tracking
+    [manager checkForDoNotTrackAndTransition];
+    XCTAssert(manager.currentStatus == MPConsentStatusUnknown);
+}
+
+- (void)testTransitionFromConsentedToATTNotDeterminedDoNotTrackBackToConsented {
+    NSDictionary * before = @{
+                              @"is_whitelisted": @"1",
+                              @"is_gdpr_region": @"1",
+                              @"call_again_after_secs": @"10",
+                              @"current_privacy_policy_link": @"http://www.mopub.com/privacy",
+                              @"current_privacy_policy_version": @"3.0.0",
+                              @"current_vendor_list_link": @"http://www.mopub.com/vendors",
+                              @"current_vendor_list_version": @"4.0.0",
+                              @"current_vendor_list_iab_format": @"yyyyy",
+                              @"current_vendor_list_iab_hash": @"hash",
+                              };
+
+    // Update consent
+    MPConsentManager * manager = MPConsentManager.sharedManager;
+    BOOL success = [manager updateConsentStateWithParameters:before];
+    XCTAssertTrue(success);
+    XCTAssert(manager.currentStatus == MPConsentStatusUnknown);
+
+    // Set consent to allowed.
+    [manager grantConsent];
+
+    XCTAssert(manager.currentStatus == MPConsentStatusConsented);
+    XCTAssert([manager.consentedIabVendorList isEqualToString:@"yyyyy"]);
+    XCTAssert([manager.consentedPrivacyPolicyVersion isEqualToString:@"3.0.0"]);
+    XCTAssert([manager.consentedVendorListVersion isEqualToString:@"4.0.0"]);
+
+    // Set tracking authorization to denied
+    if (@available(iOS 14.0, *)) {
+        [MPIdentityProvider setTrackingAuthorizationStatus:ATTrackingManagerAuthorizationStatusNotDetermined];
+    }
+
+    // Do not track
+    [manager checkForDoNotTrackAndTransition];
+
+    XCTAssert(manager.currentStatus == MPConsentStatusDoNotTrack);
+    XCTAssertNil(manager.consentedIabVendorList);
+    XCTAssertNil(manager.consentedPrivacyPolicyVersion);
+    XCTAssertNil(manager.consentedVendorListVersion);
+    XCTAssertFalse(manager.canCollectPersonalInfo);
+
+    // Set tracking authorization to authorized
+    if (@available(iOS 14.0, *)) {
+        [MPIdentityProvider setTrackingAuthorizationStatus:ATTrackingManagerAuthorizationStatusAuthorized];
+    }
+
+    // Transition to allow tracking
+    [manager checkForDoNotTrackAndTransition];
+    XCTAssert(manager.currentStatus == MPConsentStatusConsented);
+    XCTAssert([manager.consentedIabVendorList isEqualToString:@"yyyyy"]);
+    XCTAssert([manager.consentedPrivacyPolicyVersion isEqualToString:@"3.0.0"]);
+    XCTAssert([manager.consentedVendorListVersion isEqualToString:@"4.0.0"]);
+}
+
+- (void)testTransitionFromDeniedToATTNotDeterminedDoNotTrackBackToDenied {
+    NSDictionary * before = @{
+                              @"is_whitelisted": @"1",
+                              @"is_gdpr_region": @"1",
+                              @"call_again_after_secs": @"10",
+                              @"current_privacy_policy_link": @"http://www.mopub.com/privacy",
+                              @"current_privacy_policy_version": @"3.0.0",
+                              @"current_vendor_list_link": @"http://www.mopub.com/vendors",
+                              @"current_vendor_list_version": @"4.0.0",
+                              @"current_vendor_list_iab_format": @"yyyyy",
+                              @"current_vendor_list_iab_hash": @"hash",
+                              };
+
+    // Update consent
+    MPConsentManager * manager = MPConsentManager.sharedManager;
+    BOOL success = [manager updateConsentStateWithParameters:before];
+    XCTAssertTrue(success);
+    XCTAssert(manager.currentStatus == MPConsentStatusUnknown);
+
+    // Set consent to deny.
+    [manager revokeConsent];
+
+    // Due to incremental consent, the consented fields will be updated on a transition to denied.
+    XCTAssert(manager.currentStatus == MPConsentStatusDenied);
+    XCTAssert([manager.consentedIabVendorList isEqualToString:@"yyyyy"]);
+    XCTAssert([manager.consentedPrivacyPolicyVersion isEqualToString:@"3.0.0"]);
+    XCTAssert([manager.consentedVendorListVersion isEqualToString:@"4.0.0"]);
+
+    // Set tracking authorization to denied
+    if (@available(iOS 14.0, *)) {
+        [MPIdentityProvider setTrackingAuthorizationStatus:ATTrackingManagerAuthorizationStatusNotDetermined];
+    }
+
+    // Do not track
+    [manager checkForDoNotTrackAndTransition];
+
+    XCTAssert(manager.currentStatus == MPConsentStatusDoNotTrack);
+    XCTAssertNil(manager.consentedIabVendorList);
+    XCTAssertNil(manager.consentedPrivacyPolicyVersion);
+    XCTAssertNil(manager.consentedVendorListVersion);
+    XCTAssertFalse(manager.canCollectPersonalInfo);
+
+    // Set tracking authorization to authorized
+    if (@available(iOS 14.0, *)) {
+        [MPIdentityProvider setTrackingAuthorizationStatus:ATTrackingManagerAuthorizationStatusAuthorized];
+    }
+
+    // Transition to allow tracking
+    [manager checkForDoNotTrackAndTransition];
+    XCTAssert(manager.currentStatus == MPConsentStatusDenied);
+}
+
+- (void)testTransitionFromUnknownToATTNotDeterminedDoNotTrackBackToUnknown {
+    NSDictionary * before = @{
+                              @"is_whitelisted": @"1",
+                              @"is_gdpr_region": @"1",
+                              @"call_again_after_secs": @"10",
+                              @"current_privacy_policy_link": @"http://www.mopub.com/privacy",
+                              @"current_privacy_policy_version": @"3.0.0",
+                              @"current_vendor_list_link": @"http://www.mopub.com/vendors",
+                              @"current_vendor_list_version": @"4.0.0",
+                              @"current_vendor_list_iab_format": @"yyyyy",
+                              @"current_vendor_list_iab_hash": @"hash",
+                              };
+
+    // Update consent
+    MPConsentManager * manager = MPConsentManager.sharedManager;
+    BOOL success = [manager updateConsentStateWithParameters:before];
+    XCTAssertTrue(success);
+    XCTAssert(manager.currentStatus == MPConsentStatusUnknown);
+
+    // Do not modify consent; it should stay unknown here
+
+    // Set tracking authorization to denied
+    if (@available(iOS 14.0, *)) {
+        [MPIdentityProvider setTrackingAuthorizationStatus:ATTrackingManagerAuthorizationStatusNotDetermined];
+    }
+
+    // Do not track
+    [manager checkForDoNotTrackAndTransition];
+
+    XCTAssert(manager.currentStatus == MPConsentStatusDoNotTrack);
+    XCTAssertNil(manager.consentedIabVendorList);
+    XCTAssertNil(manager.consentedPrivacyPolicyVersion);
+    XCTAssertNil(manager.consentedVendorListVersion);
+    XCTAssertFalse(manager.canCollectPersonalInfo);
+
+    // Set tracking authorization to authorized
+    if (@available(iOS 14.0, *)) {
+        [MPIdentityProvider setTrackingAuthorizationStatus:ATTrackingManagerAuthorizationStatusAuthorized];
+    }
+
+    // Transition to allow tracking
+    [manager checkForDoNotTrackAndTransition];
+    XCTAssert(manager.currentStatus == MPConsentStatusUnknown);
 }
 
 #pragma mark - Incremental Consent
@@ -1336,10 +1704,19 @@
 }
 
 - (void)testStoreIfa {
+    // Set tracking authorization to authorized so ifa is accessible
+    if (@available(iOS 14.0, *)) {
+        [MPIdentityProvider setTrackingAuthorizationStatus:ATTrackingManagerAuthorizationStatusAuthorized];
+    }
+
+    // Preconditions
+    MPConsentManager.sharedManager.rawIfa = @"fake_ifa_for_consent";
+
     [MPConsentManager.sharedManager storeIfa];
 
     NSString *ifa = [NSUserDefaults.standardUserDefaults stringForKey:kIfaForConsentStorageKey];
     XCTAssertNotNil(ifa);
+    XCTAssertTrue([ifa isEqualToString:@"fake_ifa_for_consent"]);
     [MPConsentManager.sharedManager removeIfa];
 }
 
@@ -1357,10 +1734,19 @@
 }
 
 - (void)testIfaOldStatusNotConsentedNewStatusConsented {
+    // Set tracking authorization to authorized so ifa is accessible
+    if (@available(iOS 14.0, *)) {
+        [MPIdentityProvider setTrackingAuthorizationStatus:ATTrackingManagerAuthorizationStatusAuthorized];
+    }
+
+    // Preconditions
+    MPConsentManager.sharedManager.rawIfa = @"fake_ifa_for_consent";
+
     [MPConsentManager.sharedManager setCurrentStatus:MPConsentStatusUnknown reason:@"Unit test: Unknown" statusWasReacquired:NO shouldBroadcast:YES];
     [MPConsentManager.sharedManager setCurrentStatus:MPConsentStatusConsented reason:@"Unit test: Consented" statusWasReacquired:NO shouldBroadcast:YES];
     NSString *ifa = [NSUserDefaults.standardUserDefaults stringForKey:kIfaForConsentStorageKey];
     XCTAssertNotNil(ifa);
+    XCTAssertTrue([ifa isEqualToString:@"fake_ifa_for_consent"]);
 }
 
 #pragma mark - Load Consent Dialog
@@ -1655,6 +2041,18 @@
     [manager clearAdUnitIdUsedForConsent];
     XCTAssertNil(manager.adUnitIdUsedForConsent);
     XCTAssertNil([NSUserDefaults.standardUserDefaults stringForKey:kAdUnitIdUsedForConsentStorageKey]);
+}
+
+#pragma mark - IFA Upgrading
+
+- (void)testIfaForConsentUpgradedToRemovePrefix {
+    // Preconditions
+    [NSUserDefaults.standardUserDefaults setObject:@"ifa:33909447-C528-4842-9461-77DC75D6CDFC" forKey:kIfaForConsentStorageKey];
+
+    // IFA upgrade performed automatically when reading the `ifaForConsent` property.
+    NSString *ifa = MPConsentManager.sharedManager.ifaForConsent;
+    XCTAssertNotNil(ifa);
+    XCTAssertTrue([ifa isEqualToString:@"33909447-C528-4842-9461-77DC75D6CDFC"]);
 }
 
 @end

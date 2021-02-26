@@ -7,10 +7,19 @@
 //
 
 #import "MPAdServerURLBuilder.h"
+#import "MPLocationAuthorizationStatus.h"
+
+NS_ASSUME_NONNULL_BEGIN
 
 @interface MPAdServerURLBuilder (Testing)
 
-+ (NSString *)advancedBiddingValue;
++ (NSString * _Nullable)advancedBiddingValue;
 + (NSDictionary<NSString *, NSString *> *)adapterInformation;
 
+@property (class, nonatomic, copy, nullable) NSString *ifa;
+@property (class, nonatomic, copy, nullable) NSString *ifv;
+@property (class, nonatomic, assign) MPLocationAuthorizationStatus locationAuthorizationStatus;
+
 @end
+
+NS_ASSUME_NONNULL_END

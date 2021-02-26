@@ -1,0 +1,73 @@
+<VAST version="3.0">
+    <Ad id="1">
+        <InLine>
+            <AdSystem>MoPub</AdSystem>
+            <AdTitle>MoPub Test Ad</AdTitle>
+            <Description>MoPub Description</Description>
+            <Error><![CDATA[https://www.mopub.com/?q=error&errorcode=[ERRORCODE]]]></Error>
+            <Impression><![CDATA[https://www.mopub.com/?q=impression]]></Impression>
+            <Impression><![CDATA[https://www.mopub.com/?q=impression1]]></Impression>
+            <Impression><![CDATA[https://www.mopub.com/?q=impression2]]></Impression>
+            <Impression><![CDATA[https://www.mopub.com/?q=impression3]]></Impression>
+            <Creatives>
+                <Creative>
+                    <Linear skipoffset="00:00:05">
+                        <Duration>00:00:30</Duration>
+                        <VideoClicks>
+                            <ClickThrough><![CDATA[https://www.mopub.com/?q=videoClickThrough]]></ClickThrough>
+                        </VideoClicks>
+                        <MediaFiles>
+                            <MediaFile delivery="progressive" type="video/mp4" bitrate="325" width="640" height="360"><![CDATA[https://d2al1opqne3nsh.cloudfront.net/videos/corgi_30s_640x360_baseline_30.mp4]]></MediaFile>
+                            <MediaFile delivery="progressive" type="video/mp4" bitrate="714" width="1280" height="720"><![CDATA[https://d2al1opqne3nsh.cloudfront.net/videos/corgi_30s_1280x720_main_40.mp4]]></MediaFile>
+                            <MediaFile delivery="progressive" type="video/mp4" bitrate="1447" width="1920" height="1080"><![CDATA[https://d2al1opqne3nsh.cloudfront.net/videos/corgi_30s_1920x1080_high_41.mp4]]></MediaFile>
+                        </MediaFiles>
+                        <Icons>
+                            <Icon program="AdChoices" width="77" height="15" xPosition="right" yPosition="bottom">
+                                <StaticResource creativeType="image/png">
+                                    <![CDATA[https://choices.trustarc.com/get?name=admarker-full-tl.png]]>
+                                </StaticResource>
+                                <IconClicks>
+                                       <IconClickThrough>
+                                           <![CDATA[https://www.mopub.com/?q=IconClickThrough]]>
+                                       </IconClickThrough>
+                                </IconClicks>
+                            </Icon>
+                            <Icon program="AdChoices" width="100" height="30" offset="00:00:03" duration="00:00:03">
+                                <StaticResource creativeType="image/png">
+                                    <![CDATA[http://demo.tremormedia.com/proddev/vast/728x90_banner1.jpg]]>
+                                </StaticResource>
+                                <IconClicks>
+                                   <IconClickThrough>
+                                       <![CDATA[https://www.mopub.com/?q=IconClickThrough]]>
+                                   </IconClickThrough>
+                                </IconClicks>
+                            </Icon>
+                        </Icons>
+                    </Linear>
+                </Creative>
+                <Creative>
+                    <CompanionAds>
+                        <Companion width="300" height="250">
+                            <StaticResource creativeType="image/jpeg"><![CDATA[https://d2al1opqne3nsh.cloudfront.net/images/corgi300x250.jpeg]]></StaticResource>
+                            <CompanionClickThrough><![CDATA[https://www.mopub.com/?q=companionClickThrough300x250]]></CompanionClickThrough>
+                        </Companion>
+                        <Companion width="480" height="320">
+                            <StaticResource creativeType="image/jpeg"><![CDATA[https://d2al1opqne3nsh.cloudfront.net/images/corgi480x320.jpeg]]></StaticResource>
+                            <CompanionClickThrough><![CDATA[https://www.mopub.com/?q=companionClickThrough480x320]]></CompanionClickThrough>
+                        </Companion>
+                        <Companion width="569" height="320">
+                            <StaticResource creativeType="image/jpeg"><![CDATA[https://d2al1opqne3nsh.cloudfront.net/images/corgi569x320.jpeg]]></StaticResource>
+                            <CompanionClickThrough><![CDATA[https://www.mopub.com/?q=companionClickThrough569x320]]></CompanionClickThrough>
+                        </Companion>
+                    </CompanionAds>
+                </Creative>
+            </Creatives>
+            <Extensions>
+                <Extension type="MoPub">
+                    <MoPubForceOrientation>Device</MoPubForceOrientation>
+                    <MoPubCtaText>Install Now</MoPubCtaText>
+                </Extension>
+            </Extensions>
+        </InLine>
+    </Ad>
+</VAST>

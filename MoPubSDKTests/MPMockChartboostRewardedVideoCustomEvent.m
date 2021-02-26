@@ -10,10 +10,21 @@
 #import "MPMockChartboostAdapterConfiguration.h"
 
 @implementation MPMockChartboostRewardedVideoCustomEvent
+@synthesize delegate;
+@synthesize enableAutomaticImpressionAndClickTracking;
+@synthesize localExtras;
 
-- (void)requestRewardedVideoWithCustomEventInfo:(NSDictionary *)info adMarkup:(NSString *)adMarkup {
+- (BOOL)hasAdAvailable {
+    return YES;
+}
+
+- (BOOL)isRewardExpected {
+    return YES;
+}
+
+- (void)requestAdWithAdapterInfo:(NSDictionary *)info adMarkup:(NSString *)adMarkup {
     [MPMockChartboostAdapterConfiguration setCachedInitializationParameters:info];
-    [self.delegate rewardedVideoDidLoadAdForCustomEvent:self];
+    [self.delegate fullscreenAdAdapterDidLoadAd:self];
 }
 
 @end

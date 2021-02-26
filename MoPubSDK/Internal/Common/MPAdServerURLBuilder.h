@@ -11,8 +11,6 @@
 #import "MPEngineInfo.h"
 #import "MPURL.h"
 
-@class CLLocation;
-
 @interface MPAdServerURLBuilder : NSObject
 
 /**
@@ -21,9 +19,9 @@
 @property (class, nonatomic, strong) MPEngineInfo * engineInformation;
 
 /**
- * Returns an NSURL object given an endpoint and a dictionary of query parameters/values
+ Returns an NSURL object given NSURLComponents and a dictionary of query parameters/values
  */
-+ (MPURL *)URLWithEndpointPath:(NSString *)endpointPath postData:(NSDictionary *)parameters;
++ (MPURL *)URLWithComponents:(NSURLComponents *)components postData:(NSDictionary *)parameters;
 
 @end
 
@@ -34,14 +32,12 @@
 
 + (MPURL *)URLWithAdUnitID:(NSString *)adUnitID
                  targeting:(MPAdTargeting *)targeting
-             desiredAssets:(NSArray *)assets
-               viewability:(BOOL)viewability;
+             desiredAssets:(NSArray *)assets;
 
 + (MPURL *)URLWithAdUnitID:(NSString *)adUnitID
                  targeting:(MPAdTargeting *)targeting
              desiredAssets:(NSArray *)assets
-                adSequence:(NSInteger)adSequence
-               viewability:(BOOL)viewability;
+                adSequence:(NSInteger)adSequence;
 
 @end
 
@@ -100,16 +96,27 @@
  Both @c rewardType and @c rewardAmount must be present in order for them to be added.
  @param rewardAmount Optional reward amount to associate with the reward type.
  Both @c rewardType and @c rewardAmount must be present in order for them to be added.
- @param customEventName Optional name of the custom event class used to render the rewarded ad.
+ @param adapterClassName Optional name of the adapter class used to render the rewarded ad.
  @param additionalData Optional additional data passed in by the publisher to be sent back to
  their reward server.
- @return Expandeded URL if successful; otherwise @c nil.
+ @return Expanded URL if successful; otherwise @c nil.
  */
 + (MPURL *)rewardedCompletionUrl:(NSString *)sourceUrl
                   withCustomerId:(NSString *)customerId
                       rewardType:(NSString *)rewardType
                     rewardAmount:(NSNumber *)rewardAmount
-                 customEventName:(NSString *)customEventName
+                adapterClassName:(NSString *)adapterClassName
                   additionalData:(NSString *)additionalData;
+
+@end
+
+@interface MPAdServerURLBuilder (SKAdNetwork)
+
+/**
+ Constructs URL to synchronize enabled SKAdNetwork networks with ad server.
+ @param skAdNetworkIds List of SKAdNetwork IDs enabled for this app. Must be nonnull, more than one network
+ @return URL to synchronize SKAdNetwork IDs to ad server, or @c nil if requirements for @c skAdNetworkIds are not met
+ */
++ (MPURL *)skAdNetworkSynchronizationURLWithSkAdNetworkIds:(NSArray <NSString *> *)skAdNetworkIds;
 
 @end

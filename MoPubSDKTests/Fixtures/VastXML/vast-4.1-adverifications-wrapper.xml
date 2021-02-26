@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<VAST xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="vast_2.0.1-creativeView.xsd" version="4.1">
+  <Ad id="WrapperAdWrapper">
+    <Wrapper>
+      <AdSystem>WrapperAdSystem</AdSystem>
+      <Impression><![CDATA[https://px.moatads.com/pixel.gif?pingImpressionWrapper]]></Impression>
+      <VASTAdTagURI><![CDATA[https://raw.githubusercontent.com/jeffreycarlson/vast-test-ads/master/vast_4.1_inline_1.xml]]></VASTAdTagURI>
+      <AdVerifications>
+        <Verification vendor="moat.com-mopubsamplevastwrapper628796485625">
+          <JavaScriptResource apiFramework="omid" browserOptional="true"><![CDATA[https://z.moatads.com/mopubsamplevastwrapper628796485625/moatvideo.js]]></JavaScriptResource>
+          <VerificationParameters><![CDATA[{"moatClientLevel1":"MoPub","moatClientLevel2":"OM-VAST-Test","moatClientLevel3":"OM-VAST-Test","moatClientSlicer1":"VAST-4.1","zMoatDuration":"30"}]]></VerificationParameters>
+          <TrackingEvents>
+              <Tracking event="verificationNotExecuted">
+                  <![CDATA[https://verif.moat.com/not-executed?reason=[REASON]]]>
+              </Tracking>
+          </TrackingEvents>
+        </Verification>
+      </AdVerifications>
+    </Wrapper>
+  </Ad>
+</VAST>

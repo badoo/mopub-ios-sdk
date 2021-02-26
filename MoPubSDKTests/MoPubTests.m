@@ -18,6 +18,7 @@
 #import "MPWebView+Testing.h"
 #import "MRController.h"
 #import "MRController+Testing.h"
+#import "MPViewabilityManager+Testing.h"
 
 static NSTimeInterval const kTestTimeout = 2;
 
@@ -31,6 +32,12 @@ static NSTimeInterval const kTestTimeout = 2;
     [super setUp];
     [MPMediationManager.sharedManager clearCache];
     MPLogging.consoleLogLevel = MPBLogLevelInfo;
+
+    // Reset Viewability Manager state
+    MPViewabilityManager.sharedManager.isEnabled = YES;
+    MPViewabilityManager.sharedManager.isInitialized = NO;
+    MPViewabilityManager.sharedManager.omidPartner = nil;
+    [MPViewabilityManager.sharedManager clearCachedOMIDLibrary];
 }
 
 #pragma mark - Initialization
@@ -196,6 +203,29 @@ static NSTimeInterval const kTestTimeout = 2;
     MPLogging.consoleLogLevel = MPBLogLevelDebug;
 
     XCTAssertTrue(MPLogging.consoleLogLevel == MPBLogLevelDebug);
+}
+
+#pragma mark - Viewability
+
+- (void)testDisableViewability {
+    // Initialize Viewability Manager
+    XCTestExpectation *expectation = [self expectationWithDescription:@"Expect MPViewabilityManager initialization complete"];
+    [MPViewabilityManager.sharedManager initializeWithCompletion:^(BOOL initialized) {
+        [expectation fulfill];
+    }];
+
+    [self waitForExpectationsWithTimeout:kTestTimeout handler:^(NSError *error) {
+        XCTAssertNil(error);
+    }];
+
+    XCTAssertTrue(MPViewabilityManager.sharedManager.isEnabled);
+    XCTAssertTrue(MPViewabilityManager.sharedManager.isInitialized);
+
+    // Disable viewability
+    [MoPub.sharedInstance disableViewability];
+
+    XCTAssertFalse(MPViewabilityManager.sharedManager.isEnabled);
+    XCTAssertTrue(MPViewabilityManager.sharedManager.isInitialized);
 }
 
 @end

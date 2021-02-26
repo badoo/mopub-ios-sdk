@@ -31,6 +31,7 @@ static NSString * const kDisplayAgentErrorDomain = @"com.mopub.displayagent";
 @property (nonatomic) MOPUBDisplayAgentType displayAgentType;
 @property (nonatomic, strong) SKStoreProductViewController *storeKitController;
 @property (nonatomic, strong) SFSafariViewController *safariController;
+@property (nonatomic, strong) MPSKAdNetworkClickthroughData *clickthroughData;
 
 @property (nonatomic, strong) MPActivityViewControllerHelper *activityViewControllerHelper;
 
@@ -84,7 +85,7 @@ static NSString * const kDisplayAgentErrorDomain = @"com.mopub.displayagent";
     }
 }
 
-- (void)displayDestinationForURL:(NSURL *)URL
+- (void)displayDestinationForURL:(NSURL *)URL skAdNetworkClickthroughData:(MPSKAdNetworkClickthroughData *)clickthroughData
 {
     if (self.isLoadingDestination) return;
     self.isLoadingDestination = YES;
@@ -95,6 +96,10 @@ static NSString * const kDisplayAgentErrorDomain = @"com.mopub.displayagent";
     [self.resolver cancel];
     [self.enhancedDeeplinkFallbackResolver cancel];
 
+    // Save clickthrough data (or nil) for later
+    self.clickthroughData = clickthroughData;
+
+    // For other clickthroughs, follow the URL and suggested action
     __weak __typeof__(self) weakSelf = self;
     self.resolver = [MPURLResolver resolverWithURL:URL completion:^(MPURLActionInfo *suggestedAction, NSError *error) {
         __typeof__(self) strongSelf = weakSelf;
@@ -240,7 +245,12 @@ static NSString * const kDisplayAgentErrorDomain = @"com.mopub.displayagent";
         return;
     }
 
-    [self presentStoreKitControllerWithProductParameters:parameters fallbackURL:URL];
+    // SKAdNetwork:
+    // If clickthrough data was sent as part of the ad response, use that rather than
+    // the clickthrough data generated from the URL.
+    NSDictionary *productParameters = self.clickthroughData != nil ? self.clickthroughData.dictionaryForStoreProductViewController : parameters;
+
+    [self presentStoreKitControllerWithProductParameters:productParameters];
 }
 
 - (void)openURLInApplication:(NSURL *)URL
@@ -280,7 +290,7 @@ static NSString * const kDisplayAgentErrorDomain = @"com.mopub.displayagent";
     [self.delegate displayAgentDidDismissModal];
 }
 
-- (void)presentStoreKitControllerWithProductParameters:(NSDictionary *)parameters fallbackURL:(NSURL *)URL
+- (void)presentStoreKitControllerWithProductParameters:(NSDictionary *)parameters
 {
     self.storeKitController = [[SKStoreProductViewController alloc] init];
     self.storeKitController.modalPresentationStyle = UIModalPresentationFullScreen;
@@ -293,10 +303,32 @@ static NSString * const kDisplayAgentErrorDomain = @"com.mopub.displayagent";
 
 #pragma mark - <SKStoreProductViewControllerDelegate>
 
+// Called when the user dismisses the store screen.
 - (void)productViewControllerDidFinish:(SKStoreProductViewController *)viewController
 {
     self.isLoadingDestination = NO;
-    [self hideModalAndNotifyDelegate];
+
+    // In iOS 13.0 and later, SKStoreProductViewController is automatically dismissed when the
+    // user clicks "Cancel", so we do not need to manually dismiss it.
+    // However, in iOS 13.0 and 13.1, there's a bug in @c SKStoreProductViewController that
+    // leaves around an invisible view controller giving the appearance of a softlock upon
+    // dismissal. Given that, for iOS 13.0 and 13.1, *a* view controller must be dismissed
+    // before the ad can be interacted with.
+    // Therefore, for iOS 13.2 and later, when this method is called, assume the
+    // @c SKStoreProductViewController has been dismissed. For iOS 13.1 and earlier, manually
+    // dismiss it.
+    if (@available(iOS 13.2, *)) {
+        [self.delegate displayAgentDidDismissModal];
+    }
+    // Manually dismiss the presented view controller on iOS 13.1 and earlier.
+    else {
+        [self hideModalAndNotifyDelegate];
+    }
+
+    // *Note* Failure to dispose of @c storeKitController immediately after its use has been
+    // known to cause an issue in iOS 13+ where videos played via MoVideo fail to unpause.
+    // Disposing here fixes that issue.
+    self.storeKitController = nil;
 }
 
 #pragma mark - <SFSafariViewControllerDelegate>

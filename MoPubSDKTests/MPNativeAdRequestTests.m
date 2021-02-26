@@ -7,9 +7,9 @@
 //
 
 #import <XCTest/XCTest.h>
+#import <MoPub/MoPub-Swift.h>
 #import "MPAdConfigurationFactory.h"
 #import "MPAdServerKeys.h"
-#import "MPAPIEndpoints.h"
 #import "MPConstants.h"
 #import "MPError.h"
 #import "MPNativeAdRequest.h"
@@ -26,6 +26,7 @@
 #import "MPNativeAd+Testing.h"
 #import "MPAdServerKeys.h"
 #import "MPImpressionTrackedNotification.h"
+#import "MPViewabilityManager+Testing.h"
 
 static const NSTimeInterval kTestTimeout   = 2; // seconds
 
@@ -52,6 +53,12 @@ static const NSTimeInterval kTestTimeout   = 2; // seconds
 
         @[rendererConfig];
     });
+
+    // Reset Viewability Manager state
+    MPViewabilityManager.sharedManager.isEnabled = YES;
+    MPViewabilityManager.sharedManager.isInitialized = NO;
+    MPViewabilityManager.sharedManager.omidPartner = nil;
+    [MPViewabilityManager.sharedManager clearCachedOMIDLibrary];
 }
 
 - (void)tearDown {
@@ -245,7 +252,20 @@ static const NSTimeInterval kTestTimeout   = 2; // seconds
 
 #pragma mark - Viewability
 
-- (void)testViewabilityQueryParameterNotPresent {
+- (void)testViewabilityQueryParameterPresent {
+    // Initialize Viewability Manager
+    XCTestExpectation *expectation = [self expectationWithDescription:@"Expect MPViewabilityManager initialization complete"];
+    [MPViewabilityManager.sharedManager initializeWithCompletion:^(BOOL initialized) {
+        [expectation fulfill];
+    }];
+
+    [self waitForExpectationsWithTimeout:kTestTimeout handler:^(NSError *error) {
+        XCTAssertNil(error);
+    }];
+
+    XCTAssertTrue(MPViewabilityManager.sharedManager.isEnabled);
+    XCTAssertTrue(MPViewabilityManager.sharedManager.isInitialized);
+
     // Native ads should not send a viewability query parameter.
     MPMockAdServerCommunicator * mockAdServerCommunicator = nil;
     MPNativeAdRequest * nativeAdRequest = [MPNativeAdRequest requestWithAdUnitIdentifier:@"FAKE_AD_UNIT_ID" rendererConfigurations:nil];
@@ -261,11 +281,143 @@ static const NSTimeInterval kTestTimeout   = 2; // seconds
     XCTAssertNotNil(mockAdServerCommunicator);
     XCTAssertNotNil(mockAdServerCommunicator.lastUrlLoaded);
 
-    NSURL * url = mockAdServerCommunicator.lastUrlLoaded;
-    NSURLComponents * urlComponents = [NSURLComponents componentsWithURL:url resolvingAgainstBaseURL:YES];
+    MPURL * url = [mockAdServerCommunicator.lastUrlLoaded isKindOfClass:[MPURL class]] ? (MPURL *)mockAdServerCommunicator.lastUrlLoaded : nil;
+    XCTAssertNotNil(url);
 
-    NSString * viewabilityQueryParamValue = [urlComponents valueForQueryParameter:@"vv"];
-    XCTAssertNil(viewabilityQueryParamValue);
+    NSString * viewabilityValue = [url stringForPOSTDataKey:kViewabilityStatusKey];
+    XCTAssertNotNil(viewabilityValue);
+    XCTAssertTrue([viewabilityValue isEqualToString:@"4"]);
+}
+
+- (void)testViewabilityTrackerCreationNilContext {
+    // Initialize Viewability Manager
+    XCTestExpectation *expectation = [self expectationWithDescription:@"Expect MPViewabilityManager initialization complete"];
+    [MPViewabilityManager.sharedManager initializeWithCompletion:^(BOOL initialized) {
+        [expectation fulfill];
+    }];
+
+    [self waitForExpectationsWithTimeout:kTestTimeout handler:^(NSError *error) {
+        XCTAssertNil(error);
+    }];
+
+    XCTAssertTrue(MPViewabilityManager.sharedManager.isEnabled);
+    XCTAssertTrue(MPViewabilityManager.sharedManager.isInitialized);
+
+    // View to be tracked
+    UIView * fakeView = [[UIView alloc] initWithFrame:CGRectMake(0, 0, 300, 250)];
+
+    MPNativeAdRequest * nativeAdRequest = [MPNativeAdRequest requestWithAdUnitIdentifier:@"FAKE_AD_UNIT_ID" rendererConfigurations:nil];
+    id<MPViewabilityTracker> tracker = [nativeAdRequest viewabilityTrackerForView:fakeView context:nil];
+
+    XCTAssertNil(tracker);
+}
+
+- (void)testViewabilityTrackerCreationNoView {
+    // Initialize Viewability Manager
+    XCTestExpectation *expectation = [self expectationWithDescription:@"Expect MPViewabilityManager initialization complete"];
+    [MPViewabilityManager.sharedManager initializeWithCompletion:^(BOOL initialized) {
+        [expectation fulfill];
+    }];
+
+    [self waitForExpectationsWithTimeout:kTestTimeout handler:^(NSError *error) {
+        XCTAssertNil(error);
+    }];
+
+    XCTAssertTrue(MPViewabilityManager.sharedManager.isEnabled);
+    XCTAssertTrue(MPViewabilityManager.sharedManager.isInitialized);
+
+    // Valid DoubleVerify verification resource tag
+    NSArray *verificationsJson = @[@{
+        @"apiFramework": @"omid",
+        @"vendorKey": @"doubleverify.com-omid",
+        @"javascriptResourceUrl": @"https://cdn.doubleverify.com/dvtp_src.js",
+        @"verificationParameters": @"ctx=13337537&cmp=DV330341&sid=iOS-Display-Native&plc=video&advid=3819603&adsrv=189&tagtype=&dvtagver=6.1.src&DVP_PP_BUNDLE_ID=%%BUNDLE%%&DVP_PP_APP_ID=%%PLACEMENTID%%&DVP_PP_APP_NAME=%%APPNAME%%&DVP_MP_2=%%PUBID%%&DVP_MP_3=%%ADUNITID%%&DVP_MP_4=%%ADGROUPID%%&DVPX_PP_IMP_ID=%%REQUESTID%%&DVP_PP_AUCTION_IP=%%IPADDRESS%%&DVPX_PP_AUCTION_UA=%%USERAGENT%%"
+    }];
+
+    MPViewabilityContext * context = [[MPViewabilityContext alloc] initWithVerificationResourcesJSON:verificationsJson];
+    XCTAssertNotNil(context);
+    XCTAssertTrue(context.omidResources.count == 1);
+    XCTAssertTrue(context.omidNotExecutedTrackers.count == 0);
+
+    // View to be tracked
+    UIView * fakeView = nil;
+
+    MPNativeAdRequest * nativeAdRequest = [MPNativeAdRequest requestWithAdUnitIdentifier:@"FAKE_AD_UNIT_ID" rendererConfigurations:nil];
+    id<MPViewabilityTracker> tracker = [nativeAdRequest viewabilityTrackerForView:fakeView context:context];
+
+    XCTAssertNil(tracker);
+}
+
+
+- (void)testViewabilityTrackerCreationContextSuccess {
+    // Initialize Viewability Manager
+    XCTestExpectation *expectation = [self expectationWithDescription:@"Expect MPViewabilityManager initialization complete"];
+    [MPViewabilityManager.sharedManager initializeWithCompletion:^(BOOL initialized) {
+        [expectation fulfill];
+    }];
+
+    [self waitForExpectationsWithTimeout:kTestTimeout handler:^(NSError *error) {
+        XCTAssertNil(error);
+    }];
+
+    XCTAssertTrue(MPViewabilityManager.sharedManager.isEnabled);
+    XCTAssertTrue(MPViewabilityManager.sharedManager.isInitialized);
+
+    // Valid DoubleVerify verification resource tag
+    NSArray *verificationsJson = @[@{
+        @"apiFramework": @"omid",
+        @"vendorKey": @"doubleverify.com-omid",
+        @"javascriptResourceUrl": @"https://cdn.doubleverify.com/dvtp_src.js",
+        @"verificationParameters": @"ctx=13337537&cmp=DV330341&sid=iOS-Display-Native&plc=video&advid=3819603&adsrv=189&tagtype=&dvtagver=6.1.src&DVP_PP_BUNDLE_ID=%%BUNDLE%%&DVP_PP_APP_ID=%%PLACEMENTID%%&DVP_PP_APP_NAME=%%APPNAME%%&DVP_MP_2=%%PUBID%%&DVP_MP_3=%%ADUNITID%%&DVP_MP_4=%%ADGROUPID%%&DVPX_PP_IMP_ID=%%REQUESTID%%&DVP_PP_AUCTION_IP=%%IPADDRESS%%&DVPX_PP_AUCTION_UA=%%USERAGENT%%"
+    }];
+
+    MPViewabilityContext * context = [[MPViewabilityContext alloc] initWithVerificationResourcesJSON:verificationsJson];
+    XCTAssertNotNil(context);
+    XCTAssertTrue(context.omidResources.count == 1);
+    XCTAssertTrue(context.omidNotExecutedTrackers.count == 0);
+
+    // View to be tracked
+    UIView * fakeView = [[UIView alloc] initWithFrame:CGRectMake(0, 0, 300, 250)];
+
+    MPNativeAdRequest * nativeAdRequest = [MPNativeAdRequest requestWithAdUnitIdentifier:@"FAKE_AD_UNIT_ID" rendererConfigurations:nil];
+    id<MPViewabilityTracker> tracker = [nativeAdRequest viewabilityTrackerForView:fakeView context:context];
+
+    XCTAssertNotNil(tracker);
+    XCTAssertFalse(tracker.isTracking);
+}
+
+- (void)testViewabilityTrackerCreationIncompleteContext {
+    // Initialize Viewability Manager
+    XCTestExpectation *expectation = [self expectationWithDescription:@"Expect MPViewabilityManager initialization complete"];
+    [MPViewabilityManager.sharedManager initializeWithCompletion:^(BOOL initialized) {
+        [expectation fulfill];
+    }];
+
+    [self waitForExpectationsWithTimeout:kTestTimeout handler:^(NSError *error) {
+        XCTAssertNil(error);
+    }];
+
+    XCTAssertTrue(MPViewabilityManager.sharedManager.isEnabled);
+    XCTAssertTrue(MPViewabilityManager.sharedManager.isInitialized);
+
+    // Valid DoubleVerify verification resource tag
+    NSArray *verificationsJson = @[@{
+        @"apiFramework": @"omid",
+        @"vendorKey": @"doubleverify.com-omid"
+    }];
+
+    MPViewabilityContext * context = [[MPViewabilityContext alloc] initWithVerificationResourcesJSON:verificationsJson];
+    XCTAssertNotNil(context);
+    XCTAssertTrue(context.omidResources.count == 0);
+    XCTAssertTrue(context.omidNotExecutedTrackers.count == 0);
+
+    // View to be tracked
+    UIView * fakeView = [[UIView alloc] initWithFrame:CGRectMake(0, 0, 300, 250)];
+
+    MPNativeAdRequest * nativeAdRequest = [MPNativeAdRequest requestWithAdUnitIdentifier:@"FAKE_AD_UNIT_ID" rendererConfigurations:nil];
+    id<MPViewabilityTracker> tracker = [nativeAdRequest viewabilityTrackerForView:fakeView context:context];
+
+    XCTAssertNil(tracker);
 }
 
 #pragma mark - Timeout

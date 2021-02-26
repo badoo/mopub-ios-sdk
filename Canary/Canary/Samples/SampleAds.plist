@@ -84,12 +84,6 @@
 			</dict>
 			<dict>
 				<key>name</key>
-				<string>Native Video</string>
-				<key>adUnitId</key>
-				<string>b2b67c2a8c0944eda272ed8e4ddf7ed4</string>
-			</dict>
-			<dict>
-				<key>name</key>
 				<string>Native Collection</string>
 				<key>adUnitId</key>
 				<string>76a3fefaced247959582d2d2df6f4757</string>
@@ -101,14 +95,6 @@
 				<string>Native Table</string>
 				<key>adUnitId</key>
 				<string>76a3fefaced247959582d2d2df6f4757</string>
-				<key>override_class</key>
-				<string>NativeAdTableViewController</string>
-			</dict>
-			<dict>
-				<key>name</key>
-				<string>Native Video Table</string>
-				<key>adUnitId</key>
-				<string>b2b67c2a8c0944eda272ed8e4ddf7ed4</string>
 				<key>override_class</key>
 				<string>NativeAdTableViewController</string>
 			</dict>

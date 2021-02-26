@@ -7,20 +7,20 @@
 //
 
 #import <XCTest/XCTest.h>
+#import <MoPub/MoPub-Swift.h>
 #import "MPAdConfiguration.h"
 #import "MPAdConfigurationFactory.h"
 #import "MPAdServerKeys.h"
 #import "MPAdTargeting.h"
-#import "MPAPIEndpoints.h"
-#import "MPRewardedVideoAdManager.h"
+#import "MPFullscreenAdAdapterMock.h"
+#import "MPProxy.h"
 #import "MPRewardedVideoAdManager+Testing.h"
-#import "MPRewardedVideoDelegateHandler.h"
-#import "MPRewardedVideoReward.h"
+#import "MPReward.h"
 #import "MPMockAdServerCommunicator.h"
-#import "MPMockRewardedVideoCustomEvent.h"
 #import "MPURL.h"
 #import "NSURLComponents+Testing.h"
 #import "MPRewardedVideo+Testing.h"
+#import "MPRewardedVideoAdManagerDelegateMock.h"
 #import "MPImpressionTrackedNotification.h"
 
 static NSString * const kTestAdUnitId = @"967f82c7-c059-4ae8-8cb6-41c34265b1ef";
@@ -28,11 +28,32 @@ static const NSTimeInterval kTestTimeout   = 2; // seconds
 
 @interface MPRewardedVideoAdManagerTests : XCTestCase
 
+@property (nonatomic, strong) MPRewardedVideoAdManager *adManager;
+@property (nonatomic, strong) MPRewardedVideoAdManagerDelegateMock *delegateMock;
+@property (nonatomic, strong) MPProxy *mockProxy;
+
 @end
 
 @implementation MPRewardedVideoAdManagerTests
 
 #pragma mark - Currency
+
+- (void)setUp {
+    [super setUp];
+
+    self.mockProxy = [[MPProxy alloc] initWithTarget:[MPRewardedVideoAdManagerDelegateMock new]];
+    self.delegateMock = (MPRewardedVideoAdManagerDelegateMock *)self.mockProxy;
+    self.adManager = [[MPRewardedVideoAdManager alloc] initWithAdUnitID:kTestAdUnitId delegate:self.delegateMock];
+    // `MPRewardedVideoAdManager.adapter` is assigned during `fetchAdWithConfiguration:`, so, don't set here
+}
+
+- (void)tearDown {
+    [super tearDown];
+
+    self.mockProxy = nil;
+    self.delegateMock = nil;
+    self.adManager = nil;
+}
 
 - (void)testRewardedSingleCurrencyPresentationSuccess {
     // Setup rewarded ad configuration
@@ -45,16 +66,17 @@ static const NSTimeInterval kTestTimeout   = 2; // seconds
     XCTestExpectation * expectation = [self expectationWithDescription:@"Wait for reward completion block to fire."];
 
     // Configure delegate handler to listen for the reward event.
-    __block MPRewardedVideoReward * rewardForUser = nil;
-    MPRewardedVideoDelegateHandler * delegateHandler = [MPRewardedVideoDelegateHandler new];
-    delegateHandler.shouldRewardUser = ^(MPRewardedVideoReward * reward) {
+    __block MPReward *rewardForUser = nil;
+    [self.mockProxy registerSelector:@selector(rewardedVideoShouldRewardUserForAdManager:reward:)
+                       forPostAction:^(NSInvocation *invocation) {
+        __unsafe_unretained MPReward *reward;
+        [invocation getArgument:&reward atIndex:3];
         rewardForUser = reward;
         [expectation fulfill];
-    };
+    }];
 
-    MPRewardedVideoAdManager * rewardedAd = [[MPRewardedVideoAdManager alloc] initWithAdUnitID:kTestAdUnitId delegate:delegateHandler];
-    [rewardedAd loadWithConfiguration:config];
-    [rewardedAd presentRewardedVideoAdFromViewController:nil withReward:nil customData:nil];
+    [self.adManager loadWithConfiguration:config];
+    [self.adManager presentRewardedVideoAdFromViewController:nil withReward:nil customData:nil];
 
     [self waitForExpectationsWithTimeout:kTestTimeout handler:^(NSError * _Nullable error) {
         XCTAssertNil(error);
@@ -78,16 +100,17 @@ static const NSTimeInterval kTestTimeout   = 2; // seconds
     XCTestExpectation * expectation = [self expectationWithDescription:@"Wait for reward completion block to fire."];
 
     // Configure delegate handler to listen for the reward event.
-    __block MPRewardedVideoReward * rewardForUser = nil;
-    MPRewardedVideoDelegateHandler * delegateHandler = [MPRewardedVideoDelegateHandler new];
-    delegateHandler.shouldRewardUser = ^(MPRewardedVideoReward * reward) {
+    __block MPReward *rewardForUser = nil;
+    [self.mockProxy registerSelector:@selector(rewardedVideoShouldRewardUserForAdManager:reward:)
+                       forPostAction:^(NSInvocation *invocation) {
+        __unsafe_unretained MPReward *reward;
+        [invocation getArgument:&reward atIndex:3];
         rewardForUser = reward;
         [expectation fulfill];
-    };
+    }];
 
-    MPRewardedVideoAdManager * rewardedAd = [[MPRewardedVideoAdManager alloc] initWithAdUnitID:kTestAdUnitId delegate:delegateHandler];
-    [rewardedAd loadWithConfiguration:config];
-    [rewardedAd presentRewardedVideoAdFromViewController:nil withReward:nil customData:nil];
+    [self.adManager loadWithConfiguration:config];
+    [self.adManager presentRewardedVideoAdFromViewController:nil withReward:nil customData:nil];
 
     [self waitForExpectationsWithTimeout:kTestTimeout handler:^(NSError * _Nullable error) {
         XCTAssertNil(error);
@@ -113,16 +136,19 @@ static const NSTimeInterval kTestTimeout   = 2; // seconds
     XCTestExpectation * expectation = [self expectationWithDescription:@"Wait for reward completion block to fire."];
 
     // Configure delegate handler to listen for the reward event.
-    __block MPRewardedVideoReward * rewardForUser = nil;
-    MPRewardedVideoDelegateHandler * delegateHandler = [MPRewardedVideoDelegateHandler new];
-    delegateHandler.shouldRewardUser = ^(MPRewardedVideoReward * reward) {
+    __block MPReward *rewardForUser = nil;
+    [self.mockProxy registerSelector:@selector(rewardedVideoShouldRewardUserForAdManager:reward:)
+                       forPostAction:^(NSInvocation *invocation) {
+        __unsafe_unretained MPReward *reward;
+        [invocation getArgument:&reward atIndex:3];
         rewardForUser = reward;
         [expectation fulfill];
-    };
+    }];
 
-    MPRewardedVideoAdManager * rewardedAd = [[MPRewardedVideoAdManager alloc] initWithAdUnitID:kTestAdUnitId delegate:delegateHandler];
-    [rewardedAd loadWithConfiguration:config];
-    [rewardedAd presentRewardedVideoAdFromViewController:nil withReward:rewardedAd.availableRewards[1] customData:nil];
+    [self.adManager loadWithConfiguration:config];
+    [self.adManager presentRewardedVideoAdFromViewController:nil
+                                                  withReward:self.adManager.availableRewards[1]
+                                                  customData:nil];
 
     [self waitForExpectationsWithTimeout:kTestTimeout handler:^(NSError * _Nullable error) {
         XCTAssertNil(error);
@@ -148,24 +174,26 @@ static const NSTimeInterval kTestTimeout   = 2; // seconds
     XCTestExpectation * expectation = [self expectationWithDescription:@"Wait for reward completion block to fire."];
 
     // Configure delegate handler to listen for the reward event.
-    __block MPRewardedVideoReward * rewardForUser = nil;
+    __block MPReward *rewardForUser = nil;
     __block BOOL didFail = NO;
-    MPRewardedVideoDelegateHandler * delegateHandler = [MPRewardedVideoDelegateHandler new];
-    delegateHandler.shouldRewardUser = ^(MPRewardedVideoReward * reward) {
+    [self.mockProxy registerSelector:@selector(rewardedVideoShouldRewardUserForAdManager:reward:)
+                       forPostAction:^(NSInvocation *invocation) {
+        __unsafe_unretained MPReward *reward;
+        [invocation getArgument:&reward atIndex:3];
         rewardForUser = reward;
         didFail = NO;
         [expectation fulfill];
-    };
+    }];
 
-    delegateHandler.didFailToPlayAd = ^() {
+    [self.mockProxy registerSelector:@selector(rewardedVideoDidFailToPlayForAdManager:error:)
+                       forPostAction:^(NSInvocation *invocation) {
         rewardForUser = nil;
         didFail = YES;
         [expectation fulfill];
-    };
+    }];
 
-    MPRewardedVideoAdManager * rewardedAd = [[MPRewardedVideoAdManager alloc] initWithAdUnitID:kTestAdUnitId delegate:delegateHandler];
-    [rewardedAd loadWithConfiguration:config];
-    [rewardedAd presentRewardedVideoAdFromViewController:nil withReward:nil customData:nil];
+    [self.adManager loadWithConfiguration:config];
+    [self.adManager presentRewardedVideoAdFromViewController:nil withReward:nil customData:nil];
 
     [self waitForExpectationsWithTimeout:kTestTimeout handler:^(NSError * _Nullable error) {
         XCTAssertNil(error);
@@ -190,24 +218,26 @@ static const NSTimeInterval kTestTimeout   = 2; // seconds
     XCTestExpectation * expectation = [self expectationWithDescription:@"Wait for reward completion block to fire."];
 
     // Configure delegate handler to listen for the reward event.
-    __block MPRewardedVideoReward * rewardForUser = nil;
+    __block MPReward *rewardForUser = nil;
     __block BOOL didFail = NO;
-    MPRewardedVideoDelegateHandler * delegateHandler = [MPRewardedVideoDelegateHandler new];
-    delegateHandler.shouldRewardUser = ^(MPRewardedVideoReward * reward) {
+    [self.mockProxy registerSelector:@selector(rewardedVideoShouldRewardUserForAdManager:reward:)
+                       forPostAction:^(NSInvocation *invocation) {
+        __unsafe_unretained MPReward *reward;
+        [invocation getArgument:&reward atIndex:3];
         rewardForUser = reward;
         didFail = NO;
         [expectation fulfill];
-    };
+    }];
 
-    delegateHandler.didFailToPlayAd = ^() {
+    [self.mockProxy registerSelector:@selector(rewardedVideoDidFailToPlayForAdManager:error:)
+                       forPostAction:^(NSInvocation *invocation) {
         rewardForUser = nil;
         didFail = YES;
         [expectation fulfill];
-    };
+    }];
 
-    MPRewardedVideoAdManager * rewardedAd = [[MPRewardedVideoAdManager alloc] initWithAdUnitID:kTestAdUnitId delegate:delegateHandler];
-    [rewardedAd loadWithConfiguration:config];
-    [rewardedAd presentRewardedVideoAdFromViewController:nil withReward:nil customData:nil];
+    [self.adManager loadWithConfiguration:config];
+    [self.adManager presentRewardedVideoAdFromViewController:nil withReward:nil customData:nil];
 
     [self waitForExpectationsWithTimeout:kTestTimeout handler:^(NSError * _Nullable error) {
         XCTAssertNil(error);
@@ -232,27 +262,29 @@ static const NSTimeInterval kTestTimeout   = 2; // seconds
     XCTestExpectation * expectation = [self expectationWithDescription:@"Wait for reward completion block to fire."];
 
     // Configure delegate handler to listen for the reward event.
-    __block MPRewardedVideoReward * rewardForUser = nil;
+    __block MPReward *rewardForUser = nil;
     __block BOOL didFail = NO;
-    MPRewardedVideoDelegateHandler * delegateHandler = [MPRewardedVideoDelegateHandler new];
-    delegateHandler.shouldRewardUser = ^(MPRewardedVideoReward * reward) {
+    [self.mockProxy registerSelector:@selector(rewardedVideoShouldRewardUserForAdManager:reward:)
+                       forPostAction:^(NSInvocation *invocation) {
+        __unsafe_unretained MPReward *reward;
+        [invocation getArgument:&reward atIndex:3];
         rewardForUser = reward;
         didFail = NO;
         [expectation fulfill];
-    };
+    }];
 
-    delegateHandler.didFailToPlayAd = ^() {
+    [self.mockProxy registerSelector:@selector(rewardedVideoDidFailToPlayForAdManager:error:)
+                       forPostAction:^(NSInvocation *invocation) {
         rewardForUser = nil;
         didFail = YES;
         [expectation fulfill];
-    };
+    }];
 
     // Create a malicious reward
-    MPRewardedVideoReward * badReward = [[MPRewardedVideoReward alloc] initWithCurrencyType:@"$$$" amount:@(100)];
+    MPReward *badReward = [[MPReward alloc] initWithCurrencyType:@"$$$" amount:@(100)];
 
-    MPRewardedVideoAdManager * rewardedAd = [[MPRewardedVideoAdManager alloc] initWithAdUnitID:kTestAdUnitId delegate:delegateHandler];
-    [rewardedAd loadWithConfiguration:config];
-    [rewardedAd presentRewardedVideoAdFromViewController:nil withReward:badReward customData:nil];
+    [self.adManager loadWithConfiguration:config];
+    [self.adManager presentRewardedVideoAdFromViewController:nil withReward:badReward customData:nil];
 
     [self waitForExpectationsWithTimeout:kTestTimeout handler:^(NSError * _Nullable error) {
         XCTAssertNil(error);
@@ -268,14 +300,13 @@ static const NSTimeInterval kTestTimeout   = 2; // seconds
 
     // Configure delegate handler to listen for the error event.
     __block BOOL didFail = NO;
-    MPRewardedVideoDelegateHandler * delegateHandler = [MPRewardedVideoDelegateHandler new];
-    delegateHandler.didFailToPlayAd = ^() {
+    [self.mockProxy registerSelector:@selector(rewardedVideoDidFailToPlayForAdManager:error:)
+                       forPostAction:^(NSInvocation *invocation) {
         didFail = YES;
         [expectation fulfill];
-    };
+    }];
 
-    MPRewardedVideoAdManager * rewardedAd = [[MPRewardedVideoAdManager alloc] initWithAdUnitID:kTestAdUnitId delegate:delegateHandler];
-    [rewardedAd presentRewardedVideoAdFromViewController:nil withReward:nil customData:nil];
+    [self.adManager presentRewardedVideoAdFromViewController:nil withReward:nil customData:nil];
 
     [self waitForExpectationsWithTimeout:kTestTimeout handler:^(NSError * _Nullable error) {
         XCTAssertNil(error);
@@ -289,13 +320,12 @@ static const NSTimeInterval kTestTimeout   = 2; // seconds
 - (void)testEmptyConfigurationArray {
     XCTestExpectation * expectation = [self expectationWithDescription:@"Wait for rewardedVideo load"];
 
-    MPRewardedVideoDelegateHandler * handler = [MPRewardedVideoDelegateHandler new];
-    handler.didFailToLoadAd = ^{
+    [self.mockProxy registerSelector:@selector(rewardedVideoDidFailToLoadForAdManager:error:)
+                       forPostAction:^(NSInvocation *invocation) {
         [expectation fulfill];
-    };
+    }];
 
-    MPRewardedVideoAdManager * manager = [[MPRewardedVideoAdManager alloc] initWithAdUnitID:kTestAdUnitId delegate:handler];
-    [manager communicatorDidReceiveAdConfigurations:@[]];
+    [self.adManager communicatorDidReceiveAdConfigurations:@[]];
 
     [self waitForExpectationsWithTimeout:kTestTimeout handler:^(NSError * _Nullable error) {
         if (error != nil) {
@@ -307,13 +337,12 @@ static const NSTimeInterval kTestTimeout   = 2; // seconds
 - (void)testNilConfigurationArray {
     XCTestExpectation * expectation = [self expectationWithDescription:@"Wait for rewardedVideo load"];
 
-    MPRewardedVideoDelegateHandler * handler = [MPRewardedVideoDelegateHandler new];
-    handler.didFailToLoadAd = ^{
+    [self.mockProxy registerSelector:@selector(rewardedVideoDidFailToLoadForAdManager:error:)
+                       forPostAction:^(NSInvocation *invocation) {
         [expectation fulfill];
-    };
+    }];
 
-    MPRewardedVideoAdManager * manager = [[MPRewardedVideoAdManager alloc] initWithAdUnitID:kTestAdUnitId delegate:handler];
-    [manager communicatorDidReceiveAdConfigurations:nil];
+    [self.adManager communicatorDidReceiveAdConfigurations:nil];
 
     [self waitForExpectationsWithTimeout:kTestTimeout handler:^(NSError * _Nullable error) {
         if (error != nil) {
@@ -325,25 +354,24 @@ static const NSTimeInterval kTestTimeout   = 2; // seconds
 - (void)testMultipleResponsesFirstSuccess {
     XCTestExpectation * expectation = [self expectationWithDescription:@"Wait for rewardedVideo load"];
 
-    MPRewardedVideoDelegateHandler * handler = [MPRewardedVideoDelegateHandler new];
-    handler.didLoadAd = ^{
+    [self.mockProxy registerSelector:@selector(rewardedVideoDidLoadForAdManager:) forPostAction:^(NSInvocation *invocation) {
         [expectation fulfill];
-    };
-    handler.didFailToLoadAd = ^{
+    }];
+    [self.mockProxy registerSelector:@selector(rewardedVideoDidFailToLoadForAdManager:error:)
+                       forPostAction:^(NSInvocation *invocation) {
         XCTFail(@"Encountered an unexpected load failure");
         [expectation fulfill];
-    };
+    }];
 
     // Generate the ad configurations
-    MPAdConfiguration * rewardedVideoThatShouldLoad = [MPAdConfigurationFactory defaultRewardedVideoConfigurationWithCustomEventClassName:@"MPMockRewardedVideoCustomEvent"];
-    MPAdConfiguration * rewardedVideoLoadThatShouldNotLoad = [MPAdConfigurationFactory defaultRewardedVideoConfigurationWithCustomEventClassName:@"MPMockRewardedVideoCustomEvent"];
+    MPAdConfiguration * rewardedVideoThatShouldLoad = [MPAdConfigurationFactory defaultFullscreenConfigWithAdapterClass:MPFullscreenAdAdapterMock.class];
+    MPAdConfiguration * rewardedVideoLoadThatShouldNotLoad = [MPAdConfigurationFactory defaultFullscreenConfigWithAdapterClass:MPFullscreenAdAdapterMock.class];
     MPAdConfiguration * rewardedVideoLoadFail = [MPAdConfigurationFactory defaultRewardedVideoConfigurationWithCustomEventClassName:@"i_should_not_exist"];
     NSArray * configurations = @[rewardedVideoThatShouldLoad, rewardedVideoLoadThatShouldNotLoad, rewardedVideoLoadFail];
 
-    MPRewardedVideoAdManager * manager = [[MPRewardedVideoAdManager alloc] initWithAdUnitID:kTestAdUnitId delegate:handler];
-    MPMockAdServerCommunicator * communicator = [[MPMockAdServerCommunicator alloc] initWithDelegate:manager];
-    manager.communicator = communicator;
-    [manager communicatorDidReceiveAdConfigurations:configurations];
+    MPMockAdServerCommunicator *communicator = [[MPMockAdServerCommunicator alloc] initWithDelegate:self.adManager];
+    self.adManager.communicator = communicator;
+    [self.adManager communicatorDidReceiveAdConfigurations:configurations];
 
     [self waitForExpectationsWithTimeout:kTestTimeout handler:^(NSError * _Nullable error) {
         if (error != nil) {
@@ -358,25 +386,25 @@ static const NSTimeInterval kTestTimeout   = 2; // seconds
 - (void)testMultipleResponsesMiddleSuccess {
     XCTestExpectation * expectation = [self expectationWithDescription:@"Wait for rewardedVideo load"];
 
-    MPRewardedVideoDelegateHandler * handler = [MPRewardedVideoDelegateHandler new];
-    handler.didLoadAd = ^{
+    [self.mockProxy registerSelector:@selector(rewardedVideoDidLoadForAdManager:)
+                       forPostAction:^(NSInvocation *invocation) {
         [expectation fulfill];
-    };
-    handler.didFailToLoadAd = ^{
+    }];
+    [self.mockProxy registerSelector:@selector(rewardedVideoDidFailToLoadForAdManager:error:)
+                       forPostAction:^(NSInvocation *invocation) {
         XCTFail(@"Encountered an unexpected load failure");
         [expectation fulfill];
-    };
+    }];
 
     // Generate the ad configurations
-    MPAdConfiguration * rewardedVideoThatShouldLoad = [MPAdConfigurationFactory defaultRewardedVideoConfigurationWithCustomEventClassName:@"MPMockRewardedVideoCustomEvent"];
-    MPAdConfiguration * rewardedVideoLoadThatShouldNotLoad = [MPAdConfigurationFactory defaultRewardedVideoConfigurationWithCustomEventClassName:@"MPMockRewardedVideoCustomEvent"];
+    MPAdConfiguration * rewardedVideoThatShouldLoad = [MPAdConfigurationFactory defaultFullscreenConfigWithAdapterClass:MPFullscreenAdAdapterMock.class];
+    MPAdConfiguration * rewardedVideoLoadThatShouldNotLoad = [MPAdConfigurationFactory defaultFullscreenConfigWithAdapterClass:MPFullscreenAdAdapterMock.class];
     MPAdConfiguration * rewardedVideoLoadFail = [MPAdConfigurationFactory defaultRewardedVideoConfigurationWithCustomEventClassName:@"i_should_not_exist"];
     NSArray * configurations = @[rewardedVideoLoadFail, rewardedVideoThatShouldLoad, rewardedVideoLoadThatShouldNotLoad];
 
-    MPRewardedVideoAdManager * manager = [[MPRewardedVideoAdManager alloc] initWithAdUnitID:kTestAdUnitId delegate:handler];
-    MPMockAdServerCommunicator * communicator = [[MPMockAdServerCommunicator alloc] initWithDelegate:manager];
-    manager.communicator = communicator;
-    [manager communicatorDidReceiveAdConfigurations:configurations];
+    MPMockAdServerCommunicator *communicator = [[MPMockAdServerCommunicator alloc] initWithDelegate:self.adManager];
+    self.adManager.communicator = communicator;
+    [self.adManager communicatorDidReceiveAdConfigurations:configurations];
 
     [self waitForExpectationsWithTimeout:kTestTimeout handler:^(NSError * _Nullable error) {
         if (error != nil) {
@@ -391,25 +419,25 @@ static const NSTimeInterval kTestTimeout   = 2; // seconds
 - (void)testMultipleResponsesLastSuccess {
     XCTestExpectation * expectation = [self expectationWithDescription:@"Wait for rewardedVideo load"];
 
-    MPRewardedVideoDelegateHandler * handler = [MPRewardedVideoDelegateHandler new];
-    handler.didLoadAd = ^{
+    [self.mockProxy registerSelector:@selector(rewardedVideoDidLoadForAdManager:)
+                       forPostAction:^(NSInvocation *invocation) {
         [expectation fulfill];
-    };
-    handler.didFailToLoadAd = ^{
+    }];
+    [self.mockProxy registerSelector:@selector(rewardedVideoDidFailToLoadForAdManager:error:)
+                       forPostAction:^(NSInvocation *invocation) {
         XCTFail(@"Encountered an unexpected load failure");
         [expectation fulfill];
-    };
+    }];
 
     // Generate the ad configurations
-    MPAdConfiguration * rewardedVideoThatShouldLoad = [MPAdConfigurationFactory defaultRewardedVideoConfigurationWithCustomEventClassName:@"MPMockRewardedVideoCustomEvent"];
+    MPAdConfiguration * rewardedVideoThatShouldLoad = [MPAdConfigurationFactory defaultFullscreenConfigWithAdapterClass:MPFullscreenAdAdapterMock.class];
     MPAdConfiguration * rewardedVideoLoadFail1 = [MPAdConfigurationFactory defaultRewardedVideoConfigurationWithCustomEventClassName:@"i_should_not_exist"];
     MPAdConfiguration * rewardedVideoLoadFail2 = [MPAdConfigurationFactory defaultRewardedVideoConfigurationWithCustomEventClassName:@"i_should_not_exist"];
     NSArray * configurations = @[rewardedVideoLoadFail1, rewardedVideoLoadFail2, rewardedVideoThatShouldLoad];
 
-    MPRewardedVideoAdManager * manager = [[MPRewardedVideoAdManager alloc] initWithAdUnitID:kTestAdUnitId delegate:handler];
-    MPMockAdServerCommunicator * communicator = [[MPMockAdServerCommunicator alloc] initWithDelegate:manager];
-    manager.communicator = communicator;
-    [manager communicatorDidReceiveAdConfigurations:configurations];
+    MPMockAdServerCommunicator *communicator = [[MPMockAdServerCommunicator alloc] initWithDelegate:self.adManager];
+    self.adManager.communicator = communicator;
+    [self.adManager communicatorDidReceiveAdConfigurations:configurations];
 
     [self waitForExpectationsWithTimeout:kTestTimeout handler:^(NSError * _Nullable error) {
         if (error != nil) {
@@ -424,20 +452,19 @@ static const NSTimeInterval kTestTimeout   = 2; // seconds
 - (void)testMultipleResponsesFailOverToNextPage {
     XCTestExpectation * expectation = [self expectationWithDescription:@"Wait for rewardedVideo load"];
 
-    MPRewardedVideoDelegateHandler * handler = [MPRewardedVideoDelegateHandler new];
-    handler.didFailToLoadAd = ^{
+    [self.mockProxy registerSelector:@selector(rewardedVideoDidFailToLoadForAdManager:error:)
+                       forPostAction:^(NSInvocation *invocation) {
         [expectation fulfill];
-    };
+    }];
 
     // Generate the ad configurations
     MPAdConfiguration * rewardedVideoLoadFail1 = [MPAdConfigurationFactory defaultRewardedVideoConfigurationWithCustomEventClassName:@"i_should_not_exist"];
     MPAdConfiguration * rewardedVideoLoadFail2 = [MPAdConfigurationFactory defaultRewardedVideoConfigurationWithCustomEventClassName:@"i_should_not_exist"];
     NSArray * configurations = @[rewardedVideoLoadFail1, rewardedVideoLoadFail2];
 
-    MPRewardedVideoAdManager * manager = [[MPRewardedVideoAdManager alloc] initWithAdUnitID:kTestAdUnitId delegate:handler];
-    MPMockAdServerCommunicator * communicator = [[MPMockAdServerCommunicator alloc] initWithDelegate:manager];
-    manager.communicator = communicator;
-    [manager communicatorDidReceiveAdConfigurations:configurations];
+    MPMockAdServerCommunicator *communicator = [[MPMockAdServerCommunicator alloc] initWithDelegate:self.adManager];
+    self.adManager.communicator = communicator;
+    [self.adManager communicatorDidReceiveAdConfigurations:configurations];
 
     [self waitForExpectationsWithTimeout:kTestTimeout handler:^(NSError * _Nullable error) {
         if (error != nil) {
@@ -454,22 +481,21 @@ static const NSTimeInterval kTestTimeout   = 2; // seconds
 - (void)testMultipleResponsesFailOverToNextPageClear {
     XCTestExpectation * expectation = [self expectationWithDescription:@"Wait for rewardedVideo load"];
 
-    MPRewardedVideoDelegateHandler * handler = [MPRewardedVideoDelegateHandler new];
-    handler.didFailToLoadAd = ^{
+    [self.mockProxy registerSelector:@selector(rewardedVideoDidFailToLoadForAdManager:error:)
+                       forPostAction:^(NSInvocation *invocation) {
         [expectation fulfill];
-    };
+    }];
 
     // Generate the ad configurations
     MPAdConfiguration * rewardedVideoLoadFail1 = [MPAdConfigurationFactory defaultRewardedVideoConfigurationWithCustomEventClassName:@"i_should_not_exist"];
     MPAdConfiguration * rewardedVideoLoadFail2 = [MPAdConfigurationFactory defaultRewardedVideoConfigurationWithCustomEventClassName:@"i_should_not_exist"];
     NSArray * configurations = @[rewardedVideoLoadFail1, rewardedVideoLoadFail2];
 
-    MPRewardedVideoAdManager * manager = [[MPRewardedVideoAdManager alloc] initWithAdUnitID:kTestAdUnitId delegate:handler];
-    MPMockAdServerCommunicator * communicator = [[MPMockAdServerCommunicator alloc] initWithDelegate:manager];
+    MPMockAdServerCommunicator *communicator = [[MPMockAdServerCommunicator alloc] initWithDelegate:self.adManager];
     communicator.mockConfigurationsResponse = @[[MPAdConfigurationFactory clearResponse]];
 
-    manager.communicator = communicator;
-    [manager communicatorDidReceiveAdConfigurations:configurations];
+    self.adManager.communicator = communicator;
+    [self.adManager communicatorDidReceiveAdConfigurations:configurations];
 
     [self waitForExpectationsWithTimeout:kTestTimeout handler:^(NSError * _Nullable error) {
         if (error != nil) {
@@ -504,7 +530,7 @@ static const NSTimeInterval kTestTimeout   = 2; // seconds
 
     NSString * viewabilityValue = [url stringForPOSTDataKey:kViewabilityStatusKey];
     XCTAssertNotNil(viewabilityValue);
-    XCTAssertTrue([viewabilityValue isEqualToString:@"1"]);
+    XCTAssertTrue([viewabilityValue isEqualToString:@"4"]);
 }
 
 #pragma mark - Local Extras
@@ -512,27 +538,27 @@ static const NSTimeInterval kTestTimeout   = 2; // seconds
 - (void)testLocalExtrasInCustomEvent {
     XCTestExpectation * expectation = [self expectationWithDescription:@"Wait for rewardedVideo load"];
 
-    MPRewardedVideoDelegateHandler * handler = [MPRewardedVideoDelegateHandler new];
-    handler.didLoadAd = ^{
+    [self.mockProxy registerSelector:@selector(rewardedVideoDidLoadForAdManager:)
+                       forPostAction:^(NSInvocation *invocation) {
         [expectation fulfill];
-    };
-    handler.didFailToLoadAd = ^{
+    }];
+    [self.mockProxy registerSelector:@selector(rewardedVideoDidFailToLoadForAdManager:error:)
+                       forPostAction:^(NSInvocation *invocation) {
         XCTFail(@"Encountered an unexpected load failure");
         [expectation fulfill];
-    };
+    }];
 
     // Generate the ad configurations
-    MPAdConfiguration * rewardedVideoThatShouldLoad = [MPAdConfigurationFactory defaultRewardedVideoConfigurationWithCustomEventClassName:@"MPMockRewardedVideoCustomEvent"];
+    MPAdConfiguration * rewardedVideoThatShouldLoad = [MPAdConfigurationFactory defaultFullscreenConfigWithAdapterClass:MPFullscreenAdAdapterMock.class];
     NSArray * configurations = @[rewardedVideoThatShouldLoad];
 
-    MPRewardedVideoAdManager * manager = [[MPRewardedVideoAdManager alloc] initWithAdUnitID:kTestAdUnitId delegate:handler];
-    MPMockAdServerCommunicator * communicator = [[MPMockAdServerCommunicator alloc] initWithDelegate:manager];
+    MPMockAdServerCommunicator *communicator = [[MPMockAdServerCommunicator alloc] initWithDelegate:self.adManager];
     communicator.mockConfigurationsResponse = configurations;
-    manager.communicator = communicator;
+    self.adManager.communicator = communicator;
 
     MPAdTargeting * targeting = [[MPAdTargeting alloc] initWithCreativeSafeSize:CGSizeZero];
     targeting.localExtras = @{ @"testing": @"YES" };
-    [manager loadRewardedVideoAdWithCustomerId:@"CUSTOMER_ID" targeting:targeting];
+    [self.adManager loadRewardedVideoAdWithCustomerId:@"CUSTOMER_ID" targeting:targeting];
 
     [self waitForExpectationsWithTimeout:kTestTimeout handler:^(NSError * _Nullable error) {
         if (error != nil) {
@@ -540,14 +566,10 @@ static const NSTimeInterval kTestTimeout   = 2; // seconds
         }
     }];
 
-    MPRewardedVideoAdapter * adapter = (MPRewardedVideoAdapter *)manager.adapter;
-    MPMockRewardedVideoCustomEvent * customEvent = (MPMockRewardedVideoCustomEvent *)adapter.rewardedVideoCustomEvent;
-    XCTAssertNotNil(customEvent);
-
-    NSDictionary * localExtras = customEvent.localExtras;
-    XCTAssertNotNil(localExtras);
-    XCTAssert([localExtras[@"testing"] isEqualToString:@"YES"]);
-    XCTAssertTrue(customEvent.isLocalExtrasAvailableAtRequest);
+    id<MPFullscreenAdAdapter> adapter = (id<MPFullscreenAdAdapter>)self.adManager.adapter;
+    XCTAssertNotNil(adapter);
+    XCTAssertNotNil(adapter.localExtras);
+    XCTAssert([adapter.localExtras[@"testing"] isEqualToString:@"YES"]);
 }
 
 #pragma mark - Impression Level Revenue Data
@@ -555,50 +577,51 @@ static const NSTimeInterval kTestTimeout   = 2; // seconds
 - (void)testImpressionDelegateFiresWithoutILRD {
     XCTestExpectation * delegateExpectation = [self expectationWithDescription:@"Wait for impression delegate"];
     XCTestExpectation * notificationExpectation = [self expectationWithDescription:@"Wait for impression notification"];
-
-    __block MPRewardedVideoAdManager * manager = nil;
+    __weak __typeof__(self) weakSelf = self;
 
     // Make delegate handler
-    MPRewardedVideoDelegateHandler * handler = [MPRewardedVideoDelegateHandler new];
-    handler.didReceiveImpression = ^(MPImpressionData * impressionData) {
-        [delegateExpectation fulfill];
+    [self.mockProxy registerSelector:@selector(rewardedVideoDidLoadForAdManager:)
+                       forPostAction:^(NSInvocation *invocation) {
+        __typeof__(self) strongSelf = weakSelf;
 
-        XCTAssertNil(impressionData);
-    };
-
-    // Make notification handler
-    id notificationObserver = [[NSNotificationCenter defaultCenter] addObserverForName:kMPImpressionTrackedNotification
-                                                                                object:nil
-                                                                                 queue:[NSOperationQueue mainQueue]
-                                                                            usingBlock:^(NSNotification * note){
-                                                                                [notificationExpectation fulfill];
-
-                                                                                MPImpressionData * impressionData = note.userInfo[kMPImpressionTrackedInfoImpressionDataKey];
-                                                                                XCTAssertNil(impressionData);
-                                                                                XCTAssertNil(note.object);
-                                                                                XCTAssert([note.userInfo[kMPImpressionTrackedInfoAdUnitIDKey] isEqualToString:manager.adUnitId]);
-                                                                            }];
-
-    // Generate the ad configurations
-    MPAdConfiguration * rewardedVideoThatShouldLoad = [MPAdConfigurationFactory defaultRewardedVideoConfigurationWithCustomEventClassName:@"MPMockRewardedVideoCustomEvent"];
-    NSArray * configurations = @[rewardedVideoThatShouldLoad];
-
-    manager = [[MPRewardedVideoAdManager alloc] initWithAdUnitID:kTestAdUnitId delegate:handler];
-    MPMockAdServerCommunicator * communicator = [[MPMockAdServerCommunicator alloc] initWithDelegate:manager];
-    communicator.mockConfigurationsResponse = configurations;
-    manager.communicator = communicator;
-
-    handler.didLoadAd = ^{
         // Track impression
-        MPRewardedVideoAdapter * adapter = (MPRewardedVideoAdapter *)manager.adapter;
-        [adapter trackImpression];
+        [strongSelf.adManager.adapter trackImpression];
 
         // Simulate impression to @c MPRewardedVideo proper
-        [[MPRewardedVideo sharedInstance] rewardedVideoAdManager:manager didReceiveImpressionEventWithImpressionData:nil];
-    };
+        [[MPRewardedVideo sharedInstance] rewardedVideoAdManager:strongSelf.adManager didReceiveImpressionEventWithImpressionData:nil];
+    }];
+
+    [self.mockProxy registerSelector:@selector(rewardedVideoAdManager:didReceiveImpressionEventWithImpressionData:)
+                       forPostAction:^(NSInvocation *invocation) {
+        __unsafe_unretained MPImpressionData *impressionData;
+        [invocation getArgument:&impressionData atIndex:3];
+        XCTAssertNil(impressionData);
+        [delegateExpectation fulfill];
+    }];
+
+    // Make notification handler
+    id notificationObserver = [[NSNotificationCenter defaultCenter]
+                               addObserverForName:kMPImpressionTrackedNotification
+                               object:nil
+                               queue:[NSOperationQueue mainQueue]
+                               usingBlock:^(NSNotification *note){
+        MPImpressionData *impressionData = note.userInfo[kMPImpressionTrackedInfoImpressionDataKey];
+        XCTAssertNil(impressionData);
+        XCTAssertNil(note.object);
+        XCTAssert([note.userInfo[kMPImpressionTrackedInfoAdUnitIDKey] isEqualToString:self.adManager.adUnitId]);
+        [notificationExpectation fulfill];
+    }];
+
+    // Generate the ad configurations
+    MPAdConfiguration * rewardedVideoThatShouldLoad = [MPAdConfigurationFactory defaultFullscreenConfigWithAdapterClass:MPFullscreenAdAdapterMock.class];
+    NSArray * configurations = @[rewardedVideoThatShouldLoad];
+
+    MPMockAdServerCommunicator * communicator = [[MPMockAdServerCommunicator alloc] initWithDelegate:self.adManager];
+    communicator.mockConfigurationsResponse = configurations;
+    self.adManager.communicator = communicator;
 
     MPAdTargeting * targeting = [[MPAdTargeting alloc] initWithCreativeSafeSize:CGSizeZero];
-    [manager loadRewardedVideoAdWithCustomerId:@"CUSTOMER_ID" targeting:targeting];
+    [self.adManager loadRewardedVideoAdWithCustomerId:@"CUSTOMER_ID" targeting:targeting];
 
     [self waitForExpectationsWithTimeout:kTestTimeout handler:^(NSError * _Nullable error) {
         if (error != nil) {
@@ -613,55 +636,53 @@ static const NSTimeInterval kTestTimeout   = 2; // seconds
     XCTestExpectation * delegateExpectation = [self expectationWithDescription:@"Wait for impression delegate"];
     XCTestExpectation * notificationExpectation = [self expectationWithDescription:@"Wait for impression notification"];
     NSString * testAdUnitID = @"TEST_ADUNIT_ID";
-
-    __block MPRewardedVideoAdManager * manager = nil;
+    // Generate the ad configurations
+    MPAdConfiguration *rewardedVideoThatShouldLoad = [MPAdConfigurationFactory defaultFullscreenConfigWithAdapterClass:MPFullscreenAdAdapterMock.class];
+    rewardedVideoThatShouldLoad.impressionData = [[MPImpressionData alloc] initWithDictionary:@{kImpressionDataAdUnitIDKey:testAdUnitID}];
+    __weak __typeof__(self) weakSelf = self;
 
     // Make delegate handler
-    MPRewardedVideoDelegateHandler * handler = [MPRewardedVideoDelegateHandler new];
-    handler.didReceiveImpression = ^(MPImpressionData * impressionData) {
-        [delegateExpectation fulfill];
+    [self.mockProxy registerSelector:@selector(rewardedVideoDidLoadForAdManager:)
+                       forPostAction:^(NSInvocation *invocation) {
+        __typeof__(self) strongSelf = weakSelf;
 
-        XCTAssertNotNil(impressionData);
-        XCTAssert([impressionData.adUnitID isEqualToString:testAdUnitID]);
-    };
-
-    // Make notification handler
-    id notificationObserver = [[NSNotificationCenter defaultCenter] addObserverForName:kMPImpressionTrackedNotification
-                                                                                object:nil
-                                                                                 queue:[NSOperationQueue mainQueue]
-                                                                            usingBlock:^(NSNotification * note){
-                                                                                [notificationExpectation fulfill];
-
-                                                                                MPImpressionData * impressionData = note.userInfo[kMPImpressionTrackedInfoImpressionDataKey];
-                                                                                XCTAssertNotNil(impressionData);
-                                                                                XCTAssert([impressionData.adUnitID isEqualToString:testAdUnitID]);
-                                                                                XCTAssertNil(note.object);
-                                                                                XCTAssert([note.userInfo[kMPImpressionTrackedInfoAdUnitIDKey] isEqualToString:manager.adUnitId]);
-                                                                            }];
-
-    // Generate the ad configurations
-    MPAdConfiguration * rewardedVideoThatShouldLoad = [MPAdConfigurationFactory defaultRewardedVideoConfigurationWithCustomEventClassName:@"MPMockRewardedVideoCustomEvent"];
-    rewardedVideoThatShouldLoad.impressionData = [[MPImpressionData alloc] initWithDictionary:@{
-                                                                                                kImpressionDataAdUnitIDKey: testAdUnitID
-                                                                                                }];
-    NSArray * configurations = @[rewardedVideoThatShouldLoad];
-
-    manager = [[MPRewardedVideoAdManager alloc] initWithAdUnitID:kTestAdUnitId delegate:handler];
-    MPMockAdServerCommunicator * communicator = [[MPMockAdServerCommunicator alloc] initWithDelegate:manager];
-    communicator.mockConfigurationsResponse = configurations;
-    manager.communicator = communicator;
-
-    handler.didLoadAd = ^{
         // Track impression
-        MPRewardedVideoAdapter * adapter = (MPRewardedVideoAdapter *)manager.adapter;
-        [adapter trackImpression];
+        [strongSelf.adManager.adapter trackImpression];
 
         // Simulate impression to @c MPRewardedVideo proper
-        [[MPRewardedVideo sharedInstance] rewardedVideoAdManager:manager didReceiveImpressionEventWithImpressionData:rewardedVideoThatShouldLoad.impressionData];
-    };
+        [[MPRewardedVideo sharedInstance] rewardedVideoAdManager:strongSelf.adManager
+                     didReceiveImpressionEventWithImpressionData:rewardedVideoThatShouldLoad.impressionData];
+    }];
+
+    [self.mockProxy registerSelector:@selector(rewardedVideoAdManager:didReceiveImpressionEventWithImpressionData:)
+                       forPostAction:^(NSInvocation *invocation) {
+        __unsafe_unretained MPImpressionData *impressionData;
+        [invocation getArgument:&impressionData atIndex:3];
+        XCTAssertNotNil(impressionData);
+        XCTAssert([impressionData.adUnitID isEqualToString:testAdUnitID]);
+        [delegateExpectation fulfill];
+    }];
+
+    // Make notification handler
+    id notificationObserver = [[NSNotificationCenter defaultCenter]
+                               addObserverForName:kMPImpressionTrackedNotification
+                               object:nil
+                               queue:[NSOperationQueue mainQueue]
+                               usingBlock:^(NSNotification *note){
+        MPImpressionData *impressionData = note.userInfo[kMPImpressionTrackedInfoImpressionDataKey];
+        XCTAssertNotNil(impressionData);
+        XCTAssert([impressionData.adUnitID isEqualToString:testAdUnitID]);
+        XCTAssertNil(note.object);
+        XCTAssert([note.userInfo[kMPImpressionTrackedInfoAdUnitIDKey] isEqualToString:self.adManager.adUnitId]);
+        [notificationExpectation fulfill];
+    }];
+
+    MPMockAdServerCommunicator * communicator = [[MPMockAdServerCommunicator alloc] initWithDelegate:self.adManager];
+    communicator.mockConfigurationsResponse = @[rewardedVideoThatShouldLoad];
+    self.adManager.communicator = communicator;
 
     MPAdTargeting * targeting = [[MPAdTargeting alloc] initWithCreativeSafeSize:CGSizeZero];
-    [manager loadRewardedVideoAdWithCustomerId:@"CUSTOMER_ID" targeting:targeting];
+    [self.adManager loadRewardedVideoAdWithCustomerId:@"CUSTOMER_ID" targeting:targeting];
 
     [self waitForExpectationsWithTimeout:kTestTimeout handler:^(NSError * _Nullable error) {
         if (error != nil) {

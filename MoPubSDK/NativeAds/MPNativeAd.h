@@ -16,9 +16,9 @@
 @class MPAdConfiguration;
 
 /**
- * The `MPNativeAd` class is used to render and manage events for a native advertisement. The
- * class provides methods for accessing native ad properties returned by the server, as well as
- * convenience methods for URL navigation and metrics-gathering.
+ The `MPNativeAd` class is used to render and manage events for a native advertisement. The
+ class provides methods for accessing native ad properties returned by the server, as well as
+ convenience methods for URL navigation and metrics-gathering.
  */
 
 @interface MPNativeAd : NSObject <MPMoPubAd>
@@ -26,18 +26,18 @@
 /** @name Ad Resources */
 
 /**
- * Exposed click status of the Ad to destinguish between clicks on Ad and Info.
+ * Expose the click status of the Ad to distinguish between clicks on Ad and Info.
  * - Alexander Balaban
  */
 @property (nonatomic, readonly) BOOL hasTrackedClick;
 
 /**
- * The delegate of the `MPNativeAd` object.
+ The delegate of the `MPNativeAd` object.
  */
 @property (nonatomic, weak) id<MPNativeAdDelegate> delegate;
 
 /**
- * A dictionary representing the native ad properties.
+ A dictionary representing the native ad properties.
  */
 @property (nonatomic, readonly) NSDictionary *properties;
 
@@ -46,13 +46,13 @@
 /** @name Retrieving Ad View */
 
 /**
- * Retrieves a rendered view containing the ad.
- *
- * @param error A pointer to an error object. If an error occurs, this pointer will be set to an
- * actual error object containing the error information.
- *
- * @return If successful, the method will return a view containing the rendered ad. The method will
- * return nil if it cannot render the ad data to a view.
+ Retrieves a rendered view containing the ad.
+
+ @param error A pointer to an error object. If an error occurs, this pointer will be set to an
+ actual error object containing the error information.
+
+ @return If successful, the method will return a view containing the rendered ad. The method will
+ return nil if it cannot render the ad data to a view.
  */
 - (UIView *)retrieveAdViewWithError:(NSError **)error;
 

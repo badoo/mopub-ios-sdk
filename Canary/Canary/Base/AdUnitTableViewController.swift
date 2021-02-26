@@ -60,10 +60,8 @@ class AdUnitTableViewController: UIViewController {
             return
         }
         
-        // Embed the destination ad view controller into a navigation controller so that
-        // pushing onto the navigation stack will work.
-        let navigationController: UINavigationController = UINavigationController(rootViewController: destination)
-        splitViewController?.showDetailViewController(navigationController, sender: self)
+        // Push the destination ad view controller onto the navigation stack.
+        navigationController?.pushViewController(destination, animated: true)
     }
     
     /**
@@ -166,6 +164,10 @@ extension AdUnitTableViewController: UITableViewDelegate {
     
     func tableView(_ tableView: UITableView, heightForHeaderInSection section: Int) -> CGFloat {
         return UITableView.automaticDimension
+    }
+    
+    func tableView(_ tableView: UITableView, heightForFooterInSection section: Int) -> CGFloat {
+        return 8 // leave some space between section headers if a section is below an empty section
     }
 }
 

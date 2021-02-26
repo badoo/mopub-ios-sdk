@@ -8,8 +8,9 @@
 
 #import "MPLogEvent.h"
 #import "MPAdapterConfiguration.h"
-#import "MPRewardedVideoReward.h"
+#import "MPReward.h"
 #import "MPURLRequest.h"
+#import "MPViewabilityObstruction.h"
 #import "NSString+MPConsentStatus.h"
 
 @implementation MPLogEvent
@@ -123,7 +124,7 @@
     return [[MPLogEvent alloc] initWithMessage:message];
 }
 
-+ (instancetype)adShouldRewardUserWithReward:(MPRewardedVideoReward *)reward {
++ (instancetype)adShouldRewardUserWithReward:(MPReward *)reward {
     NSString * message = [NSString stringWithFormat:@"Should rewarded user with %@ %@", reward.amount, reward.currencyType];
     return [[MPLogEvent alloc] initWithMessage:message];
 }
@@ -147,7 +148,7 @@
 }
 
 + (instancetype)adLoadSuccessForAdapter:(NSString *)name {
-    NSString * message = [NSString stringWithFormat:@"Adapter %@ sucessfully loaded ad", name];
+    NSString * message = [NSString stringWithFormat:@"Adapter %@ successfully loaded ad", name];
     return [[MPLogEvent alloc] initWithMessage:message];
 }
 
@@ -162,7 +163,7 @@
 }
 
 + (instancetype)adShowSuccessForAdapter:(NSString *)name {
-    NSString * message = [NSString stringWithFormat:@"Adapter %@ sucessfully showed ad", name];
+    NSString * message = [NSString stringWithFormat:@"Adapter %@ successfully showed ad", name];
     return [[MPLogEvent alloc] initWithMessage:message];
 }
 
@@ -301,6 +302,60 @@
 + (instancetype)javascriptConsoleLogWithMessage:(NSString *)message {
     NSString * scrubbedMessage = [message stringByReplacingOccurrencesOfString:@"ios-log: " withString:@""];
     return [[MPLogEvent alloc] initWithMessage:[NSString stringWithFormat:@"Javascript console logged: %@", scrubbedMessage]];
+}
+
+@end
+
+@implementation MPLogEvent (Viewability)
+
++ (instancetype)viewabilityDisabled {
+    static NSString * const message = @"Viewability has been disabled";
+    return [[MPLogEvent alloc] initWithMessage:message];
+}
+
++ (instancetype)viewabilityTrackerCreated:(id<MPViewabilityTracker>)tracker {
+    NSString * message = [NSString stringWithFormat:@"Viewability tracker (%p) created", tracker];
+    return [[MPLogEvent alloc] initWithMessage:message];
+}
+
++ (instancetype)viewabilityTrackerDeallocated:(id<MPViewabilityTracker>)tracker {
+    NSString * message = [NSString stringWithFormat:@"Viewability tracker (%p) deallocated", tracker];
+    return [[MPLogEvent alloc] initWithMessage:message];
+}
+
++ (instancetype)viewabilityTrackerSessionStarted:(id<MPViewabilityTracker>)tracker {
+    NSString * message = [NSString stringWithFormat:@"Viewability tracker (%p) started session", tracker];
+    return [[MPLogEvent alloc] initWithMessage:message];
+}
+
++ (instancetype)viewabilityTrackerSessionStopped:(id<MPViewabilityTracker>)tracker {
+    NSString * message = [NSString stringWithFormat:@"Viewability tracker (%p) stopped session", tracker];
+    return [[MPLogEvent alloc] initWithMessage:message];
+}
+
++ (instancetype)viewabilityTrackerUpdatedTrackingView:(id<MPViewabilityTracker>)tracker {
+    NSString * message = [NSString stringWithFormat:@"Viewability tracker (%p) changed tracked view", tracker];
+    return [[MPLogEvent alloc] initWithMessage:message];
+}
+
++ (instancetype)viewabilityTrackerTrackedAdLoaded:(id<MPViewabilityTracker>)tracker {
+    NSString * message = [NSString stringWithFormat:@"Viewability tracker (%p) ad event: loaded", tracker];
+    return [[MPLogEvent alloc] initWithMessage:message];
+}
+
++ (instancetype)viewabilityTrackerTrackedImpression:(id<MPViewabilityTracker>)tracker {
+    NSString * message = [NSString stringWithFormat:@"Viewability tracker (%p) ad event: impression", tracker];
+    return [[MPLogEvent alloc] initWithMessage:message];
+}
+
++ (instancetype)viewabilityTracker:(id<MPViewabilityTracker>)tracker trackedVideoEvent:(NSString *)event {
+    NSString * message = [NSString stringWithFormat:@"Viewability tracker (%p) video event: %@", tracker, event];
+    return [[MPLogEvent alloc] initWithMessage:message];
+}
+
++ (instancetype)viewabilityTracker:(id<MPViewabilityTracker>)tracker addedFriendlyObstruction:(id<MPViewabilityObstruction>)obstruction {
+    NSString * message = [NSString stringWithFormat:@"Viewability tracker (%p) added friendly obstruction: %@", tracker, obstruction.viewabilityObstructionName];
+    return [[MPLogEvent alloc] initWithMessage:message];
 }
 
 @end

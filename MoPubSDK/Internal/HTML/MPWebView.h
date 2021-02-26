@@ -7,14 +7,14 @@
 //
 
 /**
- * @c MPWebView
- * This class is a wrapper class for @c WKWebView. @c MPWebView blocks all JavaScript text boxes from appearing.
- *
- * It's highly recommended that the caller uses @c `evaluateJavaScript:completionHandler:` whenever code can be reworked
- * to make use of completion blocks to keep the advantages of asynchronicity. It solely fires off the javascript execution within
- * @c WKWebView and does not wait or return.
- *
- * MPWebView currently does not support a few other features of WKWebView, such as pagination -- as WKWebView.
+ @c MPWebView
+ This class is a wrapper class for @c WKWebView. @c MPWebView blocks all JavaScript text boxes from appearing.
+
+ It's highly recommended that the caller uses @c `evaluateJavaScript:completionHandler:` whenever code can be reworked
+ to make use of completion blocks to keep the advantages of asynchronicity. It solely fires off the javascript execution within
+ @c WKWebView and does not wait or return.
+
+ MPWebView currently does not support a few other features of WKWebView, such as pagination -- as WKWebView.
  */
 
 #import <UIKit/UIKit.h>
@@ -44,6 +44,13 @@ typedef void (^MPWebViewJavascriptEvaluationCompletionHandler)(id result, NSErro
 @interface MPWebView : UIView
 
 @property (weak, nonatomic) id<MPWebViewDelegate> delegate;
+
+/**
+ Initializes a webview with the given size and user scripts.
+ @param frame The frame rectangle for the view, measured in points. The origin of the frame is relative to the superview in which you plan to add it. This method uses the frame rectangle to set the center and bounds properties accordingly.
+ @param scripts Optional scripts that will be injected into the webview.
+ */
+- (instancetype)initWithFrame:(CGRect)frame scripts:(NSArray<WKUserScript *> *)scripts;
 
 // When set to `YES`, `shouldConformToSafeArea` sets constraints on the WKWebView to always stay within the safe area
 // using the MPWebView's safeAreaLayoutGuide. Otherwise, the WKWebView will be constrained directly to MPWebView's
@@ -86,7 +93,6 @@ textEncodingName:(NSString *)encodingName
 - (NSString *)stringByEvaluatingJavaScriptFromString:(NSString *)javaScriptString;
 
 @property (nonatomic, readonly) BOOL allowsInlineMediaPlayback;
-@property (nonatomic, readonly) BOOL mediaPlaybackRequiresUserAction;
 @property (nonatomic, readonly) BOOL mediaPlaybackAllowsAirPlay;
 
 - (void)mp_setScrollable:(BOOL)scrollable;

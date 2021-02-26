@@ -22,7 +22,6 @@ class NativeAdView: UIView {
     @IBOutlet weak var mainImageView: UIImageView!
     @IBOutlet weak var sponsoredByLabel: UILabel!
     @IBOutlet weak var privacyInformationIconImageView: UIImageView!
-    @IBOutlet weak var videoView: UIView!
     
     // IBInspectable
     @IBInspectable var nibName: String? = "NativeAdView"
@@ -122,10 +121,6 @@ extension NativeAdView: MPNativeAdRendering {
     
     func nativePrivacyInformationIconImageView() -> UIImageView! {
         return privacyInformationIconImageView
-    }
-    
-    func nativeVideoView() -> UIView! {
-        return videoView
     }
     
     static func localizedSponsoredByText(withSponsorName sponsorName: String!) -> String! {

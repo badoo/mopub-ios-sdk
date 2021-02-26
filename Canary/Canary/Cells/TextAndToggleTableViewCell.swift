@@ -21,6 +21,11 @@ final class TextAndToggleTableViewCell: UITableViewCell, TableViewCellRegisterab
     @IBOutlet private weak var toggle: UISwitch!
     private var toggleHandler: ToggleHandler?
     
+    var isToggleEnabled: Bool {
+        get { return toggle.isEnabled }
+        set { toggle.isEnabled = newValue }
+    }
+    
     // MARK: - Functions
     
     @IBAction private func toggleValueDidChange(_ sender: UISwitch) {

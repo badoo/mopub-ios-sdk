@@ -7,6 +7,7 @@
 //
 
 #import <Foundation/Foundation.h>
+#import "MPVASTVerificationErrorReason.h"
 
 extern const NSTimeInterval kMPVASTMacroProcessorUnknownTimeOffset;
 
@@ -14,5 +15,6 @@ extern const NSTimeInterval kMPVASTMacroProcessorUnknownTimeOffset;
 
 + (NSURL *)macroExpandedURLForURL:(NSURL *)URL errorCode:(NSString *)errorCode;
 + (NSURL *)macroExpandedURLForURL:(NSURL *)URL errorCode:(NSString *)errorCode videoTimeOffset:(NSTimeInterval)timeOffset videoAssetURL:(NSURL *)videoAssetURL;
++ (NSURL *)macroExpandedURLForURL:(NSURL *)URL verificationErrorReason:(MPVASTVerificationErrorReason)reason;
 
 @end

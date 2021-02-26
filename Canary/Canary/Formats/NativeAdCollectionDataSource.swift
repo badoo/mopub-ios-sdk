@@ -31,8 +31,8 @@ class NativeAdCollectionDataSource: BaseNativeAdDataSource {
     lazy var data: [(name: String, tweet: String, color: UIColor)] = {
         var data: [(name: String, tweet: String, color: UIColor)] = []
         for index in 1...100 {
-            let name = LoremIpsum.name()!
-            let tweet = LoremIpsum.tweet()!
+            let name = LoremIpsum.name
+            let tweet = LoremIpsum.tweet
             let color = UIColor.random
             data.append((name: name, tweet: tweet, color: color))
         }

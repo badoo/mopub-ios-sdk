@@ -67,19 +67,50 @@ extension UserDefaults {
     /**
      The private `UserDefaults.Key` for accessing `cachedAdUnitId`.
      */
-    private var cachedAdUnitIdKey: Key<String> {
-        return Key<String>("cachedAdUnitIdKey", defaultValue: "")
+    private var cachedAdUnitIdKey: Key<String?> {
+        return Key<String?>("cachedAdUnitIdKey", defaultValue: nil)
     }
     
     /**
      Cached ad unit ID used for MoPub SDK initialization
      */
-    var cachedAdUnitId: String {
+    var cachedAdUnitId: String? {
         get {
             return self[cachedAdUnitIdKey]
         }
         set {
-            self[cachedAdUnitIdKey] = newValue
+            guard let adUnitId = newValue else {
+                self.removeObject(forKey: cachedAdUnitIdKey.stringValue)
+                return
+            }
+            
+            self[cachedAdUnitIdKey] = adUnitId
+        }
+    }
+
+    /**
+     The private `UserDefaults.Key` for accessing `loadedAds`.
+     */
+    private var loadedAdsKey: Key<Data> {
+        return Key<Data>("loadedAdsKey", defaultValue: Data())
+    }
+    
+    /**
+     Ad unit ID's that have been loaded in history.
+     */
+    var loadedAds: [AdUnit] {
+        get {
+            guard let history = try? JSONDecoder().decode([AdUnit].self, from: self[loadedAdsKey]) else {
+                return []
+            }
+            return history
+        }
+        set {
+            guard let data = try? JSONEncoder().encode(newValue) else {
+                assertionFailure()
+                return
+            }
+            self[loadedAdsKey] = data
         }
     }
 }

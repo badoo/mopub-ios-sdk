@@ -13,8 +13,8 @@ NS_ASSUME_NONNULL_BEGIN
 
 @interface MPTimer (Testing)
 /**
- * A title string injected to Objective C runtime as associated value. Typically the test name is
- * used for timer title and unique identifier.
+ A title string injected to Objective C runtime as associated value. Typically the test name is
+ used for timer title and unique identifier.
  */
 @property (nonatomic, strong) NSString * associatedTitle;
 @end

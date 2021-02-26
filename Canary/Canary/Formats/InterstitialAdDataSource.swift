@@ -139,6 +139,8 @@ class InterstitialAdDataSource: NSObject, AdDataSource {
         interstitialAd.keywords = adUnit.keywords
         interstitialAd.userDataKeywords = adUnit.userDataKeywords
         interstitialAd.loadAd()
+        
+        SavedAdsManager.sharedInstance.addLoadedAds(adUnit: adUnit)
     }
     
     private func showAd() {

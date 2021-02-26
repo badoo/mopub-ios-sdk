@@ -7,7 +7,7 @@
 //
 
 #import <XCTest/XCTest.h>
-#import "MPRewardedVideoReward.h"
+#import "MPReward.h"
 
 @interface MPRewardedVideoRewardTests : XCTestCase
 
@@ -16,7 +16,7 @@
 @implementation MPRewardedVideoRewardTests
 
 - (void)testUnicodeRewards {
-    MPRewardedVideoReward * reward = [[MPRewardedVideoReward alloc] initWithCurrencyType:@"🐱🌟" amount:@(100)];
+    MPReward *reward = [[MPReward alloc] initWithCurrencyType:@"🐱🌟" amount:@(100)];
     XCTAssertNotNil(reward);
 }
 

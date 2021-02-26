@@ -23,7 +23,7 @@
 - (UIViewController *)viewControllerForPresentingModalView;
 
 /**
- * The latest ad targeting information for ad refresh and other scenarios.
+ The latest ad targeting information for ad refresh and other scenarios.
  */
 - (MPAdTargeting *)adTargeting;
 

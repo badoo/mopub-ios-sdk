@@ -24,8 +24,6 @@ MPVASTError VASTErrorCodeFromNativeAdErrorCode(MPNativeAdErrorCode nativeAdError
             return MPVASTErrorMezzanineIsBeingProccessed;
         case MPNativeAdErrorVASTParsingFailed:
             return MPVASTErrorXMLParseFailure;
-        case MPNativeAdErrorVideoConfigInvalid:
-            return MPVASTErrorXMLParseFailure;
         case MPNativeAdErrorContentDisplayError:
             return MPVASTErrorCannotPlayMedia;
         case MPNativeAdErrorRenderError:

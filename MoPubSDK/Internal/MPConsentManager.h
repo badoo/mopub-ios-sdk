@@ -60,7 +60,7 @@
 @property (nonatomic, copy, readonly, nonnull) NSString * currentLanguageCode;
 
 /**
- * Singleton instance of the manager.
+ Singleton instance of the manager.
  */
 + (MPConsentManager * _Nonnull)sharedManager;
 
@@ -251,30 +251,35 @@
 @interface MPConsentManager (PersonalDataHandler)
 
 /**
- * Clean up personal data and add additonal logic for personal data when consent state changes.
+ IDFA from @c ASIdentiferManager. The all zero IDFA @c 00000000-0000-0000-0000-000000000000 will be translated to @c nil.
+ */
+@property (nonatomic, copy, readonly, nullable) NSString * rawIfa;
+
+/**
+ Clean up personal data and add additonal logic for personal data when consent state changes.
  */
 
 - (void)handlePersonalDataOnStateChangeTo:(MPConsentStatus)newStatus fromOldStatus:(MPConsentStatus)oldStatus;
 
 /**
- * Store IFA(IDFA) temporary in NSUserDefault during MoPub initialization or app foregrounding. IFA is only used for removing personal data.
- *
+ Store IFA(IDFA) temporary in NSUserDefault during MoPub initialization or app foregrounding. IFA is only used for removing personal data.
+
  */
 - (void)storeIfa;
 
 /**
- * Remove IFA from NSUserDefault.
+ Remove IFA from NSUserDefault.
  */
 - (void)removeIfa;
 
 /**
- * If IFA is changed and the status is transitioning from MPConsentStatusConsented, remove old IFA from NSUserDefault and change status to unknown.
- *
+ If IFA is changed and the status is transitioning from MPConsentStatusConsented, remove old IFA from NSUserDefault and change status to unknown.
+
  */
 - (void)checkForIfaChange;
 
 /**
- * App conversion request will only be fired when MoPub obtains consent.
+ App conversion request will only be fired when MoPub obtains consent.
  */
 - (void)updateAppConversionTracking;
 

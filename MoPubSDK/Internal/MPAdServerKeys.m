@@ -12,13 +12,19 @@
 NSString * const kAdServerIDKey                       = @"id";
 NSString * const kServerAPIVersionKey                 = @"v";
 NSString * const kApplicationVersionKey               = @"av";
-NSString * const kIdfaKey                             = @"udid";
 NSString * const kMoPubIDKey                          = @"mid";
 NSString * const kBundleKey                           = @"bundle";
 NSString * const kDoNotTrackIdKey                     = @"dnt";
+NSString * const kTrackingAuthorizationStatusKey      = @"tas";
 NSString * const kSDKVersionKey                       = @"nv";
 NSString * const kSDKEngineNameKey                    = @"e_name";
 NSString * const kSDKEngineVersionKey                 = @"e_ver";
+NSString * const kOSKey                               = @"os";
+NSString * const kAdUnitKey                           = @"adunit";
+NSString * const kDeviceNameKey                       = @"dn";
+NSString * const kLocationAuthorizationStatusKey      = @"las";
+NSString * const kIdentifierForAdvertiserKey          = @"ifa";
+NSString * const kIdentifierForVendorKey              = @"ifv";
 
 #pragma mark - Ad Server Ad Request Endpoint Keys
 NSString * const kOrientationKey                      = @"o";
@@ -30,13 +36,13 @@ NSString * const kCarrierNameKey                      = @"cn";
 NSString * const kISOCountryCodeKey                   = @"iso";
 NSString * const kMobileNetworkCodeKey                = @"mnc";
 NSString * const kMobileCountryCodeKey                = @"mcc";
-NSString * const kDeviceNameKey                       = @"dn";
 NSString * const kDesiredAdAssetsKey                  = @"assets";
 NSString * const kAdSequenceKey                       = @"seq";
 NSString * const kScreenResolutionWidthKey            = @"w";
 NSString * const kScreenResolutionHeightKey           = @"h";
 NSString * const kAppTransportSecurityStatusKey       = @"ats";
 NSString * const kViewabilityStatusKey                = @"vv";
+NSString * const kViewabilityVersionKey               = @"vver";
 NSString * const kKeywordsKey                         = @"q";
 NSString * const kUserDataKeywordsKey                 = @"user_data_q";
 NSString * const kAdvancedBiddingKey                  = @"abt";
@@ -52,6 +58,7 @@ NSString * const kCreativeSafeHeightKey               = @"ch";
 
 #pragma mark - Ad Server Response Keys
 NSString * const kEnableDebugLogging                  = @"enable_debug_logging";
+NSString * const kSKAdNetworkStartSyncKey             = @"sync-supported-skadnetworks";
 
 #pragma mark - Open Endpoint Request Keys
 NSString * const kOpenEndpointSessionTrackingKey      = @"st";
@@ -64,7 +71,7 @@ NSString * const kConsentedPrivacyPolicyVersionKey    = @"consented_privacy_poli
 NSString * const kForceGDPRAppliesKey                 = @"force_gdpr_applies";
 
 #pragma mark - Synchronization Endpoint: Request Keys
-
+NSString * const kCachedIfaForConsentKey              = @"consent_ifa";
 NSString * const kLastChangedMsKey                    = @"last_changed_ms";
 NSString * const kLastSynchronizedConsentStatusKey    = @"last_consent_status";
 NSString * const kCachedIabVendorListHashKey          = @"cached_vendor_list_iab_hash";
@@ -103,7 +110,7 @@ NSString * const kDialogHTMLKey                       = @"dialog_html";
 NSString * const kCustomerIdKey                       = @"customer_id";
 NSString * const kRewardedCurrencyNameKey             = @"rcn";
 NSString * const kRewardedCurrencyAmountKey           = @"rca";
-NSString * const kRewardedCustomEventNameKey          = @"cec";
+NSString * const kRewardedAdapterClassNameKey         = @"cec";
 NSString * const kRewardedCustomDataKey               = @"rcd";
 
 #pragma mark - Impression Level Revenue Data Keys
@@ -120,5 +127,12 @@ NSString * const kImpressionDataCurrencyKey           = @"currency";
 NSString * const kImpressionDataCountryKey            = @"country";
 NSString * const kImpressionDataNetworkNameKey        = @"network_name";
 NSString * const kImpressionDataNetworkPlacementIDKey = @"network_placement_id";
+NSString * const kImpressionDataAppVersionKey         = @"app_version";
 NSString * const kImpressionDataPublisherRevenueKey   = @"publisher_revenue";
 NSString * const kImpressionDataPrecisionKey          = @"precision";
+
+#pragma mark - SKAdNetwork Keys
+NSString * const kSKAdNetworkLastSyncTimestampKey     = @"skadn_last_send_ts";
+NSString * const kSKAdNetworkLastSyncAppVersionKey    = @"skadn_last_send_av";
+NSString * const kSKAdNetworkHashKey                  = @"skadn_hash";
+NSString * const kSKAdNetworkSupportedNetworksKey     = @"supported_skadnetworks";

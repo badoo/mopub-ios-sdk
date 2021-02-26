@@ -13,7 +13,7 @@
 #import "NSURL+MPAdditions.h"
 #import "NSHTTPURLResponse+MPAdditions.h"
 #import "MPLogging.h"
-#import "MPCoreInstanceProvider.h"
+#import "MPDeviceInformation.h"
 #import "MOPUBExperimentProvider.h"
 #import "NSURL+MPAdditions.h"
 #import "MPURLRequest.h"
@@ -66,9 +66,6 @@ static NSString * const kRedirectURLQueryStringKey = @"r";
     MPURLActionInfo *info = [self actionInfoFromURL:self.originalURL error:&error];
 
     if (info) {
-        [self safeInvokeAndNilCompletionBlock:info error:nil];
-    } else if ([self shouldOpenWithInAppWebBrowser]) {
-        info = [MPURLActionInfo infoWithURL:self.originalURL webViewBaseURL:self.currentURL];
         [self safeInvokeAndNilCompletionBlock:info error:nil];
     } else if (error) {
         [self safeInvokeAndNilCompletionBlock:nil error:error];
@@ -139,9 +136,9 @@ static NSString * const kRedirectURLQueryStringKey = @"r";
 #pragma mark - Handling Application/StoreKit URLs
 
 /*
- * Parses the provided URL for actions to perform (opening StoreKit, opening Safari, etc.).
- * If the URL represents an action, this method will return an info object containing data that is
- * relevant to the suggested action.
+ Parses the provided URL for actions to perform (opening StoreKit, opening Safari, etc.).
+ If the URL represents an action, this method will return an info object containing data that is
+ relevant to the suggested action.
  */
 - (MPURLActionInfo *)actionInfoFromURL:(NSURL *)URL error:(NSError **)error;
 {
@@ -170,22 +167,6 @@ static NSString * const kRedirectURLQueryStringKey = @"r";
         actionInfo = [MPURLActionInfo infoWithURL:self.originalURL shareURL:URL];
     } else if ([self URLShouldOpenInApplication:URL]) {
         actionInfo = [MPURLActionInfo infoWithURL:self.originalURL deeplinkURL:URL];
-    } else if ([URL.scheme isEqualToString:@"http"]) { // handle HTTP requests in particular to get around ATS settings
-        // As a note: `appTransportSecuritySettings` returns what makes sense for the iOS version. I.e., if the device
-        // is running iOS 8, this method will always return `MPATSSettingAllowsArbitraryLoads`. If the device is running
-        // iOS 9, this method will never give us `MPATSSettingAllowsArbitraryLoadsInWebContent`. As a result, we don't
-        // have to do OS checks here; we can just trust these settings.
-        MPATSSetting settings = [[MPCoreInstanceProvider sharedProvider] appTransportSecuritySettings];
-
-        if ((settings & MPATSSettingAllowsArbitraryLoads) != 0) { // opens as normal if ATS is disabled
-            // don't do anything
-        } else if ((settings & MPATSSettingAllowsArbitraryLoadsInWebContent) != 0) { // opens in WKWebView if ATS is disabled for arbitrary web content
-            actionInfo = [MPURLActionInfo infoWithURL:self.originalURL
-                                       webViewBaseURL:self.currentURL];
-        } else { // opens in Mobile Safari if no other option is available
-            actionInfo = [MPURLActionInfo infoWithURL:self.originalURL
-                                 safariDestinationURL:self.currentURL];
-        }
     }
 
     return actionInfo;

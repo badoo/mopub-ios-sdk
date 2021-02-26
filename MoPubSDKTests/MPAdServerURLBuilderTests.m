@@ -7,24 +7,26 @@
 //
 
 #import <XCTest/XCTest.h>
+#import <MoPub/MoPub-Swift.h>
 #import "MPAdServerKeys.h"
 #import "MPAdServerURLBuilder+Testing.h"
-#import "MPAPIEndpoints.h"
 #import "MPConsentManager.h"
 #import "MPEngineInfo.h"
-#import "MPIdentityProvider.h"
+#import "MPIdentityProvider+Testing.h"
 #import "MPMediationManager.h"
 #import "MPMediationManager+Testing.h"
 #import "MPURL.h"
-#import "MPViewabilityTracker.h"
+#import "MPViewabilityManager+Testing.h"
 #import "NSString+MPConsentStatus.h"
 #import "NSString+MPAdditions.h"
 #import "NSURLComponents+Testing.h"
 #import "MPRateLimitManager.h"
+#import "MPSKAdNetworkManager+Testing.h"
 
 static NSString * const kTestAdUnitId = @"";
 static NSString * const kTestKeywords = @"";
 static NSString * const kGDPRAppliesStorageKey                   = @"com.mopub.mopub-ios-sdk.gdpr.applies";
+static NSString * const kIfaForConsentStorageKey                 = @"com.mopub.mopub-ios-sdk.ifa.for.consent";
 static NSString * const kConsentedIabVendorListStorageKey        = @"com.mopub.mopub-ios-sdk.consented.iab.vendor.list";
 static NSString * const kConsentedPrivacyPolicyVersionStorageKey = @"com.mopub.mopub-ios-sdk.consented.privacy.policy.version";
 static NSString * const kConsentedVendorListVersionStorageKey    = @"com.mopub.mopub-ios-sdk.consented.vendor.list.version";
@@ -37,11 +39,17 @@ static NSString * const kLastChangedMsStorageKey                 = @"com.mopub.m
 @implementation MPAdServerURLBuilderTests
 
 - (void)setUp {
+    [super setUp];
+
+    // Reset IFA
+    MPAdServerURLBuilder.ifa = nil;
+
     // Reset viewability
-    [MPViewabilityTracker initialize];
+    MPViewabilityManager.sharedManager.isEnabled = YES;
 
     NSUserDefaults * defaults = NSUserDefaults.standardUserDefaults;
     [defaults setInteger:MPBoolYes forKey:kGDPRAppliesStorageKey];
+    [defaults setObject:nil forKey:kIfaForConsentStorageKey];
     [defaults setObject:nil forKey:kConsentedIabVendorListStorageKey];
     [defaults setObject:nil forKey:kConsentedPrivacyPolicyVersionStorageKey];
     [defaults setObject:nil forKey:kConsentedVendorListVersionStorageKey];
@@ -50,12 +58,21 @@ static NSString * const kLastChangedMsStorageKey                 = @"com.mopub.m
 
     // Reset engine info
     MPAdServerURLBuilder.engineInformation = nil;
+
+    // Reset mocked location string
+    MPAdServerURLBuilder.locationAuthorizationStatus = kMPLocationAuthorizationStatusNotDetermined;
+}
+
+- (void)tearDown {
+    [super tearDown];
+
+    [MPIdentityProvider resetTrackingAuthorizationStatusToDefault];
 }
 
 #pragma mark - Viewability
 
 - (void)testViewabilityPresentInPOSTData {
-    // By default, IAS should be enabled
+    // By default, Viewability should be enabled
     MPAdTargeting * targeting = [MPAdTargeting targetingWithCreativeSafeSize:CGSizeZero];
     targeting.keywords = kTestKeywords;
 
@@ -63,12 +80,15 @@ static NSString * const kLastChangedMsStorageKey                 = @"com.mopub.m
     XCTAssertNotNil(url);
 
     NSString * viewabilityValue = [url stringForPOSTDataKey:kViewabilityStatusKey];
-    XCTAssertTrue([viewabilityValue isEqualToString:@"1"]);
+    XCTAssertTrue([viewabilityValue isEqualToString:@"4"]);
+
+    NSString * viewabilityVersion = [url stringForPOSTDataKey:kViewabilityVersionKey];
+    XCTAssertTrue([viewabilityVersion isEqualToString:@"1.3.4-Mopub"]);
 }
 
 - (void)testViewabilityDisabled {
-    // By default, IAS should be enabled so we should disable all vendors
-    [MPViewabilityTracker disableViewability:(MPViewabilityOptionIAS | MPViewabilityOptionMoat)];
+    // By default, Viewability should be enabled so we should disable it.
+    [MPViewabilityManager.sharedManager disableViewability];
 
     MPAdTargeting * targeting = [MPAdTargeting targetingWithCreativeSafeSize:CGSizeZero];
     targeting.keywords = kTestKeywords;
@@ -94,6 +114,9 @@ static NSString * const kLastChangedMsStorageKey                 = @"com.mopub.m
 #pragma mark - Open Endpoint
 
 - (void)testExpectedPOSTParamsSessionTracking {
+    // Preconditions
+    MPAdServerURLBuilder.ifa = @"fake_ifa";
+
     MPURL * url = [MPAdServerURLBuilder sessionTrackingURL];
 
     // Check for session tracking parameter
@@ -101,8 +124,9 @@ static NSString * const kLastChangedMsStorageKey                 = @"com.mopub.m
     XCTAssert([sessionValue isEqualToString:@"1"]);
 
     // Check for IDFA
-    NSString * idfaValue = [url stringForPOSTDataKey:kIdfaKey];
+    NSString * idfaValue = [url stringForPOSTDataKey:kIdentifierForAdvertiserKey];
     XCTAssertNotNil(idfaValue);
+    XCTAssertTrue([idfaValue isEqualToString: @"fake_ifa"]);
 
     // Check for SDK version
     NSString * versionValue = [url stringForPOSTDataKey:kSDKVersionKey];
@@ -114,6 +138,9 @@ static NSString * const kLastChangedMsStorageKey                 = @"com.mopub.m
 }
 
 - (void)testExpectedPOSTParamsConversionTracking {
+    // Preconditions
+    MPAdServerURLBuilder.ifa = @"fake_ifa";
+
     NSString * appID = @"0123456789";
     MPURL * url = [MPAdServerURLBuilder conversionTrackingURLForAppID:appID];
 
@@ -122,8 +149,9 @@ static NSString * const kLastChangedMsStorageKey                 = @"com.mopub.m
     XCTAssertNil(sessionValue);
 
     // Check for IDFA
-    NSString * idfaValue = [url stringForPOSTDataKey:kIdfaKey];
+    NSString * idfaValue = [url stringForPOSTDataKey:kIdentifierForAdvertiserKey];
     XCTAssertNotNil(idfaValue);
+    XCTAssertTrue([idfaValue isEqualToString: @"fake_ifa"]);
 
     // Check for ID
     NSString * idValue = [url stringForPOSTDataKey:kAdServerIDKey];
@@ -209,6 +237,44 @@ static NSString * const kLastChangedMsStorageKey                 = @"com.mopub.m
     XCTAssert([lastChangeValue isEqualToString:@"1532021932"]);
 }
 
+- (void)testIfaForConsentNotSentForNonGDPRSyncEndpoints {
+    // Preconditions
+    MPAdServerURLBuilder.ifa = @"fake_ifa";
+    [NSUserDefaults.standardUserDefaults setObject:@"ifa_for_consent" forKey:kIfaForConsentStorageKey];
+
+    MPAdTargeting *targeting = [MPAdTargeting targetingWithCreativeSafeSize:CGSizeZero];
+    MPURL *url = [MPAdServerURLBuilder URLWithAdUnitID:@"fake_ad_unit" targeting:targeting];
+    XCTAssertNotNil(url);
+
+    NSString *ifaForConsent = [url stringForPOSTDataKey:kCachedIfaForConsentKey];
+    XCTAssertNil(ifaForConsent);
+}
+
+- (void)testIfaForConsentSentForGDPRSyncEndpoint {
+    // Preconditions
+    MPAdServerURLBuilder.ifa = @"fake_ifa";
+    [NSUserDefaults.standardUserDefaults setObject:@"ifa_for_consent" forKey:kIfaForConsentStorageKey];
+
+    MPURL *url = [MPAdServerURLBuilder consentSynchronizationUrl];
+    XCTAssertNotNil(url);
+
+    NSString *ifaForConsent = [url stringForPOSTDataKey:kCachedIfaForConsentKey];
+    XCTAssertNotNil(ifaForConsent);
+    XCTAssertTrue([ifaForConsent isEqualToString:@"ifa_for_consent"]);
+}
+
+- (void)testIfaForConsentNotSentForGDPRSyncEndpoint {
+    // Preconditions
+    MPAdServerURLBuilder.ifa = @"fake_ifa";
+    [NSUserDefaults.standardUserDefaults setObject:nil forKey:kIfaForConsentStorageKey];
+
+    MPURL *url = [MPAdServerURLBuilder consentSynchronizationUrl];
+    XCTAssertNotNil(url);
+
+    NSString *ifaForConsent = [url stringForPOSTDataKey:kCachedIfaForConsentKey];
+    XCTAssertNil(ifaForConsent);
+}
+
 #pragma mark - URL String Parsing
 
 - (NSString *)queryParameterValueForKey:(NSString *)key inUrl:(NSString *)url {
@@ -280,7 +346,59 @@ static NSString * const kLastChangedMsStorageKey                 = @"com.mopub.m
     XCTAssertEqual([ch floatValue], [sc floatValue] * height);
 }
 
-#pragma mark - Parameter
+#pragma mark - Identifiers
+
+- (void)testIfaNotSentNotAvailable {
+    // Preconditions
+    MPAdServerURLBuilder.ifa = nil;
+
+    MPAdTargeting *targeting = [MPAdTargeting targetingWithCreativeSafeSize:CGSizeZero];
+    MPURL *url = [MPAdServerURLBuilder URLWithAdUnitID:@"fake_ad_unit" targeting:targeting];
+    XCTAssertNotNil(url);
+
+    NSString *ifa = [url stringForPOSTDataKey:kIdentifierForAdvertiserKey];
+    XCTAssertNil(ifa);
+}
+
+- (void)testIfaSentWhenAvailable {
+    // Preconditions
+    MPAdServerURLBuilder.ifa = @"fake_ifa";
+
+    MPAdTargeting *targeting = [MPAdTargeting targetingWithCreativeSafeSize:CGSizeZero];
+    MPURL *url = [MPAdServerURLBuilder URLWithAdUnitID:@"fake_ad_unit" targeting:targeting];
+    XCTAssertNotNil(url);
+
+    NSString *ifa = [url stringForPOSTDataKey:kIdentifierForAdvertiserKey];
+    XCTAssertNotNil(ifa);
+    XCTAssertTrue([ifa isEqualToString:@"fake_ifa"]);
+}
+
+- (void)testIfvSentWhenAvailable {
+    // Precondition.
+    MPAdServerURLBuilder.ifv = @"fake-uuid-string";
+
+    // Verify that the `ifv` parameter is present for the base URL.
+    MPAdTargeting * targeting = [MPAdTargeting targetingWithCreativeSafeSize:CGSizeZero];
+    MPURL * url = [MPAdServerURLBuilder URLWithAdUnitID:@"fake_ad_unit" targeting:targeting];
+    XCTAssertNotNil(url);
+
+    NSString * vendorId = [url stringForPOSTDataKey:kIdentifierForVendorKey];
+    XCTAssertNotNil(vendorId);
+    XCTAssertTrue([vendorId isEqualToString:@"fake-uuid-string"]);
+}
+
+- (void)testIfvNotSentWhenNil {
+    // Precondition.
+    MPAdServerURLBuilder.ifv = nil;
+
+    // Verify that the `ifv` parameter is present for the base URL.
+    MPAdTargeting * targeting = [MPAdTargeting targetingWithCreativeSafeSize:CGSizeZero];
+    MPURL * url = [MPAdServerURLBuilder URLWithAdUnitID:@"fake_ad_unit" targeting:targeting];
+    XCTAssertNotNil(url);
+
+    NSString * vendorId = [url stringForPOSTDataKey:kIdentifierForVendorKey];
+    XCTAssertNil(vendorId);
+}
 
 - (void)testMoPubID {
     MPAdTargeting * targeting = [MPAdTargeting targetingWithCreativeSafeSize:CGSizeZero];
@@ -288,7 +406,7 @@ static NSString * const kLastChangedMsStorageKey                 = @"com.mopub.m
     XCTAssertNotNil(url);
     XCTAssertNotNil([url stringForPOSTDataKey:kMoPubIDKey]);
     XCTAssertNotEqual([url stringForPOSTDataKey:kMoPubIDKey], @"");
-    XCTAssertTrue([[url stringForPOSTDataKey:kMoPubIDKey] isEqualToString:[MPIdentityProvider unobfuscatedMoPubIdentifier]]);
+    XCTAssertTrue([[url stringForPOSTDataKey:kMoPubIDKey] isEqualToString:MPIdentityProvider.mopubId]);
 }
 
 #pragma mark - Engine Information
@@ -324,6 +442,216 @@ static NSString * const kLastChangedMsStorageKey                 = @"com.mopub.m
     NSString * version = [url stringForPOSTDataKey:kSDKEngineVersionKey];
     XCTAssertNotNil(version);
     XCTAssert([version isEqualToString:@"2017.1.2f2"]);
+}
+
+#pragma mark - Debug Information
+
+- (void)testSessionTrackingDebugInformationPresent {
+    NSString * testAdUnitID = @"test ad unit ID";
+    [[MPConsentManager sharedManager] setAdUnitIdUsedForConsent:testAdUnitID];
+    MPURL * url = [MPAdServerURLBuilder sessionTrackingURL];
+
+    NSString * osValue = [url stringForPOSTDataKey:kOSKey];
+    XCTAssert([osValue isEqualToString:@"ios"]);
+
+    NSString * deviceNameValue = [url stringForPOSTDataKey:kDeviceNameKey];
+    XCTAssertNotNil(deviceNameValue);
+
+    NSString * adUnitValue = [url stringForPOSTDataKey:kAdUnitKey];
+    XCTAssert([adUnitValue isEqualToString:testAdUnitID]);
+}
+
+- (void)testConversionTrackingDebugInformationPresent {
+    NSString * testAdUnitID = @"test ad unit ID";
+    [[MPConsentManager sharedManager] setAdUnitIdUsedForConsent:testAdUnitID];
+    MPURL * url = [MPAdServerURLBuilder conversionTrackingURLForAppID:@"test app id"];
+
+    NSString * osValue = [url stringForPOSTDataKey:kOSKey];
+    XCTAssert([osValue isEqualToString:@"ios"]);
+
+    NSString * deviceNameValue = [url stringForPOSTDataKey:kDeviceNameKey];
+    XCTAssertNotNil(deviceNameValue);
+
+    NSString * adUnitValue = [url stringForPOSTDataKey:kAdUnitKey];
+    XCTAssert([adUnitValue isEqualToString:testAdUnitID]);
+}
+
+- (void)testAdRequestDebugInformationPresent {
+    NSString * testAdUnitID = @"test ad unit ID";
+    [[MPConsentManager sharedManager] setAdUnitIdUsedForConsent:testAdUnitID];
+
+    MPAdTargeting * testTargeting = [MPAdTargeting targetingWithCreativeSafeSize:CGSizeMake(100, 100)];
+    MPURL * url = [MPAdServerURLBuilder URLWithAdUnitID:testAdUnitID targeting:testTargeting];
+
+    NSString * osValue = [url stringForPOSTDataKey:kOSKey];
+    XCTAssert([osValue isEqualToString:@"ios"]);
+
+    NSString * deviceNameValue = [url stringForPOSTDataKey:kDeviceNameKey];
+    XCTAssertNotNil(deviceNameValue);
+
+    NSString * adUnitValue = [url stringForPOSTDataKey:kAdUnitKey];
+    XCTAssert([adUnitValue isEqualToString:testAdUnitID]);
+}
+
+- (void)testConsentSyncDebugInformationPresent {
+    NSString * testAdUnitID = @"test ad unit ID";
+    [[MPConsentManager sharedManager] setAdUnitIdUsedForConsent:testAdUnitID];
+
+    MPURL * url = [MPAdServerURLBuilder consentSynchronizationUrl];
+
+    NSString * osValue = [url stringForPOSTDataKey:kOSKey];
+    XCTAssert([osValue isEqualToString:@"ios"]);
+
+    NSString * deviceNameValue = [url stringForPOSTDataKey:kDeviceNameKey];
+    XCTAssertNotNil(deviceNameValue);
+
+    NSString * adUnitValue = [url stringForPOSTDataKey:kAdUnitKey];
+    XCTAssert([adUnitValue isEqualToString:testAdUnitID]);
+}
+
+- (void)testConsentDialogDebugInformationPresent {
+    NSString * testAdUnitID = @"test ad unit ID";
+    [[MPConsentManager sharedManager] setAdUnitIdUsedForConsent:testAdUnitID];
+
+    MPURL * url = [MPAdServerURLBuilder consentDialogURL];
+
+    NSString * osValue = [url stringForPOSTDataKey:kOSKey];
+    XCTAssert([osValue isEqualToString:@"ios"]);
+
+    NSString * deviceNameValue = [url stringForPOSTDataKey:kDeviceNameKey];
+    XCTAssertNotNil(deviceNameValue);
+
+    NSString * adUnitValue = [url stringForPOSTDataKey:kAdUnitKey];
+    XCTAssert([adUnitValue isEqualToString:testAdUnitID]);
+}
+
+- (void)testNativePositionDebugInformationPresent {
+    NSString * testAdUnitID = @"test ad unit ID";
+    [[MPConsentManager sharedManager] setAdUnitIdUsedForConsent:testAdUnitID];
+
+    MPURL * url = [MPAdServerURLBuilder nativePositionUrlForAdUnitId:testAdUnitID];
+
+    NSString * osValue = [url stringForPOSTDataKey:kOSKey];
+    XCTAssert([osValue isEqualToString:@"ios"]);
+
+    NSString * deviceNameValue = [url stringForPOSTDataKey:kDeviceNameKey];
+    XCTAssertNotNil(deviceNameValue);
+
+    NSString * adUnitValue = [url stringForPOSTDataKey:kAdUnitKey];
+    XCTAssert([adUnitValue isEqualToString:testAdUnitID]);
+}
+
+#pragma mark - Location
+
+- (void)testLocationAuthorizationPresent {
+    // Precondition
+    MPAdServerURLBuilder.locationAuthorizationStatus = kMPLocationAuthorizationStatusNotDetermined;
+
+    // Verify that the location information is present for the base URL for all
+    // Ad Server requests
+    MPAdTargeting * targeting = [MPAdTargeting targetingWithCreativeSafeSize:CGSizeZero];
+    MPURL * url = [MPAdServerURLBuilder URLWithAdUnitID:@"fake_ad_unit" targeting:targeting];
+    XCTAssertNotNil(url);
+
+    NSString * status = [url stringForPOSTDataKey:kLocationAuthorizationStatusKey];
+    XCTAssertNotNil(status);
+    XCTAssert([status isEqualToString:@"unknown"]);
+
+    // Update status
+    MPAdServerURLBuilder.locationAuthorizationStatus = kMPLocationAuthorizationStatusAuthorizedWhenInUse;
+
+    // Verify the value changed
+    MPURL * updatedUrl = [MPAdServerURLBuilder URLWithAdUnitID:@"fake_ad_unit" targeting:targeting];
+    XCTAssertNotNil(updatedUrl);
+
+    NSString * updatedStatus = [updatedUrl stringForPOSTDataKey:kLocationAuthorizationStatusKey];
+    XCTAssertNotNil(updatedStatus);
+    XCTAssert([updatedStatus isEqualToString:@"authorized-while-in-use"]);
+}
+
+- (void)testInvalidLocationAuthorizationNotPresent {
+    // Precondition
+    MPAdServerURLBuilder.locationAuthorizationStatus = -99;
+
+    // Verify that the location information is present for the base URL for all
+    // Ad Server requests
+    MPAdTargeting * targeting = [MPAdTargeting targetingWithCreativeSafeSize:CGSizeZero];
+    MPURL * url = [MPAdServerURLBuilder URLWithAdUnitID:@"fake_ad_unit" targeting:targeting];
+    XCTAssertNotNil(url);
+
+    NSString * status = [url stringForPOSTDataKey:kLocationAuthorizationStatusKey];
+    XCTAssertNil(status);
+}
+
+#pragma mark - SKAdNetwork
+
+- (void)testSkAdNetworkURL {
+    // URL is nil if nil array is passed in
+    MPURL * skAdNetworkUrl = [MPAdServerURLBuilder skAdNetworkSynchronizationURLWithSkAdNetworkIds:nil];
+    XCTAssertNil(skAdNetworkUrl);
+
+    // URL is nil if empty array is passed in
+    skAdNetworkUrl = [MPAdServerURLBuilder skAdNetworkSynchronizationURLWithSkAdNetworkIds:@[]];
+    XCTAssertNil(skAdNetworkUrl);
+
+    // URL is non-nil, correct string, and its post data contains supported networks, application version, MoPub ID, bundle ID
+    NSArray<NSString *> *referenceSupportedNetworks = @[@"foo", @"bar"];
+    skAdNetworkUrl = [MPAdServerURLBuilder skAdNetworkSynchronizationURLWithSkAdNetworkIds:referenceSupportedNetworks];
+    XCTAssertNotNil(skAdNetworkUrl);
+    XCTAssert([skAdNetworkUrl.host isEqualToString:@"cb.mopub.com"]);
+    XCTAssert([skAdNetworkUrl.path isEqualToString:@"/supported_ad_partners"]);
+
+    NSArray<NSString *> * supportedNetworks = (NSArray *)skAdNetworkUrl.postData[kSKAdNetworkSupportedNetworksKey];
+    for (NSString *network in supportedNetworks) {
+        XCTAssert([referenceSupportedNetworks containsObject:network]);
+    }
+    XCTAssertNotNil(skAdNetworkUrl.postData[kApplicationVersionKey]);
+    XCTAssertNotNil(skAdNetworkUrl.postData[kMoPubIDKey]);
+    XCTAssertNotNil(skAdNetworkUrl.postData[kBundleKey]);
+}
+
+- (void)testAdServerURLContainsSKAdNetworkMetadataWhenSKAdNetworkIsEnabled {
+    MPSKAdNetworkManager.sharedManager.supportedSkAdNetworks = @[@"foo", @"bar"];
+
+    MPURL * adRequestURL = [MPAdServerURLBuilder URLWithAdUnitID:@"abcdefg" targeting:nil];
+
+    XCTAssertNotNil(adRequestURL.postData[kSKAdNetworkHashKey]);
+    XCTAssertNotNil(adRequestURL.postData[kSKAdNetworkLastSyncTimestampKey]);
+    XCTAssertNotNil(adRequestURL.postData[kSKAdNetworkLastSyncAppVersionKey]);
+}
+
+- (void)testAdServerURLDoesNotContainSKAdNetworkMetadataWhenSKAdNetworkIsDisabled {
+    MPSKAdNetworkManager.sharedManager.supportedSkAdNetworks = nil;
+
+    MPURL * adRequestURL = [MPAdServerURLBuilder URLWithAdUnitID:@"abcdefg" targeting:nil];
+
+    XCTAssertNil(adRequestURL.postData[kSKAdNetworkHashKey]);
+    XCTAssertNil(adRequestURL.postData[kSKAdNetworkLastSyncTimestampKey]);
+    XCTAssertNil(adRequestURL.postData[kSKAdNetworkLastSyncAppVersionKey]);
+}
+
+#pragma mark - App Tracking Transparency Authorization Status
+
+- (void)testURLPostDataContainsAppTrackingAuthorizationStatus {
+    if (@available(iOS 14.0, *)) {
+        MPURL *adRequestURL;
+
+        MPIdentityProvider.trackingAuthorizationStatus = ATTrackingManagerAuthorizationStatusNotDetermined;
+        adRequestURL = [MPAdServerURLBuilder URLWithAdUnitID:@"asfdjkl" targeting:nil];
+        XCTAssert([kAppTrackingTransparencyDescriptionNotDetermined isEqualToString:(NSString *)adRequestURL.postData[kTrackingAuthorizationStatusKey]]);
+
+        MPIdentityProvider.trackingAuthorizationStatus = ATTrackingManagerAuthorizationStatusAuthorized;
+        adRequestURL = [MPAdServerURLBuilder URLWithAdUnitID:@"asfdjkl" targeting:nil];
+        XCTAssert([kAppTrackingTransparencyDescriptionAuthorized isEqualToString:(NSString *)adRequestURL.postData[kTrackingAuthorizationStatusKey]]);
+
+        MPIdentityProvider.trackingAuthorizationStatus = ATTrackingManagerAuthorizationStatusDenied;
+        adRequestURL = [MPAdServerURLBuilder URLWithAdUnitID:@"asfdjkl" targeting:nil];
+        XCTAssert([kAppTrackingTransparencyDescriptionDenied isEqualToString:(NSString *)adRequestURL.postData[kTrackingAuthorizationStatusKey]]);
+
+        MPIdentityProvider.trackingAuthorizationStatus = ATTrackingManagerAuthorizationStatusRestricted;
+        adRequestURL = [MPAdServerURLBuilder URLWithAdUnitID:@"asfdjkl" targeting:nil];
+        XCTAssert([kAppTrackingTransparencyDescriptionRestricted isEqualToString:(NSString *)adRequestURL.postData[kTrackingAuthorizationStatusKey]]);
+    }
 }
 
 @end

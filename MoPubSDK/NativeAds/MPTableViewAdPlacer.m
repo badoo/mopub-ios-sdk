@@ -82,11 +82,11 @@ static NSString * const kTableViewAdPlacerReuseIdentifier = @"MPTableViewAdPlace
 - (void)loadAdsForAdUnitID:(NSString *)adUnitID targeting:(MPNativeAdRequestTargeting *)targeting
 {
     if (!self.insertionTimer) {
-        self.insertionTimer = [MPTimer timerWithTimeInterval:kUpdateVisibleCellsInterval
-                                                      target:self
-                                                    selector:@selector(updateVisibleCells)
-                                                     repeats:YES
-                                                 runLoopMode:NSRunLoopCommonModes];
+        __typeof__(self) __weak weakSelf = self;
+        self.insertionTimer = [MPTimer timerWithTimeInterval:kUpdateVisibleCellsInterval repeats:YES runLoopMode:NSRunLoopCommonModes block:^(MPTimer * _Nonnull timer) {
+            __typeof__(self) strongSelf = weakSelf;
+            [strongSelf updateVisibleCells];
+        }];
         [self.insertionTimer scheduleNow];
     }
     [self.streamAdPlacer loadAdsForAdUnitID:adUnitID targeting:targeting];
@@ -601,7 +601,7 @@ static char kAdPlacerKey;
     [self reloadData];
 }
 
-- (CGRect)mp_rectForRowAtIndexPath:(NSIndexPath *)indexPath
+- (CGRect)mp_rectForRowAtIndexPath:(NSIndexPath * _Nonnull)indexPath
 {
     MPTableViewAdPlacer *adPlacer = [self mp_adPlacer];
     NSIndexPath *adjustedIndexPath = indexPath;
@@ -867,7 +867,7 @@ static char kAdPlacerKey;
     }
 }
 
-- (void)mp_deselectRowAtIndexPath:(NSIndexPath *)indexPath animated:(BOOL)animated
+- (void)mp_deselectRowAtIndexPath:(NSIndexPath * _Nonnull)indexPath animated:(BOOL)animated
 {
     MPTableViewAdPlacer *adPlacer = [self mp_adPlacer];
     NSIndexPath *adjustedIndexPath = indexPath;
@@ -881,7 +881,7 @@ static char kAdPlacerKey;
     }
 }
 
-- (id)mp_dequeueReusableCellWithIdentifier:(NSString *)identifier forIndexPath:(NSIndexPath *)indexPath
+- (id)mp_dequeueReusableCellWithIdentifier:(NSString *)identifier forIndexPath:(NSIndexPath * _Nonnull)indexPath
 {
     MPTableViewAdPlacer *adPlacer = [self mp_adPlacer];
     NSIndexPath *adjustedIndexPath = indexPath;

@@ -173,19 +173,19 @@ static NSInteger const MPMaxRepeatingInterval = 1 << 16;
 #pragma mark - Dictionary helpers
 
 /**
- * Returns an `NSInteger` value associated with a certain key in a dictionary, or a specified
- * default value if the key is not associated with a valid integer representation.
- *
- * Valid integer representations include `NSNumber` objects and `NSString` objects that
- * consist only of integer or sign characters.
- *
- * @param dictionary A dictionary containing keys and values.
- * @param key The key for which to return an integer value.
- * @param defaultValue A value that should be returned if `key` is not associated with an object
- * that contains an integer representation.
- *
- * @return The integer value associated with `key`, or `defaultValue` if the object is not an
- * `NSNumber` or an `NSString` representing an integer.
+ Returns an `NSInteger` value associated with a certain key in a dictionary, or a specified
+ default value if the key is not associated with a valid integer representation.
+
+ Valid integer representations include `NSNumber` objects and `NSString` objects that
+ consist only of integer or sign characters.
+
+ @param dictionary A dictionary containing keys and values.
+ @param key The key for which to return an integer value.
+ @param defaultValue A value that should be returned if `key` is not associated with an object
+ that contains an integer representation.
+
+ @return The integer value associated with `key`, or `defaultValue` if the object is not an
+ `NSNumber` or an `NSString` representing an integer.
  */
 - (NSInteger)integerFromDictionary:(NSDictionary *)dictionary forKey:(NSString *)key defaultValue:(NSInteger)defaultValue
 {
@@ -214,19 +214,22 @@ static NSInteger const MPMaxRepeatingInterval = 1 << 16;
 
 #pragma mark - Error helpers
 
-- (void)safeAssignError:(NSError **)error code:(MPNativePositionResponseDeserializationErrorCode)code userInfo:(NSDictionary *)userInfo
+- (BOOL)safeAssignError:(NSError **)error code:(MPNativePositionResponseDeserializationErrorCode)code userInfo:(NSDictionary *)userInfo
 {
     if (error) {
         *error = [self deserializationErrorWithCode:code userInfo:userInfo];
     }
+
+    return error != nil;
 }
 
-- (void)safeAssignError:(NSError **)error code:(MPNativePositionResponseDeserializationErrorCode)code description:(NSString *)description
+- (BOOL)safeAssignError:(NSError **)error code:(MPNativePositionResponseDeserializationErrorCode)code description:(NSString *)description
 {
     [self safeAssignError:error code:code description:description underlyingError:nil];
+    return error != nil;
 }
 
-- (void)safeAssignError:(NSError **)error code:(MPNativePositionResponseDeserializationErrorCode)code description:(NSString *)description underlyingError:(NSError *)underlyingError
+- (BOOL)safeAssignError:(NSError **)error code:(MPNativePositionResponseDeserializationErrorCode)code description:(NSString *)description underlyingError:(NSError *)underlyingError
 {
     NSMutableDictionary *userInfo = [NSMutableDictionary dictionary];
 
@@ -239,6 +242,7 @@ static NSInteger const MPMaxRepeatingInterval = 1 << 16;
     }
 
     [self safeAssignError:error code:code userInfo:userInfo];
+    return error != nil;
 }
 
 - (NSError *)deserializationErrorWithCode:(MPNativePositionResponseDeserializationErrorCode)code userInfo:(NSDictionary *)userInfo

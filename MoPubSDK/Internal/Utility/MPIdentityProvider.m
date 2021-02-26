@@ -6,133 +6,119 @@
 //  http://www.mopub.com/legal/sdk-license-agreement/
 //
 
-#import "MPIdentityProvider.h"
-#import "MPGlobal.h"
-#import "MPConsentManager.h"
 #import <AdSupport/AdSupport.h>
 
-#define MOPUB_IDENTIFIER_DEFAULTS_KEY @"com.mopub.identifier"
-#define MOPUB_IDENTIFIER_LAST_SET_TIME_KEY @"com.mopub.identifiertime"
-#define MOPUB_DAY_IN_SECONDS 24 * 60 * 60
-#define MOPUB_ALL_ZERO_UUID @"00000000-0000-0000-0000-000000000000"
-NSString *const mopubPrefix = @"mopub:";
+#import "MPConsentManager.h"
+#import "MPIdentityProvider.h"
 
-static BOOL gFrequencyCappingIdUsageEnabled = YES;
+// NSUserDefaults keys
+static NSString *const kCachedMoPubIdentifierKey                 = @"com.mopub.identifier";
 
-@interface MPIdentityProvider ()
-@property (class, nonatomic, readonly) NSCalendar * iso8601Calendar;
+// Deprecated constants used to clean up NSUserDefaults in an upgrade scenario.
+// These were deprecated as of version 5.14.0
+static NSString *const kDeprecatedMoPubIdentifierLastSetKey      = @"com.mopub.identifiertime";
+static NSString *const kDeprecatedMoPubPrefixToRemove            = @"mopub:";
 
-+ (NSString *)mopubIdentifier:(BOOL)obfuscate;
-
-@end
+// App Tracking Transparency value strings
+NSString *const kAppTrackingTransparencyDescriptionAuthorized    = @"authorized";
+NSString *const kAppTrackingTransparencyDescriptionDenied        = @"denied";
+NSString *const kAppTrackingTransparencyDescriptionRestricted    = @"restricted";
+NSString *const kAppTrackingTransparencyDescriptionNotDetermined = @"not_determined";
 
 @implementation MPIdentityProvider
 
-+ (NSCalendar *)iso8601Calendar {
-    static dispatch_once_t onceToken;
-    static NSCalendar * _iso8601Calendar;
-    dispatch_once(&onceToken, ^{
-        _iso8601Calendar = [[NSCalendar alloc] initWithCalendarIdentifier:NSCalendarIdentifierISO8601];
-        _iso8601Calendar.timeZone = [NSTimeZone timeZoneForSecondsFromGMT:0];
-    });
++ (BOOL)advertisingTrackingEnabled {
+    if (@available(iOS 14.0, *)) {
+        /*
+         As of iOS 14, Apple does not provide an explicit means of checking if the IDFA is available.
+         The IDFA may or may not be available with an ATT status of NotDetermined, depending on if
+         Apple has decided to enforce ATT as opt-in as they plan to. Therefore, if the ATT status
+         is NotDetermined, use the IDFA itself to work out the return value of this method.
 
-    return _iso8601Calendar;
-}
-
-+ (NSString *)identifier
-{
-    return [self _identifier:NO];
-}
-
-+ (NSString *)obfuscatedIdentifier
-{
-    return [self _identifier:YES];
-}
-
-+ (NSString *)unobfuscatedMoPubIdentifier {
-    NSString *value = [self mopubIdentifier:NO];
-    if ([value hasPrefix:mopubPrefix]) {
-        value = [value substringFromIndex:[mopubPrefix length]];
+         @c MPConsentManager depends on this method to detect DoNotTrack consent status. Given that,
+         if this method were to use the @c ifa getter to grab the IDFA, which checks @c MPConsentManager
+         to verify if IDFA is allowed to be collected, any GDPR status other than explicit_yes, combined
+         with a "not_determined" ATT status, would result in @c MPConsentManager mistakenly locking into
+         a DNT state. Therefore, check @c MPConsentManager's @c rawIfa value directly. Note that
+         we are only checking if the IDFA is non-nil; IDFA is not collected here and should not ever
+         be collected via any means besides the @c ifa getter below (minus special circumstances
+         internal to @c MPConsentManager).
+        */
+        return self.trackingAuthorizationStatus == ATTrackingManagerAuthorizationStatusAuthorized ||
+            (self.trackingAuthorizationStatus == ATTrackingManagerAuthorizationStatusNotDetermined && MPConsentManager.sharedManager.rawIfa != nil);
     }
-    return value;
-}
 
-+ (NSString *)_identifier:(BOOL)obfuscate
-{
-    if (MPIdentityProvider.advertisingTrackingEnabled && [MPConsentManager sharedManager].canCollectPersonalInfo) {
-        return [self identifierFromASIdentifierManager:obfuscate];
-    } else {
-        return [self mopubIdentifier:obfuscate];
-    }
-}
-
-+ (BOOL)advertisingTrackingEnabled
-{
     return [[ASIdentifierManager sharedManager] isAdvertisingTrackingEnabled];
 }
 
-+ (NSString *)identifierFromASIdentifierManager:(BOOL)obfuscate
-{
-    if (obfuscate) {
-        return @"ifa:XXXX";
-    }
-    if (!MPIdentityProvider.advertisingTrackingEnabled) {
-        return nil;
++ (NSString *)ifa {
+    MPConsentManager *consentManager = MPConsentManager.sharedManager;
+
+    /*
+     Regardless of if @c advertisingTrackingEnabled returns @c YES, provided that @c canCollectPersonalInfo
+     is @c YES, go ahead and collect the IDFA if it's available. This ensures that even if APIs change in
+     the future, the IDFA will always be included when available. iOS will restrict access when it is not
+     available.
+    */
+    if (consentManager.canCollectPersonalInfo) {
+        return consentManager.rawIfa;
     }
 
-    NSString *identifier = [[ASIdentifierManager sharedManager].advertisingIdentifier UUIDString];
-    return [NSString stringWithFormat:@"ifa:%@", [identifier uppercaseString]];
+    return nil;
 }
 
-+ (NSString *)mopubIdentifier:(BOOL)obfuscate
-{
-    if (![self frequencyCappingIdUsageEnabled]) {
-        return [NSString stringWithFormat:@"ifa:%@", MOPUB_ALL_ZERO_UUID];
-    }
++ (NSString *)ifv {
+    return UIDevice.currentDevice.identifierForVendor.UUIDString;
+}
 
-    if (obfuscate) {
-        return @"mopub:XXXX";
-    }
-
-    // Compare the current timestamp to the timestamp of the last MoPub identifier generation.
-    NSDate * now = [NSDate date];
-    NSDate * lastSetDate = [[NSUserDefaults standardUserDefaults] objectForKey:MOPUB_IDENTIFIER_LAST_SET_TIME_KEY];
-
-    // MoPub identifier has not been set before. Set the timestamp and let the identifer
-    // be generated.
-    if (lastSetDate == nil) {
-        [[NSUserDefaults standardUserDefaults] setObject:now forKey:MOPUB_IDENTIFIER_LAST_SET_TIME_KEY];
-        [[NSUserDefaults standardUserDefaults] synchronize];
-    }
-    // Current day does not match the same day when the identifier was generated.
-    // Invalidate the current identifier so it can be regenerated.
-    else if (![MPIdentityProvider.iso8601Calendar isDate:now inSameDayAsDate:lastSetDate]) {
-        [[NSUserDefaults standardUserDefaults] setObject:now forKey:MOPUB_IDENTIFIER_LAST_SET_TIME_KEY];
-        [[NSUserDefaults standardUserDefaults] removeObjectForKey:MOPUB_IDENTIFIER_DEFAULTS_KEY];
-    }
-
-    NSString * identifier = [[NSUserDefaults standardUserDefaults] objectForKey:MOPUB_IDENTIFIER_DEFAULTS_KEY];
++ (NSString *)mopubId {
+    // Generate the MoPub ID if it doesn't exist.
+    NSString *identifier = [NSUserDefaults.standardUserDefaults objectForKey:kCachedMoPubIdentifierKey];
     if (identifier == nil) {
-        CFUUIDRef uuidObject = CFUUIDCreate(kCFAllocatorDefault);
-        NSString *uuidStr = (NSString *)CFBridgingRelease(CFUUIDCreateString(kCFAllocatorDefault, uuidObject));
-        CFRelease(uuidObject);
+        identifier = NSUUID.UUID.UUIDString.uppercaseString;
+        [NSUserDefaults.standardUserDefaults setObject:identifier forKey:kCachedMoPubIdentifierKey];
+    }
 
-        identifier = [mopubPrefix stringByAppendingString:[uuidStr uppercaseString]];
-        [[NSUserDefaults standardUserDefaults] setObject:identifier forKey:MOPUB_IDENTIFIER_DEFAULTS_KEY];
-        [[NSUserDefaults standardUserDefaults] synchronize];
+    // Upgrade previous MoPub IDs which had the mopub: prefix and remove it.
+    // Also remove the previous timestamp since it is no longer relevant.
+    if ([identifier hasPrefix:kDeprecatedMoPubPrefixToRemove]) {
+        identifier = [identifier substringFromIndex:kDeprecatedMoPubPrefixToRemove.length];
+        [NSUserDefaults.standardUserDefaults setObject:identifier forKey:kCachedMoPubIdentifierKey];
+        [NSUserDefaults.standardUserDefaults removeObjectForKey:kDeprecatedMoPubIdentifierLastSetKey];
     }
 
     return identifier;
 }
 
-+ (void)setFrequencyCappingIdUsageEnabled:(BOOL)frequencyCappingIdUsageEnabled
-{
-    gFrequencyCappingIdUsageEnabled = frequencyCappingIdUsageEnabled;
++ (ATTrackingManagerAuthorizationStatus)trackingAuthorizationStatus {
+    return ATTrackingManager.trackingAuthorizationStatus;
 }
 
-+ (BOOL)frequencyCappingIdUsageEnabled
-{
-    return gFrequencyCappingIdUsageEnabled;
++ (NSString *)trackingAuthorizationStatusDescription {
+    // For iOS 14+, just convert the tracking authorization status to its description string
+    if (@available(iOS 14.0, *)) {
+        switch (self.trackingAuthorizationStatus) {
+            case ATTrackingManagerAuthorizationStatusDenied:
+                return kAppTrackingTransparencyDescriptionDenied;
+            case ATTrackingManagerAuthorizationStatusAuthorized:
+                return kAppTrackingTransparencyDescriptionAuthorized;
+            case ATTrackingManagerAuthorizationStatusRestricted:
+                return kAppTrackingTransparencyDescriptionRestricted;
+            case ATTrackingManagerAuthorizationStatusNotDetermined:
+                return kAppTrackingTransparencyDescriptionNotDetermined;
+            default:
+                assert(NO); // Should never reach this point
+                return nil;
+        }
+    }
+
+    // For iOS 13-, convert DNT status to authorized/denied
+    if (self.advertisingTrackingEnabled) {
+        return kAppTrackingTransparencyDescriptionAuthorized;
+    }
+    else {
+        return kAppTrackingTransparencyDescriptionDenied;
+    }
 }
 
 @end

@@ -6,14 +6,17 @@
 //  http://www.mopub.com/legal/sdk-license-agreement/
 //
 
+#if __has_include(<MoPub/MoPub-Swift.h>)
+    #import <MoPub/MoPub-Swift.h>
+#else
+    #import "MoPub-Swift.h"
+#endif
 #import "MPNativePositionSource.h"
 #import "MPConstants.h"
-#import "MPIdentityProvider.h"
 #import "MPAdPositioning.h"
 #import "MPClientAdPositioning.h"
 #import "MPLogging.h"
 #import "MPNativePositionResponseDeserializer.h"
-#import "MPAPIEndpoints.h"
 #import "MPHTTPNetworkSession.h"
 #import "MPURLRequest.h"
 #import "MPAdServerURLBuilder.h"

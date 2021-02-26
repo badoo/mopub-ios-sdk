@@ -23,7 +23,7 @@
 @property (nonatomic, readonly) BOOL isImpressionMinVisiblePixelsValid;
 
 /**
- * `init` is not available.
+ `init` is not available.
  */
 - (instancetype)init __attribute__((unavailable("init not available")));
 

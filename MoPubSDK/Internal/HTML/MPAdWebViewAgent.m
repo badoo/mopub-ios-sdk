@@ -6,322 +6,282 @@
 //  http://www.mopub.com/legal/sdk-license-agreement/
 //
 
-#import <WebKit/WebKit.h>
-#import "MPAdWebViewAgent.h"
-#import "MPAdConfiguration.h"
-#import "MPGlobal.h"
-#import "MPLogging.h"
-#import "MPAdDestinationDisplayAgent.h"
-#import "NSURL+MPAdditions.h"
-#import "MPWebView.h"
-#import "MPCoreInstanceProvider.h"
-#import "MPUserInteractionGestureRecognizer.h"
-#import "NSJSONSerialization+MPAdditions.h"
-#import "NSURL+MPAdditions.h"
-#import "MPAPIEndPoints.h"
-#import "MoPub.h"
-#import "MPViewabilityTracker.h"
-#import "NSString+MPAdditions.h"
-
-#ifndef NSFoundationVersionNumber_iOS_6_1
-#define NSFoundationVersionNumber_iOS_6_1 993.00
+#if __has_include(<MoPub/MoPub-Swift.h>)
+    #import <MoPub/MoPub-Swift.h>
+#else
+    #import "MoPub-Swift.h"
 #endif
+#import "MPAdWebViewAgent.h"
+#import "MPAdDestinationDisplayAgent.h"
+#import "MPAnalyticsTracker.h"
+#import "MPLogging.h"
+#import "MPUserInteractionGestureRecognizer.h"
+#import "NSURL+MPAdditions.h"
 
-@interface MPAdWebViewAgent () <UIGestureRecognizerDelegate>
+@interface MPAdWebViewAgent() <MPAdDestinationDisplayAgentDelegate, MPWebViewDelegate, UIGestureRecognizerDelegate>
+// Configuration
+@property (nonatomic, nullable, strong) MPAdConfiguration *configuration;
 
-@property (nonatomic, strong) MPAdConfiguration *configuration;
-@property (nonatomic, strong) id<MPAdDestinationDisplayAgent> destinationDisplayAgent;
-@property (nonatomic, assign) BOOL shouldHandleRequests;
-@property (nonatomic, strong) id<MPAdAlertManagerProtocol> adAlertManager;
+// Clickthrough
+@property (nonatomic, strong) id<MPAdDestinationDisplayAgent> clickthroughDestination;
+
+// User interaction
 @property (nonatomic, assign) BOOL userInteractedWithWebView;
 @property (nonatomic, strong) MPUserInteractionGestureRecognizer *userInteractionRecognizer;
-@property (nonatomic, assign) CGRect frame;
-@property (nonatomic, strong, readwrite) MPViewabilityTracker *viewabilityTracker;
-@property (nonatomic, assign) BOOL didFireClickImpression;
 
-- (void)performActionForMoPubSpecificURL:(NSURL *)URL;
-- (BOOL)shouldIntercept:(NSURL *)URL navigationType:(WKNavigationType)navigationType;
-- (void)interceptURL:(NSURL *)URL;
-
+// Web view
+@property (nonatomic, assign, readwrite) BOOL isRequestHandlingEnabled;
+@property (nonatomic, strong, readwrite) MPWebView *webView;
+@property (nonatomic, assign) CGRect webViewFrame;
 @end
 
 @implementation MPAdWebViewAgent
 
-- (id)initWithAdWebViewFrame:(CGRect)frame delegate:(id<MPAdWebViewAgentDelegate>)delegate
-{
-    self = [super init];
-    if (self) {
-        _frame = frame;
+#pragma mark - Initialization
 
-        self.destinationDisplayAgent = [MPAdDestinationDisplayAgent agentWithDelegate:self];
-        self.delegate = delegate;
-        self.shouldHandleRequests = YES;
-        self.didFireClickImpression = NO;
-        self.adAlertManager = [[MPCoreInstanceProvider sharedProvider] buildMPAdAlertManagerWithDelegate:self];
+- (instancetype)initWithWebViewFrame:(CGRect)frame
+                            delegate:(id<MPAdWebViewAgentDelegate>)delegate {
+    if (self = [super init]) {
+        // Setup internal state
+        _clickthroughDestination = [MPAdDestinationDisplayAgent agentWithDelegate:self];
+        _configuration = nil;
+        _delegate = delegate;
 
-        self.userInteractionRecognizer = [[MPUserInteractionGestureRecognizer alloc] initWithTarget:self action:@selector(handleInteraction:)];
-        self.userInteractionRecognizer.cancelsTouchesInView = NO;
-        self.userInteractionRecognizer.delegate = self;
+        // Defer creation of web view until load time when more information
+        // about the creative is available.
+        _isRequestHandlingEnabled = YES;
+        _webView = nil;
+        _webViewFrame = frame;
+
+        // Configure gesture recognizers to validate real user interaction
+        _userInteractedWithWebView = NO;
+        _userInteractionRecognizer = ({
+            MPUserInteractionGestureRecognizer *recognizer = [[MPUserInteractionGestureRecognizer alloc] initWithTarget:self action:@selector(handleUserInteraction:)];
+            recognizer.cancelsTouchesInView = NO;
+            recognizer.delegate = self;
+            recognizer;
+        });
     }
+
     return self;
 }
 
-- (void)dealloc
-{
-    [self.viewabilityTracker stopTracking];
-    self.userInteractionRecognizer.delegate = nil;
-    [self.userInteractionRecognizer removeTarget:self action:nil];
-    [self.destinationDisplayAgent cancel];
-    [self.destinationDisplayAgent setDelegate:nil];
-    self.view.delegate = nil;
-}
+#pragma mark - View Lifecycle
 
-- (void)handleInteraction:(UITapGestureRecognizer *)sender
-{
-    if (sender.state == UIGestureRecognizerStateEnded) {
-        self.userInteractedWithWebView = YES;
+/**
+ Initializes a fresh instance of a web view, replacing any existing instance.
+ */
+- (void)initializeWebViewWithConfiguration:(MPAdConfiguration *)configuration {
+    // Clear out any previous instance of the web view since it's
+    // no longer valid.
+    if (self.webView != nil) {
+        self.webView.delegate = nil;
+
+        [self.webView removeFromSuperview];
+        self.webView = nil;
     }
-}
 
-#pragma mark - <UIGestureRecognizerDelegate>
-
-- (BOOL)gestureRecognizer:(UIGestureRecognizer *)gestureRecognizer shouldRecognizeSimultaneouslyWithGestureRecognizer:(UIGestureRecognizer *)otherGestureRecognizer
-{
-    return YES;
-}
-
-#pragma mark - <MPAdAlertManagerDelegate>
-
-- (UIViewController *)viewControllerForPresentingMailVC
-{
-    return [self.delegate viewControllerForPresentingModalView];
-}
-
-- (void)adAlertManagerDidTriggerAlert:(MPAdAlertManager *)manager
-{
-    [self.adAlertManager processAdAlertOnce];
-}
-
-#pragma mark - Public
-
-- (void)loadConfiguration:(MPAdConfiguration *)configuration
-{
-    self.configuration = configuration;
-
-    // Initialize web view
-    if (self.view != nil) {
-        self.view.delegate = nil;
-        [self.view removeFromSuperview];
-        self.view = nil;
-    }
-    self.view = [[MPWebView alloc] initWithFrame:self.frame];
-    self.view.shouldConformToSafeArea = [self isInterstitialAd];
-    self.view.delegate = self;
-    [self.view addGestureRecognizer:self.userInteractionRecognizer];
+    // Create a fresh web view instance and configure it
+    NSArray<WKUserScript *> *scripts = configuration.viewabilityContext.resourcesAsScripts;
+    self.webView = [[MPWebView alloc] initWithFrame:self.webViewFrame scripts:scripts];
+    self.webView.shouldConformToSafeArea = configuration.isFullscreenAd;
+    self.webView.delegate = self;
 
     // Ignore server configuration size for interstitials. At this point our web view
     // is sized correctly for the device's screen. Currently the server sends down values for a 3.5in
     // screen, and they do not size correctly on a 4in screen.
     if (configuration.isFullscreenAd == false) {
         if ([configuration hasPreferredSize]) {
-            CGRect frame = self.view.frame;
+            CGRect frame = self.webView.frame;
             frame.size.width = configuration.preferredSize.width;
             frame.size.height = configuration.preferredSize.height;
-            self.view.frame = frame;
+            self.webView.frame = frame;
         }
     }
 
-    [self.view mp_setScrollable:NO];
-
-    // Initialize viewability trackers before loading self.view
-    [self init3rdPartyViewabilityTrackers];
-
-    [self.view loadHTMLString:[configuration adResponseHTMLString]
-                      baseURL:[NSURL URLWithString:[MPAPIEndpoints baseURL]]
-     ];
-
-    [self initAdAlertManager];
+    [self.webView addGestureRecognizer:self.userInteractionRecognizer];
+    [self.webView mp_setScrollable:NO];
 }
 
-- (void)invokeJavaScriptForEvent:(MPAdWebViewEvent)event
-{
-    switch (event) {
-        case MPAdWebViewEventAdDidAppear:
-            // For banner, viewability tracker is handled right after adView is initialized (not here).
-            // For interstitial (handled here), we start tracking viewability if it's not started during adView initialization.
-            if (![self shouldStartViewabilityDuringInitialization]) {
-                [self startViewabilityTracker];
-            }
+- (void)loadConfiguration:(MPAdConfiguration *)configuration {
+    // Save the configuration to reference tracking information later
+    self.configuration = configuration;
 
-            [self.view stringByEvaluatingJavaScriptFromString:@"webviewDidAppear();"];
+    // Create a fresh web view
+    [self initializeWebViewWithConfiguration:configuration];
+
+    // Webview has been created and initialized at this point.
+    [self.delegate adSessionStarted:self.webView];
+
+    // Perform any HTML customizations now
+    NSString *customizedCreativeHTMLString = [self.delegate customizeHTML:configuration.adResponseHTMLString inWebView:self.webView];
+
+    // Load the creative HTML into the web view
+    [self.webView loadHTMLString:customizedCreativeHTMLString baseURL:MPAPIEndpoints.baseURL];
+}
+
+- (void)didAppear {
+    // Invoke the `webviewDidAppear()` JavaScript injected into the creative
+    // by the template
+    [self.webView evaluateJavaScript:@"webviewDidAppear();" completionHandler:nil];
+}
+
+- (void)didDisappear {
+    // Invoke the `webviewDidClose()` JavaScript injected into the creative
+    // by the template
+    [self.webView evaluateJavaScript:@"webviewDidClose();" completionHandler:nil];
+}
+
+#pragma mark - Request Handling
+
+- (void)enableRequestHandling {
+    self.isRequestHandlingEnabled = YES;
+}
+
+- (void)disableRequestHandling {
+    self.isRequestHandlingEnabled = NO;
+
+    // Cancel any clickthough navigation immediately.
+    [self.clickthroughDestination cancel];
+}
+
+#pragma mark - MoPub URL handling
+
+- (void)handleMoPubURL:(NSURL *)url {
+    MPLogDebug(@"Loading MoPub URL: %@", url);
+
+    MPMoPubHostCommand command = [url mp_mopubHostCommand];
+    switch (command) {
+        case MPMoPubHostCommandClose:
+            [self.delegate adDidClose:self.webView];
             break;
-        case MPAdWebViewEventAdDidDisappear:
-            [self.view stringByEvaluatingJavaScriptFromString:@"webviewDidClose();"];
+        case MPMoPubHostCommandFinishLoad:
+            [self.delegate adDidLoad:self.webView];
+            break;
+        case MPMoPubHostCommandFailLoad:
+            [self.delegate adDidFailToLoad:self.webView];
             break;
         default:
+            MPLogInfo(@"Unsupported MoPub URL: %@", url.absoluteString);
             break;
     }
 }
 
-- (void)startViewabilityTracker
-{
-    [self.viewabilityTracker startTracking];
+#pragma mark - Clickthrough
+
+/**
+ Determines if the given URL navigation is a clickthrough and should be intercepted.
+ @param url Target URL.
+ @param navigationType Type of navigation used to go to the target URL.
+ @return True if the navigation should be intercepted and handled differently; false otherwise.
+ */
+- (BOOL)isClickthroughUrl:(NSURL *)url navigationType:(WKNavigationType)navigationType {
+    // Intercept href links for additional processing
+    if (navigationType == WKNavigationTypeLinkActivated) {
+        return YES;
+    }
+    // Intercept clicks when HTML creative uses `window.location()` and `window.open()`
+    // and user interaction was detected.
+    else if (navigationType == WKNavigationTypeOther && self.userInteractedWithWebView) {
+        return YES;
+    }
+
+    return NO;
 }
 
-- (void)disableRequestHandling
-{
-    self.shouldHandleRequests = NO;
-    [self.destinationDisplayAgent cancel];
+/**
+ Handles scrubbing the intercepted URL before passing it along to the clickthrough destination.
+ @param url Url to handle.
+ */
+- (void)handleClickthroughUrl:(NSURL *)url {
+    // Click tracking is delegated to upstream
+    [self.delegate adWebViewAgentDidReceiveTap:self];
+
+    // Direct the URL to the destination handler.
+    [self.clickthroughDestination displayDestinationForURL:url skAdNetworkClickthroughData:self.configuration.skAdNetworkClickthroughData];
 }
 
-- (void)enableRequestHandling
-{
-    self.shouldHandleRequests = YES;
-}
+#pragma mark - MPAdDestinationDisplayAgentDelegate
 
-#pragma mark - <MPAdDestinationDisplayAgentDelegate>
-
-- (UIViewController *)viewControllerForPresentingModalView
-{
+- (UIViewController *)viewControllerForPresentingModalView {
+    // Pass through the view controller used to present modals.
     return [self.delegate viewControllerForPresentingModalView];
 }
 
-- (void)displayAgentWillPresentModal
-{
-    [self.delegate adActionWillBegin:self.view];
+- (void)displayAgentWillPresentModal {
+    // The clickthrough destination will present a modal.
+    [self.delegate adActionWillBegin:self.webView];
 }
 
-- (void)displayAgentWillLeaveApplication
-{
-    [self.delegate adActionWillLeaveApplication:self.view];
+- (void)displayAgentWillLeaveApplication {
+    // The clickthrough destination will result in an app switch.
+    [self.delegate adActionWillLeaveApplication:self.webView];
 }
 
-- (void)displayAgentDidDismissModal
-{
-    [self.delegate adActionDidFinish:self.view];
+- (void)displayAgentDidDismissModal {
+    // The clickthrough modal was closed.
+    [self.delegate adActionDidFinish:self.webView];
 }
 
-- (MPAdConfiguration *)adConfiguration
-{
+- (MPAdConfiguration *)adConfiguration {
     return self.configuration;
 }
 
-#pragma mark - <MPWebViewDelegate>
+#pragma mark - MPUserInteractionGestureRecognizer
 
-- (BOOL)webView:(MPWebView *)webView
-shouldStartLoadWithRequest:(NSURLRequest *)request
- navigationType:(WKNavigationType)navigationType
-{
-    if (!self.shouldHandleRequests) {
+- (void)handleUserInteraction:(UITapGestureRecognizer *)sender {
+    if (sender.state == UIGestureRecognizerStateEnded) {
+        // User interaction confirmed.
+        self.userInteractedWithWebView = YES;
+    }
+}
+
+#pragma mark - MPWebViewDelegate
+
+- (BOOL)webView:(MPWebView *)webView shouldStartLoadWithRequest:(NSURLRequest *)request
+ navigationType:(WKNavigationType)navigationType {
+    // Web view request handling has been disabled. Ignore this load.
+    if (!self.isRequestHandlingEnabled) {
         return NO;
     }
 
-    NSURL *URL = [request URL];
-    if ([URL mp_isMoPubScheme]) {
-        [self performActionForMoPubSpecificURL:URL];
+    // Intercept MoPub deeplink URLs and handle those seperately.
+    NSURL *url = request.URL;
+    if ([url mp_isMoPubScheme]) {
+        [self handleMoPubURL:url];
         return NO;
-    } else if ([self shouldIntercept:URL navigationType:navigationType]) {
-
+    }
+    // URL navigation is a clickthrough, and must be processed before
+    // being sent to the clickthrough destination.
+    else if ([self isClickthroughUrl:url navigationType:navigationType]) {
         // Disable intercept without user interaction
         if (!self.userInteractedWithWebView) {
             MPLogInfo(@"Redirect without user interaction detected");
             return NO;
         }
 
-        [self interceptURL:URL];
-        return NO;
-    } else {
-        // don't handle any deep links without user interaction
-        return self.userInteractedWithWebView || [URL mp_isSafeForLoadingWithoutUserAction];
-    }
-}
-
-- (void)webViewDidStartLoad:(MPWebView *)webView
-{
-    // no op
-}
-
-#pragma mark - MoPub-specific URL handlers
-- (void)performActionForMoPubSpecificURL:(NSURL *)URL
-{
-    MPLogDebug(@"MPAdWebView - loading MoPub URL: %@", URL);
-    MPMoPubHostCommand command = [URL mp_mopubHostCommand];
-    switch (command) {
-        case MPMoPubHostCommandClose:
-            [self.delegate adDidClose:self.view];
-            break;
-        case MPMoPubHostCommandFinishLoad:
-            [self.delegate adDidFinishLoadingAd:self.view];
-            break;
-        case MPMoPubHostCommandFailLoad:
-            [self.delegate adDidFailToLoadAd:self.view];
-            break;
-        default:
-            MPLogInfo(@"MPAdWebView - unsupported MoPub URL: %@", [URL absoluteString]);
-            break;
-    }
-}
-
-#pragma mark - URL Interception
-- (BOOL)shouldIntercept:(NSURL *)URL navigationType:(WKNavigationType)navigationType
-{
-    if (navigationType == WKNavigationTypeLinkActivated) {
-        return YES;
-    } else if (navigationType == WKNavigationTypeOther && self.userInteractedWithWebView) {
-        return YES;
-    } else {
-        return NO;
-    }
-}
-
-- (void)interceptURL:(NSURL *)URL
-{
-    NSURL *redirectedURL = URL;
-    if (self.configuration.clickTrackingURL && !self.didFireClickImpression) {
-        self.didFireClickImpression = YES; // fire click impression only once
-
-        NSString *path = [NSString stringWithFormat:@"%@&r=%@",
-                          self.configuration.clickTrackingURL.absoluteString,
-                          [[URL absoluteString] mp_URLEncodedString]];
-        redirectedURL = [NSURL URLWithString:path];
-    }
-
-    [self.destinationDisplayAgent displayDestinationForURL:redirectedURL];
-}
-
-#pragma mark - Utility
-
-- (void)init3rdPartyViewabilityTrackers
-{
-    self.viewabilityTracker = [[MPViewabilityTracker alloc]
-                               initWithWebView:self.view
-                               isVideo:self.configuration.isVastVideoPlayer
-                               startTrackingImmediately:[self shouldStartViewabilityDuringInitialization]];
-}
-
-- (BOOL)shouldStartViewabilityDuringInitialization
-{
-    // If viewabile impression tracking experiment is enabled, we defer viewability trackers until
-    // ad view is at least x pixels on screen for y seconds, where x and y are configurable values defined in server.
-    if (self.adConfiguration.visibleImpressionTrackingEnabled) {
+        // Handle the clickthrough
+        [self handleClickthroughUrl:url];
         return NO;
     }
 
-    return ![self isInterstitialAd];
+    // Don't handle any links without user interaction unless it
+    // is a valid http:// or https:// url.
+    return self.userInteractedWithWebView || [url mp_isSafeForLoadingWithoutUserAction];
 }
 
-- (BOOL)isInterstitialAd
-{
-    return self.configuration.isFullscreenAd;
+- (void)webViewDidFinishLoad:(MPWebView *)webView {
+    // Web view has finished loading (including any viewability JavaScript) at this point.
+    // Notify that the ad session should start now.
+    [self.delegate adSessionReady:webView];
 }
 
-- (void)initAdAlertManager
-{
-    self.adAlertManager.adConfiguration = self.configuration;
-    self.adAlertManager.adUnitId = [self.delegate adUnitId];
-    self.adAlertManager.targetAdView = self.view;
-    self.adAlertManager.location = [self.delegate location];
-    [self.adAlertManager beginMonitoringAlerts];
+#pragma mark - UIGestureRecognizerDelegate
+
+- (BOOL)gestureRecognizer:(UIGestureRecognizer *)gestureRecognizer
+shouldRecognizeSimultaneouslyWithGestureRecognizer:(UIGestureRecognizer *)otherGestureRecognizer {
+    // Allow the gestures to pass through to the views below.
+    return YES;
 }
 
 @end

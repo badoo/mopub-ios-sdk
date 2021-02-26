@@ -25,6 +25,7 @@
 #import "MPHTTPNetworkSession.h"
 #import "MPURLRequest.h"
 #import "MPImpressionTrackedNotification.h"
+#import "MPViewabilityTracker.h"
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 
@@ -47,6 +48,12 @@
 @property (nonatomic) MPNativeView *associatedView;
 
 @property (nonatomic) BOOL hasAttachedToView;
+
+// This object is externally created in `MPNativeAdRequest`.
+// Starting the tracking session, and tracking ad load are done in
+// `MPNativeAdRequest`. This object is responsible for tracking
+// the impression and stopping the session.
+@property (nonatomic, readwrite, strong) id<MPViewabilityTracker> tracker;
 
 @end
 
@@ -77,8 +84,20 @@
             UITapGestureRecognizer *recognizer = [[UITapGestureRecognizer alloc] initWithTarget:self action:@selector(adViewTapped)];
             [_associatedView addGestureRecognizer:recognizer];
         }
+
+        // The ad configuration and Viewability tracker are created externally
+        // by `MPNativeAdRequest` and assigned to this object in the
+        // `completeAdRequestWithAdObject:error:` method.
+        _configuration = nil;
+        _tracker = nil;
     }
     return self;
+}
+
+- (void)dealloc {
+    if (self.tracker != nil) {
+        [self.tracker stopTracking];
+    }
 }
 
 #pragma mark - Public
@@ -136,6 +155,10 @@
     [MoPub sendImpressionDelegateAndNotificationFromAd:self
                                               adUnitID:self.adUnitID
                                         impressionData:self.configuration.impressionData];
+
+    if (self.tracker != nil) {
+        [self.tracker trackImpression];
+    }
 }
 
 - (void)trackClick

@@ -6,7 +6,6 @@
 	<string>AppLovinAdapterConfiguration</string>
 	<string>ChartboostAdapterConfiguration</string>
 	<string>FacebookAdapterConfiguration</string>
-	<string>FlurryAdapterConfiguration</string>
 	<string>GoogleAdMobAdapterConfiguration</string>
 	<string>IronSourceAdapterConfiguration</string>
 	<string>SnapAdAdapterConfiguration</string>
@@ -14,5 +13,6 @@
 	<string>UnityAdsAdapterConfiguration</string>
 	<string>VerizonAdapterConfiguration</string>
 	<string>VungleAdapterConfiguration</string>
+	<string>PangleAdapterConfiguration</string>
 </array>
 </plist>

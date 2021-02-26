@@ -8,6 +8,7 @@
 
 #import <XCTest/XCTest.h>
 #import "MPAnalyticsTracker.h"
+#import "MPMockAnalyticsTracker.h"
 #import "MPVASTTracking.h"
 #import "XCTestCase+MPAddition.h"
 
@@ -15,36 +16,6 @@
 
 @interface MPVASTTracking (Testing)
 @property (nonatomic, strong) id<MPAnalyticsTracker> analyticsTracker;
-@end
-
-#pragma mark - MockAnalyticTracker
-
-@interface MockAnalyticTracker : MPAnalyticsTracker
-
-@property (nonatomic, strong) NSArray<NSURL *> *mostRecentlySentURLs;
-
-- (void)reset;
-
-@end
-
-@implementation MockAnalyticTracker
-
-- (void)trackImpressionForConfiguration:(MPAdConfiguration *)configuration {} // no op for this test
-
-- (void)trackClickForConfiguration:(MPAdConfiguration *)configuration {} // no op for this test
-
-- (void)sendTrackingRequestForURLs:(NSArray<NSURL *> *)URLs {
-    if (self.mostRecentlySentURLs == nil) {
-        self.mostRecentlySentURLs = URLs;
-    } else {
-        self.mostRecentlySentURLs = [self.mostRecentlySentURLs arrayByAddingObjectsFromArray:URLs];
-    }
-}
-
-- (void)reset {
-    self.mostRecentlySentURLs = nil;
-}
-
 @end
 
 #pragma mark - MPVASTTrackingTests
@@ -121,6 +92,8 @@
                              MPVideoEventClick,
                              MPVideoEventClose,
                              MPVideoEventCloseLinear,
+                             MPVideoEventCompanionAdView,
+                             MPVideoEventCompanionAdClick,
                              MPVideoEventComplete,
                              MPVideoEventCreativeView,
                              MPVideoEventFirstQuartile,
@@ -139,7 +112,7 @@
     MPVideoConfig *videoConfig = [[MPVideoConfig alloc] initWithVASTResponse:vastResponse additionalTrackers:nil];
     MPVASTTracking *testSubject = [[MPVASTTracking alloc] initWithVideoConfig:videoConfig
                                                               videoURL:[NSURL URLWithString:@"https://any.thing"]];;
-    testSubject.analyticsTracker = [MockAnalyticTracker new];
+    testSubject.analyticsTracker = [MPMockAnalyticsTracker new];
     return testSubject;
 }
 
@@ -149,8 +122,9 @@
 - (void)testHandlingEvents {
     MPVASTTracking *testSubject = [self makeTestSubject];
     for (NSString *eventName in self.allTrackingEventNames) {
+        MPMockAnalyticsTracker *mockAnalyticsTracker = (MPMockAnalyticsTracker *)testSubject.analyticsTracker;
         [testSubject handleVideoEvent:eventName videoTimeOffset:5]; // time offset does not matter
-        NSArray<NSURL *> *urls = [(MockAnalyticTracker *)testSubject.analyticsTracker mostRecentlySentURLs];
+        NSArray<NSURL *> *urls = mockAnalyticsTracker.lastTrackedUrls;
 
         if ([eventName isEqualToString:MPVideoEventProgress]) {
             // nothing should happen since this should be handled by `handleVideoProgressEvent:videoDuration:`
@@ -161,13 +135,14 @@
                         eventName, urls.count, self.testData[eventName].count);
             }
         }
-        [(MockAnalyticTracker *)testSubject.analyticsTracker reset];
+        [mockAnalyticsTracker reset];
     }
 
     // This loop fires all events again, and verify the one-off events are sent only once.
     for (NSString *eventName in self.allTrackingEventNames) {
+        MPMockAnalyticsTracker *mockAnalyticsTracker = (MPMockAnalyticsTracker *)testSubject.analyticsTracker;
         [testSubject handleVideoEvent:eventName videoTimeOffset:5]; // time offset does not matter
-        NSArray<NSURL *> *urls = [(MockAnalyticTracker *)testSubject.analyticsTracker mostRecentlySentURLs];
+        NSArray<NSURL *> *urls = mockAnalyticsTracker.lastTrackedUrls;
 
         if ([self.oneOffEventTypes containsObject:eventName] == NO) {
             if (urls.count != self.testData[eventName].count) {
@@ -177,7 +152,7 @@
         } else {
             XCTAssertEqual(urls.count, 0);
         }
-        [(MockAnalyticTracker *)testSubject.analyticsTracker reset];
+        [mockAnalyticsTracker reset];
     }
 }
 
@@ -186,39 +161,38 @@
  */
 - (void)testHandlingProgressEvents {
     MPVASTTracking *testSubject = [self makeTestSubject];
+    MPMockAnalyticsTracker *mockAnalyticsTracker = (MPMockAnalyticsTracker *)testSubject.analyticsTracker;
     NSArray<NSNumber *> *times = @[@0, @5, @10, @15, @20, @25, @30]; // defined in the original XML
 
     for (int i = 0; i < times.count; i++) {
         [testSubject handleVideoProgressEvent:times[i].doubleValue videoDuration:30];
-        NSArray<NSURL *> *urls = [(MockAnalyticTracker *)testSubject.analyticsTracker mostRecentlySentURLs];
+        NSArray<NSURL *> *urls = mockAnalyticsTracker.lastTrackedUrls;
         if (times[i].intValue == 0) {
-            XCTAssertEqual(urls.count, 3);
-            XCTAssertTrue([urls[0].absoluteString isEqualToString:self.testData[MPVideoEventStart][0]]);
-            XCTAssertTrue([urls[1].absoluteString isEqualToString:self.testData[MPVideoEventStart][1]]);
-            XCTAssertTrue([urls[2].absoluteString isEqualToString:self.testData[MPVideoEventProgress][i]]);
+            XCTAssertEqual(urls.count, 1);
+            XCTAssertTrue([urls containsObject:[NSURL URLWithString:self.testData[MPVideoEventProgress][i]]]);
         } else if (times[i].intValue == 10) {
             XCTAssertEqual(urls.count, 2);
-            XCTAssertTrue([urls[0].absoluteString isEqualToString:self.testData[MPVideoEventFirstQuartile][0]]);
-            XCTAssertTrue([urls[1].absoluteString isEqualToString:self.testData[MPVideoEventProgress][i]]);
+            XCTAssertTrue([urls containsObject:[NSURL URLWithString:self.testData[MPVideoEventFirstQuartile][0]]]);
+            XCTAssertTrue([urls containsObject:[NSURL URLWithString:self.testData[MPVideoEventProgress][i]]]);
         } else if (times[i].intValue == 15) {
             XCTAssertEqual(urls.count, 2);
-            XCTAssertTrue([urls[0].absoluteString isEqualToString:self.testData[MPVideoEventMidpoint][0]]);
-            XCTAssertTrue([urls[1].absoluteString isEqualToString:self.testData[MPVideoEventProgress][i]]);
+            XCTAssertTrue([urls containsObject:[NSURL URLWithString:self.testData[MPVideoEventMidpoint][0]]]);
+            XCTAssertTrue([urls containsObject:[NSURL URLWithString:self.testData[MPVideoEventProgress][i]]]);
         } else if (times[i].intValue == 25) {
             XCTAssertEqual(urls.count, 2);
-            XCTAssertTrue([urls[0].absoluteString isEqualToString:self.testData[MPVideoEventThirdQuartile][0]]);
-            XCTAssertTrue([urls[1].absoluteString isEqualToString:self.testData[MPVideoEventProgress][i]]);
+            XCTAssertTrue([urls containsObject:[NSURL URLWithString:self.testData[MPVideoEventThirdQuartile][0]]]);
+            XCTAssertTrue([urls containsObject:[NSURL URLWithString:self.testData[MPVideoEventProgress][i]]]);
         } else {
             XCTAssertEqual(urls.count, 1);
-            XCTAssertTrue([urls[0].absoluteString isEqualToString:self.testData[MPVideoEventProgress][i]]);
+            XCTAssertTrue([urls containsObject:[NSURL URLWithString:self.testData[MPVideoEventProgress][i]]]);
         }
-        [(MockAnalyticTracker *)testSubject.analyticsTracker reset];
+        [mockAnalyticsTracker reset];
     }
 
     // This loop fires all progress events again, and verify they are sent only once.
     for (int i = 0; i < times.count; i++) {
         [testSubject handleVideoProgressEvent:times[i].doubleValue videoDuration:30];
-        NSArray<NSURL *> *urls = [(MockAnalyticTracker *)testSubject.analyticsTracker mostRecentlySentURLs];
+        NSArray<NSURL *> *urls = mockAnalyticsTracker.lastTrackedUrls;
         XCTAssertEqual(urls.count, 0);
     }
 }

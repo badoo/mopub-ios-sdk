@@ -14,5 +14,5 @@
 @property (nonatomic, strong) NSURL * lastDisplayDestinationUrl;
 
 // Override existing functionality
-- (void)displayDestinationForURL:(NSURL *)URL;
+- (void)displayDestinationForURL:(NSURL *)URL skAdNetworkClickthroughData:(MPSKAdNetworkClickthroughData *)clickthroughData;
 @end

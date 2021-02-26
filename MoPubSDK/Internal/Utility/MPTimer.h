@@ -11,25 +11,23 @@
 NS_ASSUME_NONNULL_BEGIN
 
 /**
- * @c MPTimer is a thread safe @c NSTimer wrapper, with pause / resume functionality.
+ @c MPTimer is a thread safe @c NSTimer wrapper, with pause / resume functionality.
  */
 @interface MPTimer : NSObject
 
 /**
- * Return NO is the timer is paused, and return YES otherwise.
+ Return NO is the timer is paused, and return YES otherwise.
  */
 @property (nonatomic, readonly) BOOL isCountdownActive;
 
 + (MPTimer *)timerWithTimeInterval:(NSTimeInterval)seconds
-                            target:(id)target
-                          selector:(SEL)aSelector
                            repeats:(BOOL)repeats
-                       runLoopMode:(NSString *)runLoopMode;
+                       runLoopMode:(NSString *)runLoopMode
+                             block:(void(^)(MPTimer *timer))block;
 
 + (MPTimer *)timerWithTimeInterval:(NSTimeInterval)seconds
-                            target:(id)target
-                          selector:(SEL)aSelector
-                           repeats:(BOOL)repeats;
+                           repeats:(BOOL)repeats
+                             block:(void(^)(MPTimer *timer))block;
 
 - (BOOL)isValid;
 - (void)invalidate;

@@ -11,15 +11,6 @@
       selectedDebuggerIdentifier = "Xcode.DebuggerFoundation.Debugger.LLDB"
       selectedLauncherIdentifier = "Xcode.DebuggerFoundation.Launcher.LLDB"
       shouldUseLaunchSchemeArgsEnv = "YES">
-      <MacroExpansion>
-         <BuildableReference
-            BuildableIdentifier = "primary"
-            BlueprintIdentifier = "BC33E0321FBB627B0060ECBE"
-            BuildableName = "Canary.app"
-            BlueprintName = "AppStore Application"
-            ReferencedContainer = "container:Canary.xcodeproj">
-         </BuildableReference>
-      </MacroExpansion>
       <Testables>
          <TestableReference
             skipped = "NO">
@@ -47,9 +38,9 @@
          runnableDebuggingMode = "0">
          <BuildableReference
             BuildableIdentifier = "primary"
-            BlueprintIdentifier = "BC33E0321FBB627B0060ECBE"
+            BlueprintIdentifier = "BC33E04A1FBB63260060ECBE"
             BuildableName = "Canary.app"
-            BlueprintName = "AppStore Application"
+            BlueprintName = "Canary"
             ReferencedContainer = "container:Canary.xcodeproj">
          </BuildableReference>
       </BuildableProductRunnable>
@@ -60,15 +51,6 @@
       savedToolIdentifier = ""
       useCustomWorkingDirectory = "NO"
       debugDocumentVersioning = "YES">
-      <MacroExpansion>
-         <BuildableReference
-            BuildableIdentifier = "primary"
-            BlueprintIdentifier = "BC33E0321FBB627B0060ECBE"
-            BuildableName = "Canary.app"
-            BlueprintName = "AppStore Application"
-            ReferencedContainer = "container:Canary.xcodeproj">
-         </BuildableReference>
-      </MacroExpansion>
    </ProfileAction>
    <AnalyzeAction
       buildConfiguration = "Debug">

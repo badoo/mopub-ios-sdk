@@ -1,9 +1,9 @@
 //
 //  Default.xcconfig
-//  Canary
 //
-//  Created by Kelly Dun on 3/5/19.
-//  Copyright © 2019 MoPub. All rights reserved.
+//  Copyright 2018-2020 Twitter, Inc.
+//  Licensed under the MoPub SDK License Agreement
+//  http://www.mopub.com/legal/sdk-license-agreement/
 //
 
 // Configuration settings file format documentation can be found at:
@@ -13,3 +13,8 @@
 // of `PRODUCT_NAME`, because `PRODUCT_NAME` is widely used for the module name, build path, and many
 // implicit references when Xcode makes a build and execute tests - thing can go wrong very easily.
 PRODUCT_NAME = Canary
+
+// Target only 64-bit architectures explicitly.
+VALID_ARCHS = arm64 arm64e armv7 armv7s x86_64
+VALID_ARCHS[sdk=iphoneos*] = arm64 arm64e armv7 armv7s
+VALID_ARCHS[sdk=iphonesimulator*] = x86_64

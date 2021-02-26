@@ -6,11 +6,11 @@
 //  http://www.mopub.com/legal/sdk-license-agreement/
 //
 
-#import "MPRewardedVideoCustomEvent.h"
+#import "MPFullscreenAdAdapter.h"
 
 NS_ASSUME_NONNULL_BEGIN
 
-@interface MPMockChartboostRewardedVideoCustomEvent : MPRewardedVideoCustomEvent
+@interface MPMockChartboostRewardedVideoCustomEvent : MPFullscreenAdAdapter <MPThirdPartyFullscreenAdAdapter>
 
 @end
 

@@ -24,4 +24,9 @@ extern NSString * _Nonnull const kAdUnitIdUsedForConsentStorageKey;
 - (void)didFailSynchronizationWithError:(NSError * _Nullable)error completion:(void (^ _Nonnull)(NSError * _Nullable error))completion;
 // Reset consent manager state for testing
 - (void)setUpConsentManagerForTesting;
+
+#pragma mark - Overridden Private Properties
+
+@property (nonatomic, copy, readwrite, nullable) NSString *rawIfa;
+
 @end

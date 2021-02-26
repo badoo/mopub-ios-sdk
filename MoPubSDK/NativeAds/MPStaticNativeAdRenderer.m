@@ -26,10 +26,10 @@
 #import "MPURLRequest.h"
 
 /**
- *  -1.0 is somewhat significant because this also happens to be what `UITableViewAutomaticDimension`
- *  is so it makes for easier migration to use `UITableViewAutomaticDimension` on iOS 8+ later but is not
- *  currently passed back in `-tableView:shouldIndentWhileEditingRowAtIndexPath:` directly so it can
- *  be any abitrary value.
+  -1.0 is somewhat significant because this also happens to be what `UITableViewAutomaticDimension`
+  is so it makes for easier migration to use `UITableViewAutomaticDimension` on iOS 8+ later but is not
+  currently passed back in `-tableView:shouldIndentWhileEditingRowAtIndexPath:` directly so it can
+  be any abitrary value.
  */
 const CGFloat MPNativeViewDynamicDimension = -1.0;
 

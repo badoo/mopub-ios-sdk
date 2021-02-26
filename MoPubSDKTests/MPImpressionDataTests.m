@@ -36,6 +36,7 @@
                                  kImpressionDataPrecisionKey : @"estimated",
                                  kImpressionDataNetworkNameKey : @"Facebook",
                                  kImpressionDataNetworkPlacementIDKey : @"Network Placement ID",
+                                 kImpressionDataAppVersionKey: @"126.0.1",
                                  } mutableCopy];
 }
 
@@ -57,12 +58,14 @@
     XCTAssert([impData.country isEqualToString:self.testImpressionData[kImpressionDataCountryKey]]);
     XCTAssert([impData.networkName isEqualToString:self.testImpressionData[kImpressionDataNetworkNameKey]]);
     XCTAssert([impData.networkPlacementID isEqualToString:self.testImpressionData[kImpressionDataNetworkPlacementIDKey]]);
+    XCTAssert([impData.appVersion isEqualToString:self.testImpressionData[kImpressionDataAppVersionKey]]);
 }
 
 - (void)testBasicValuesPipedThroughWithNilValues {
     self.testImpressionData[kImpressionDataNetworkNameKey] = nil;
     self.testImpressionData[kImpressionDataNetworkPlacementIDKey] = nil;
     self.testImpressionData[kImpressionDataCountryKey] = nil;
+    self.testImpressionData[kImpressionDataAppVersionKey] = nil;
 
     MPImpressionData * impData = [[MPImpressionData alloc] initWithDictionary:self.testImpressionData];
 
@@ -81,6 +84,7 @@
     XCTAssertNil(impData.country);
     XCTAssertNil(impData.networkName);
     XCTAssertNil(impData.networkPlacementID);
+    XCTAssertNil(impData.appVersion);
 }
 
 - (void)testPrecisionEnum {

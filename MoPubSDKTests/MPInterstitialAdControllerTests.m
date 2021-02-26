@@ -7,8 +7,8 @@
 //
 
 #import <XCTest/XCTest.h>
+#import <MoPub/MoPub-Swift.h>
 #import "MPAdServerKeys.h"
-#import "MPAPIEndpoints.h"
 #import "MPInterstitialAdController.h"
 #import "MPInterstitialAdController+Testing.h"
 #import "MPInterstitialAdManager+Testing.h"
@@ -50,7 +50,7 @@ static NSTimeInterval const kTestTimeout = 0.5;
 
     NSString * viewabilityValue = [url stringForPOSTDataKey:kViewabilityStatusKey];
     XCTAssertNotNil(viewabilityValue);
-    XCTAssertTrue([viewabilityValue isEqualToString:@"1"]);
+    XCTAssertTrue([viewabilityValue isEqualToString:@"4"]);
 }
 
 #pragma mark - Ad Sizing

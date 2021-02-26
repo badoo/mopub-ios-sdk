@@ -8,6 +8,7 @@
 
 #import <UIKit/UIKit.h>
 #import "MPVideoPlayer.h"
+#import "MPViewableView.h"
 
 NS_ASSUME_NONNULL_BEGIN
 
@@ -16,17 +17,23 @@ NS_ASSUME_NONNULL_BEGIN
 /**
  @c MPVideoPlayerView only allows start playing without pause, reset, nor fast forwarding. Video is
  only paused automatically due to app life cycle events or user interactions such as click-throughs.
- 
+
  Note: The actually video duration is honored as the source of truth, while the video duration
  provided by the @c MPVideoConfig is ignored.
  */
-@interface MPVideoPlayerView : UIView <MPVideoPlayer>
+@interface MPVideoPlayerView : MPViewableView <MPVideoPlayer>
 
 @property (nonatomic, weak) id<MPVideoPlayerViewDelegate> delegate;
 @property (nonatomic, readonly) BOOL didLoadVideo; // set to YES after `loadVideo` is called for the first time; never set back to NO again
 @property (nonatomic, readonly) BOOL hasStartedPlaying; // set to YES after `play` is called for the first time; never set back to NO again
 @property (nonatomic, readonly) NSTimeInterval videoDuration;
 @property (nonatomic, readonly) NSTimeInterval videoProgress;
+
+/**
+ The audio playback volume for the player.
+ A value of 0.0 indicates silence; a value of 1.0 (the default) indicates full audio volume for the player instance.
+ */
+@property (nonatomic, readonly) float videoVolume;
 
 @end
 

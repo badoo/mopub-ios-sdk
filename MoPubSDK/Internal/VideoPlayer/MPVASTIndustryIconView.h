@@ -8,6 +8,7 @@
 
 #import "MPVASTIndustryIcon.h"
 #import "MPVASTResourceView.h"
+#import "MPViewabilityObstruction.h"
 
 NS_ASSUME_NONNULL_BEGIN
 
@@ -37,6 +38,21 @@ didTriggerOverridingClickThrough:(NSURL *)url;
 
 - (void)loadIcon:(MPVASTIndustryIcon *)icon;
 
+@end
+
+#pragma mark - MPViewabilityObstruction
+
+@interface MPVASTIndustryIconView (MPViewabilityObstruction) <MPViewabilityObstruction>
+/**
+ The type of obstruction that this view identifies as.
+ */
+@property (nonatomic, readonly) MPViewabilityObstructionType viewabilityObstructionType;
+
+/**
+ A human-readable name that succinctly describes this obstruction. For convenience, use only the
+ predefined constants in `MPViewabilityObstructionName`.
+ */
+@property (nonatomic, copy, readonly) MPViewabilityObstructionName viewabilityObstructionName;
 @end
 
 NS_ASSUME_NONNULL_END

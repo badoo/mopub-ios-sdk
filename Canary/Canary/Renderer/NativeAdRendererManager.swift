@@ -8,10 +8,7 @@
 
 import Foundation
 import MoPub
-import MoPub_AdMob_Adapters
-import MoPub_FacebookAudienceNetwork_Adapters
-import MoPub_Flurry_Adapters
-import MoPub_Verizon_Adapters
+
 
 final class NativeAdRendererManager {
     static let shared = NativeAdRendererManager()
@@ -75,7 +72,6 @@ private extension NativeAdRendererManager {
     var rendererConfigurations: [MPNativeAdRendererConfiguration] {
         let networkRendererConfigurations = self.networkRendererConfigurations // cache computed var result
         var configs = [MPNativeAdRendererConfiguration]()
-        configs.append(MOPUBNativeVideoAdRenderer.rendererConfiguration(with: mopubVideoRendererSettings))
         configs.append(contentsOf: networkRendererConfigurations)
         configs.append({ // add `MPStaticNativeAdRenderer`
             var networkSupportedCustomEvents = Set<String>() // add the custom event names to `MPStaticNativeAdRenderer`
@@ -104,41 +100,10 @@ private extension NativeAdRendererManager {
     }
     
     /**
-     MoPub video ad renderer settings
-     */
-    var mopubVideoRendererSettings: MOPUBNativeVideoAdRendererSettings {
-        // MoPub video renderer
-        let mopubVideoSettings: MOPUBNativeVideoAdRendererSettings = MOPUBNativeVideoAdRendererSettings()
-        mopubVideoSettings.renderingViewClass = NativeAdView.self
-        mopubVideoSettings.viewSizeHandler = { (width) -> CGSize in
-            return CGSize(width: width, height: NativeAdView.estimatedViewHeightForWidth(width))
-        }
-        
-        return mopubVideoSettings
-    }
-    
-    /**
      Renderers for mediated networks
      */
     var networkRendererConfigurations: [MPNativeAdRendererConfiguration] {
         var renderers: [MPNativeAdRendererConfiguration] = []
-        
-        // OPTIONAL: AdMob native renderer
-        if let admobConfig = MPGoogleAdMobNativeRenderer.rendererConfiguration(with: mopubRendererSettings) {
-            renderers.append(admobConfig)
-        }
-        
-        renderers.append(FacebookNativeAdRenderer.rendererConfiguration(with: mopubRendererSettings))
-        
-        // OPTIONAL: Flurry native video renderer
-        if let flurryConfig = FlurryNativeVideoAdRenderer.rendererConfiguration(with: mopubVideoRendererSettings) {
-            renderers.append(flurryConfig)
-        }
-        
-        // OPTIONAL: Verizon native video renderer
-        if let verizonConfig = MPVerizonNativeAdRenderer.rendererConfiguration(with: mopubVideoRendererSettings) {
-            renderers.append(verizonConfig)
-        }
         
         return renderers
     }

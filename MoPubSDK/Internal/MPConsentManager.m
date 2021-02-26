@@ -7,7 +7,11 @@
 //
 
 #import <AdSupport/AdSupport.h>
-#import "MPAPIEndpoints.h"
+#if __has_include(<MoPub/MoPub-Swift.h>)
+    #import <MoPub/MoPub-Swift.h>
+#else
+    #import "MoPub-Swift.h"
+#endif
 #import "MPAdServerURLBuilder.h"
 #import "MPAdServerKeys.h"
 #import "MPConsentChangedNotification.h"
@@ -31,13 +35,14 @@ static NSString * const kConsentedPrivacyPolicyVersionStorageKey = @"com.mopub.m
 static NSString * const kConsentedVendorListVersionStorageKey    = @"com.mopub.mopub-ios-sdk.consented.vendor.list.version";
 static NSString * const kConsentStatusStorageKey                 = @"com.mopub.mopub-ios-sdk.consent.status";
 static NSString * const kExtrasStorageKey                        = @"com.mopub.mopub-ios-sdk.extras";
+static NSString * const kForceGDPRAppliesStorageKey              = @"com.mopub.mopub-ios-sdk.gdpr.force.applies.true";
+static NSString * const kGDPRAppliesStorageKey                   = @"com.mopub.mopub-ios-sdk.gdpr.applies";
 static NSString * const kIabVendorListStorageKey                 = @"com.mopub.mopub-ios-sdk.iab.vendor.list";
 static NSString * const kIabVendorListHashStorageKey             = @"com.mopub.mopub-ios-sdk.iab.vendor.list.hash";
 static NSString * const kIfaForConsentStorageKey                 = @"com.mopub.mopub-ios-sdk.ifa.for.consent";
 static NSString * const kIsDoNotTrackStorageKey                  = @"com.mopub.mopub-ios-sdk.is.do.not.track";
 static NSString * const kIsWhitelistedStorageKey                 = @"com.mopub.mopub-ios-sdk.is.whitelisted";
-static NSString * const kGDPRAppliesStorageKey                   = @"com.mopub.mopub-ios-sdk.gdpr.applies";
-static NSString * const kForceGDPRAppliesStorageKey              = @"com.mopub.mopub-ios-sdk.gdpr.force.applies.true";
+static NSString * const kLastATTAuthorizationStatusStorageKey    = @"com.mopub.mopub-ios-sdk.last.ATT.authorization.status";
 static NSString * const kLastChangedMsStorageKey                 = @"com.mopub.mopub-ios-sdk.last.changed.ms";
 static NSString * const kLastChangedReasonStorageKey             = @"com.mopub.mopub-ios-sdk.last.changed.reason";
 static NSString * const kLastSynchronizedConsentStatusStorageKey = @"com.mopub.mopub-ios-sdk.last.synchronized.consent.status";
@@ -53,6 +58,13 @@ static NSTimeInterval const kDefaultRefreshInterval = 300; //seconds
 // String replacement macros
 static NSString * const kMacroReplaceLanguageCode = @"%%LANGUAGE%%";
 
+// All zero UUID
+static NSString * const kAllZeroUUID = @"00000000-0000-0000-0000-000000000000";
+
+// Deprecated constants used to upgrade the cached IFA for consent by removing
+// the ifa: prefix.
+static NSString * const kDeprecatedIfaPrefixToRemove = @"ifa:";
+
 @interface MPConsentManager() <MPConsentDialogViewControllerDelegate>
 
 /**
@@ -67,6 +79,13 @@ static NSString * const kMacroReplaceLanguageCode = @"%%LANGUAGE%%";
  that we were last known to be in a "do not track" state; otherwise @c NO.
  */
 @property (nonatomic, readonly) BOOL isDoNotTrack;
+
+/**
+ Indicates the App Tracking Transparency authorization status cached as of the last sync request.
+ This is used to determine if a transition into a Do Not Track state was caused by an installation
+ of iOS 14 forcing the user into a "not determined" tracking authorization status.
+ */
+@property (nonatomic, readonly) ATTrackingManagerAuthorizationStatus lastAuthorizationStatus API_AVAILABLE(ios(14.0));
 
 /**
  Flag indicating that GDPR applicability was forced and the transition should be
@@ -183,6 +202,10 @@ static NSString * const kMacroReplaceLanguageCode = @"%%LANGUAGE%%";
  */
 - (BOOL)isDoNotTrack {
     return [NSUserDefaults.standardUserDefaults boolForKey:kIsDoNotTrackStorageKey];
+}
+
+- (ATTrackingManagerAuthorizationStatus)lastAuthorizationStatus {
+    return (ATTrackingManagerAuthorizationStatus)[NSUserDefaults.standardUserDefaults integerForKey:kLastATTAuthorizationStatusStorageKey];
 }
 
 - (MPConsentStatus)rawConsentStatus {
@@ -629,7 +652,11 @@ static NSString * const kMacroReplaceLanguageCode = @"%%LANGUAGE%%";
  @return A new timer instance.
  */
 - (MPTimer * _Nonnull)newNextUpdateTimer {
-    MPTimer * timer = [MPTimer timerWithTimeInterval:self.syncFrequency target:self selector:@selector(onNextUpdateFiredWithTimer) repeats:YES];
+    __typeof__(self) __weak weakSelf = self;
+    MPTimer * timer = [MPTimer timerWithTimeInterval:self.syncFrequency repeats:YES block:^(MPTimer * _Nonnull timer) {
+        __typeof__(self) strongSelf = weakSelf;
+        [strongSelf onNextUpdateFiredWithTimer];
+    }];
     [timer scheduleNow];
     return timer;
 }
@@ -656,17 +683,42 @@ static NSString * const kMacroReplaceLanguageCode = @"%%LANGUAGE%%";
     BOOL didTransition = NO;
 
     // Transitioned from an "allowed to track" to "do not track" state.
-    BOOL trackingAllowed = ASIdentifierManager.sharedManager.advertisingTrackingEnabled;
+    BOOL trackingAllowed = [MPIdentityProvider advertisingTrackingEnabled];
     MPConsentStatus status = self.currentStatus;
     if (status != MPConsentStatusDoNotTrack && !trackingAllowed) {
         didTransition = [self setCurrentStatus:MPConsentStatusDoNotTrack reason:kConsentedChangedReasonDoNotTrackEnabled statusWasReacquired:NO shouldBroadcast:YES];
     }
     // Transitioned from a "do not track" state to an "allowed to track" state.
-    // If the previously cached state was "deny consent"
     else if (status == MPConsentStatusDoNotTrack && trackingAllowed) {
+        // Default logic:
+        // If the previously cached state was "deny consent", conserve the state.
+        // Otherwise, move to an Unknown consent status.
         MPConsentStatus transitionToState = (self.rawConsentStatus == MPConsentStatusDenied ? MPConsentStatusDenied : MPConsentStatusUnknown);
         NSString * transitionReason = (transitionToState == MPConsentStatusDenied ? kConsentedChangedReasonDoNotTrackDisabled : kConsentedChangedReasonDoNotTrackDisabledNeedConsent);
+
+        // If running on iOS 14+, and if the ATT authorization status is `not_determined`, special rules apply:
+        if (@available(iOS 14.0, *)) {
+            if (self.lastAuthorizationStatus == ATTrackingManagerAuthorizationStatusNotDetermined) {
+                // During the upgrade from iOS 13 to iOS 14, a user's ATT authorization
+                // status will change to "not determined", causing a Do Not Track GDPR
+                // state. Given this, when transitioning out of a "Not Determined" ATT
+                // status directly into "Authorized" ATT status, preserve the prior GDPR
+                // consent status.
+                transitionToState = self.rawConsentStatus;
+                transitionReason = kConsentedChangedReasonDoNotTrackDisabledPreserveConsent;
+            }
+        }
+
         didTransition = [self setCurrentStatus:transitionToState reason:transitionReason statusWasReacquired:NO shouldBroadcast:YES];
+    }
+
+    // When available, always cache the present app tracking authorization status
+    // so the status being transitioned out of is available for comparison later on.
+    // Do this on every DNT check because while the DNT status may not have changed,
+    // the ATT status likely has, and that should be captured.
+    if (@available(iOS 14.0, *)) {
+        [NSUserDefaults.standardUserDefaults setInteger:MPIdentityProvider.trackingAuthorizationStatus
+                                                 forKey:kLastATTAuthorizationStatusStorageKey];
     }
 
     return didTransition;
@@ -957,7 +1009,8 @@ static NSString * const kMacroReplaceLanguageCode = @"%%LANGUAGE%%";
 - (void)clearAdUnitIdUsedForConsent {
     [NSUserDefaults.standardUserDefaults setObject:nil forKey:kAdUnitIdUsedForConsentStorageKey];
     // Using ivar here to get around warning about nullability
-    _adUnitIdUsedForConsent = nil;
+    // Intentional cast to suppress the static analyzer.
+    _adUnitIdUsedForConsent = (id _Nonnull)nil;
 }
 
 @end
@@ -1011,6 +1064,32 @@ static NSString * const kMacroReplaceLanguageCode = @"%%LANGUAGE%%";
 
 - (BOOL)forceIsGDPRApplicable {
     return [NSUserDefaults.standardUserDefaults boolForKey:kForceGDPRAppliesStorageKey];
+}
+
+#pragma mark - Public Read Only / Private Write Properties
+
+- (NSString * _Nullable)ifaForConsent {
+    // Retrieve the IFA for consent from the cache
+    NSString *cachedIfaForConsent = [NSUserDefaults.standardUserDefaults stringForKey:kIfaForConsentStorageKey];
+
+    // Upgrade scenario where we have to remove the ifa: prefix.
+    if ([cachedIfaForConsent hasPrefix:kDeprecatedIfaPrefixToRemove]) {
+        cachedIfaForConsent = [cachedIfaForConsent substringFromIndex:kDeprecatedIfaPrefixToRemove.length];
+        [NSUserDefaults.standardUserDefaults setObject:cachedIfaForConsent forKey:kIfaForConsentStorageKey];
+    }
+
+    return cachedIfaForConsent;
+}
+
+- (void)setIfaForConsent:(NSString * _Nullable)ifaForConsent {
+    // Setting `nil` will clear out the backing storage
+    if (ifaForConsent == nil) {
+        [NSUserDefaults.standardUserDefaults removeObjectForKey:kIfaForConsentStorageKey];
+    }
+    // Normal set operation.
+    else {
+        [NSUserDefaults.standardUserDefaults setObject:ifaForConsent forKey:kIfaForConsentStorageKey];
+    }
 }
 
 #pragma mark - Read Only Properties
@@ -1075,10 +1154,6 @@ static NSString * const kMacroReplaceLanguageCode = @"%%LANGUAGE%%";
     return [NSUserDefaults.standardUserDefaults stringForKey:kIabVendorListHashStorageKey];
 }
 
-- (NSString * _Nullable)ifaForConsent {
-    return [NSUserDefaults.standardUserDefaults stringForKey:kIfaForConsentStorageKey];
-}
-
 - (MPBool)isGDPRApplicable {
     // Always return @c MPBoolYes if @c forceIsGDPRApplicable has been set to @c YES
     return self.forceIsGDPRApplicable ? MPBoolYes : (MPBool)[NSUserDefaults.standardUserDefaults integerForKey:kGDPRAppliesStorageKey];
@@ -1139,6 +1214,18 @@ static NSString * const kMacroReplaceLanguageCode = @"%%LANGUAGE%%";
 
 @implementation MPConsentManager (PersonalDataHandler)
 
+- (NSString *)rawIfa {
+    // Note that per: https://developer.apple.com/documentation/adsupport/asidentifiermanager/1614151-advertisingidentifier
+    // The advertising identifier has a value of 00000000-0000-0000-0000-000000000000 until authorization is granted or when using the Simulator.
+    NSString *identifier = ASIdentifierManager.sharedManager.advertisingIdentifier.UUIDString;
+    if ([identifier isEqualToString:kAllZeroUUID]) {
+        return nil;
+    }
+
+    // Uppercase the UUID to preserve uniformity of UUIDs with previous iterations of the SDK.
+    return identifier.uppercaseString;
+}
+
 - (void)handlePersonalDataOnStateChangeTo:(MPConsentStatus)newStatus fromOldStatus:(MPConsentStatus)oldStatus {
     [self updateAppConversionTracking];
 
@@ -1156,37 +1243,36 @@ static NSString * const kMacroReplaceLanguageCode = @"%%LANGUAGE%%";
 }
 
 - (void)storeIfa {
-    NSString *identifier = [MPIdentityProvider identifierFromASIdentifierManager:NO];
-    if (!identifier) {
+    NSString *identifier = self.rawIfa;
+    if (identifier == nil) {
         return;
     }
-    NSString *storedIFA = [NSUserDefaults.standardUserDefaults stringForKey:kIfaForConsentStorageKey];
+    NSString *storedIFA = self.ifaForConsent;
     if (![identifier isEqualToString:storedIFA]) {
-        [NSUserDefaults.standardUserDefaults setObject:identifier forKey:kIfaForConsentStorageKey];
+        self.ifaForConsent = identifier;
     }
 }
 
 /**
- * If IFA is changed and the status is transitioning from MPConsentStatusConsented, remove old IFA from NSUserDefault and change status to unknown.
+ If IFA is changed and the status is transitioning from MPConsentStatusConsented, remove old IFA from NSUserDefault and change status to unknown.
  */
-- (void)checkForIfaChange
-{
-    NSString *oldIfa = [NSUserDefaults.standardUserDefaults stringForKey:kIfaForConsentStorageKey];
-    NSString *newIfa = [MPIdentityProvider identifierFromASIdentifierManager:NO];
+- (void)checkForIfaChange {
+    NSString *oldIfa = self.ifaForConsent;
+    NSString *newIfa = self.rawIfa;
     // IFA reset
     if (self.currentStatus == MPConsentStatusConsented && ![oldIfa isEqualToString:newIfa] && newIfa != nil) {
         [NSUserDefaults.standardUserDefaults removeObjectForKey:kLastSynchronizedConsentStatusStorageKey];
-        [NSUserDefaults.standardUserDefaults removeObjectForKey:kIfaForConsentStorageKey];
+        self.ifaForConsent = nil;
         [self setCurrentStatus:MPConsentStatusUnknown reason:kConsentedChangedReasonIfaChanged statusWasReacquired:NO shouldBroadcast:YES];
     }
 }
 
 - (void)removeIfa {
-    [NSUserDefaults.standardUserDefaults removeObjectForKey:kIfaForConsentStorageKey];
+    self.ifaForConsent = nil;
 }
 
 /**
- * App conversion request will only be fired when MoPub obtains consent.
+ App conversion request will only be fired when MoPub obtains consent.
  */
 - (void)updateAppConversionTracking {
     if ([MPConsentManager sharedManager].canCollectPersonalInfo) {

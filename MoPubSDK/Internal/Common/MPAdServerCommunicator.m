@@ -8,16 +8,21 @@
 
 #import "MPAdServerCommunicator.h"
 
+#if __has_include(<MoPub/MoPub-Swift.h>)
+    #import <MoPub/MoPub-Swift.h>
+#else
+    #import "MoPub-Swift.h"
+#endif
 #import "MoPub.h"
 #import "MPAdConfiguration.h"
 #import "MPAdServerKeys.h"
-#import "MPAPIEndpoints.h"
 #import "MPConsentManager.h"
 #import "MPCoreInstanceProvider.h"
 #import "MPError.h"
 #import "MPHTTPNetworkSession.h"
 #import "MPLogging.h"
 #import "MPRateLimitManager.h"
+#import "MPSKAdNetworkManager.h"
 #import "MPURLRequest.h"
 
 // Multiple response JSON fields
@@ -125,12 +130,19 @@ static NSString * const kAdResonsesContentKey = @"content";
 
 - (void)sendBeforeLoadUrlWithConfiguration:(MPAdConfiguration *)configuration
 {
-    if (configuration.beforeLoadURL != nil) {
-        MPURLRequest * request = [MPURLRequest requestWithURL:configuration.beforeLoadURL];
+    if (configuration.beforeLoadURLs.count == 0) {
+        return;
+    }
+
+    for (NSURL * beforeLoadURL in configuration.beforeLoadURLs) {
+        MPURLRequest * request = [MPURLRequest requestWithURL:beforeLoadURL];
+        if (request == nil) {
+            continue;
+        }
         [MPHTTPNetworkSession startTaskWithHttpRequest:request responseHandler:^(NSData * _Nonnull data, NSHTTPURLResponse * _Nonnull response) {
-            MPLogDebug(@"Successfully sent before load URL");
+            MPLogDebug(@"Successfully sent before load URL: %@", beforeLoadURL);
         } errorHandler:^(NSError * _Nonnull error) {
-            MPLogInfo(@"Failed to send before load URL");
+            MPLogInfo(@"Failed to send before load URL: %@", beforeLoadURL);
         }];
     }
 }
@@ -143,6 +155,9 @@ static NSString * const kAdResonsesContentKey = @"content";
 
     for (NSURL * afterLoadUrl in afterLoadUrls) {
         MPURLRequest * request = [MPURLRequest requestWithURL:afterLoadUrl];
+        if (request == nil) {
+            continue;
+        }
         [MPHTTPNetworkSession startTaskWithHttpRequest:request responseHandler:^(NSData * _Nonnull data, NSHTTPURLResponse * _Nonnull response) {
             MPLogDebug(@"Successfully sent after load URL: %@", afterLoadUrl);
         } errorHandler:^(NSError * _Nonnull error) {
@@ -245,6 +260,17 @@ static NSString * const kAdResonsesContentKey = @"content";
                                                           milliseconds:backoffMs
                                                                 reason:backoffReason];
 
+    // Start SKAdNetwork sync if needed
+    BOOL shouldStartSkAdNetworkSync = [json[kSKAdNetworkStartSyncKey] boolValue];
+    if (shouldStartSkAdNetworkSync) {
+        // Fire sync request; log the error if one occurs
+        [MPSKAdNetworkManager.sharedManager synchronizeSupportedNetworks:^(NSError *error){
+            if (error != nil) {
+                MPLogError(@"SKAdNetwork sync failed with error: %@", error);
+            }
+        }];
+    }
+
     self.loading = NO;
     [self.delegate communicatorDidReceiveAdConfigurations:configurations];
 }
@@ -299,9 +325,9 @@ static NSString * const kAdResonsesContentKey = @"content";
 - (NSError *)errorForStatusCode:(NSInteger)statusCode
 {
     NSString *errorMessage = [NSString stringWithFormat:
-                              NSLocalizedString(@"MoPub returned status code %d.",
+                              NSLocalizedString(@"MoPub returned status code %ld.",
                                                 @"Status code error"),
-                              statusCode];
+                              (long)statusCode];
     NSDictionary *errorInfo = [NSDictionary dictionaryWithObject:errorMessage
                                                           forKey:NSLocalizedDescriptionKey];
     return [NSError errorWithDomain:@"mopub.com" code:statusCode userInfo:errorInfo];
@@ -314,11 +340,8 @@ static NSString * const kAdResonsesContentKey = @"content";
 @implementation MPAdServerCommunicator (Consent)
 
 - (void)removeAllMoPubCookies {
-    // Make NSURL from base URL
-    NSURL *moPubBaseURL = [NSURL URLWithString:[MPAPIEndpoints baseURL]];
-
     // Get array of cookies with the base URL, and delete each one
-    NSArray <NSHTTPCookie *> * cookies = [[NSHTTPCookieStorage sharedHTTPCookieStorage] cookiesForURL:moPubBaseURL];
+    NSArray <NSHTTPCookie *> * cookies = [[NSHTTPCookieStorage sharedHTTPCookieStorage] cookiesForURL:MPAPIEndpoints.baseURL];
     for (NSHTTPCookie * cookie in cookies) {
         [[NSHTTPCookieStorage sharedHTTPCookieStorage] deleteCookie:cookie];
     }

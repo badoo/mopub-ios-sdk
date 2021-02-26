@@ -162,6 +162,8 @@ class BannerAdDataSource: NSObject, AdDataSource {
         adView.keywords = adUnit.keywords
         adView.userDataKeywords = adUnit.userDataKeywords
         adView.loadAd(withMaxAdSize: maxDesiredAdSize)
+        
+        SavedAdsManager.sharedInstance.addLoadedAds(adUnit: adUnit)
     }
 }
 

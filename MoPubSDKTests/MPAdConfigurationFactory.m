@@ -13,8 +13,6 @@
 #define kClickTrackerURLKey         @"clktracker"
 #define kDefaultActionURLKey        @"clk"
 
-extern NSString *const kNativeVideoTrackersMetadataKey;
-
 @implementation MPAdConfigurationFactory
 
 + (MPAdConfiguration *)clearResponse
@@ -170,10 +168,20 @@ extern NSString *const kNativeVideoTrackersMetadataKey;
 
 + (MPAdConfiguration *)defaultMRAIDInterstitialConfiguration
 {
-    NSDictionary *headers = @{
+    return [self defaultMRAIDInterstitialConfigurationWithAdditionalHeaders:nil];
+}
+
++ (MPAdConfiguration *)defaultMRAIDInterstitialConfigurationWithAdditionalHeaders:(NSDictionary *)additionalHeaders
+{
+    NSMutableDictionary *headers = [@{
                               kAdTypeMetadataKey: @"mraid",
                               kOrientationTypeMetadataKey: @"p"
-                              };
+                              } mutableCopy];
+
+    // Merge the headers if needed
+    if (additionalHeaders != nil) {
+        [headers addEntriesFromDictionary:additionalHeaders];
+    }
 
     return [self defaultInterstitialConfigurationWithHeaders:headers
                                                   HTMLString:nil];
@@ -189,7 +197,7 @@ extern NSString *const kNativeVideoTrackersMetadataKey;
         data[@"location"] = location;
     }
 
-    configuration.customEventClassData = data;
+    configuration.adapterClassData = data;
     return configuration;
 }
 
@@ -202,6 +210,16 @@ extern NSString *const kNativeVideoTrackersMetadataKey;
 {
     return [self defaultInterstitialConfigurationWithHeaders:@{kFullAdTypeMetadataKey: type}
                                                   HTMLString:nil];
+}
+
++ (MPAdConfiguration *)defaultFullscreenConfigWithAdapterClass:(Class)class
+{
+    return [self defaultFullscreenConfigWithAdapterClass:class additionalMetadata:nil];
+}
+
++ (MPAdConfiguration *)defaultFullscreenConfigWithAdapterClass:(Class)class additionalMetadata:(NSDictionary *)additionalMetadata
+{
+    return [self defaultInterstitialConfigurationWithCustomEventClassName:NSStringFromClass(class) additionalMetadata:additionalMetadata];
 }
 
 + (MPAdConfiguration *)defaultInterstitialConfigurationWithCustomEventClassName:(NSString *)eventClassName
@@ -230,18 +248,25 @@ extern NSString *const kNativeVideoTrackersMetadataKey;
 
     return [[MPAdConfiguration alloc] initWithMetadata:headers
                                                   data:[HTMLString dataUsingEncoding:NSUTF8StringEncoding]
-                                        isFullscreenAd:NO];
+                                        isFullscreenAd:YES];
 }
 
 #pragma mark - Rewarded Video
 + (NSMutableDictionary *)defaultRewardedVideoHeaders
 {
     return [@{
+              kFormatMetadataKey: kAdTypeRewardedVideo,
               kAdTypeMetadataKey: @"custom",
               kClickthroughMetadataKey: @"http://ads.mopub.com/m/clickThroughTracker?a=1",
               kNextUrlMetadataKey: @"http://ads.mopub.com/m/failURL",
               kImpressionTrackerMetadataKey: @"http://ads.mopub.com/m/impressionTracker",
               kFullAdTypeMetadataKey: kAdTypeHtml,
+              kViewabilityVerificationResourcesKey: @[@{
+                                                          @"apiFramework": @"omid",
+                                                          @"vendorKey": @"doubleverify.com-omid",
+                                                          @"javascriptResourceUrl": @"https://cdn.doubleverify.com/dvtp_src.js",
+                                                          @"verificationParameters": @"ctx=13337537&cmp=DV330341&sid=iOS-Display-Native&plc=video&advid=3819603&adsrv=189&tagtype=&dvtagver=6.1.src&DVP_PP_BUNDLE_ID=%%BUNDLE%%&DVP_PP_APP_ID=%%PLACEMENTID%%&DVP_PP_APP_NAME=%%APPNAME%%&DVP_MP_2=%%PUBID%%&DVP_MP_3=%%ADUNITID%%&DVP_MP_4=%%ADGROUPID%%&DVPX_PP_IMP_ID=%%REQUESTID%%&DVP_PP_AUCTION_IP=%%IPADDRESS%%&DVPX_PP_AUCTION_UA=%%USERAGENT%%"
+                                                      }]
               } mutableCopy];
 }
 
@@ -260,10 +285,10 @@ extern NSString *const kNativeVideoTrackersMetadataKey;
     return dict;
 }
 
-+ (NSMutableDictionary *)defaultNativeVideoHeadersWithTrackers
++ (NSMutableDictionary *)defaultVASTHeadersWithTrackers
 {
-    NSMutableDictionary *dict = [[self defaultNativeAdHeaders] mutableCopy];
-    dict[kNativeVideoTrackersMetadataKey] = @"{\"urls\": [\"http://mopub.com/%%VIDEO_EVENT%%/foo\", \"http://mopub.com/%%VIDEO_EVENT%%/bar\"],\"events\": [\"start\", \"firstQuartile\", \"midpoint\", \"thirdQuartile\", \"complete\"]}";
+    NSMutableDictionary *dict = [[NSMutableDictionary alloc] init];
+    dict[kVASTVideoTrackersMetadataKey] = @"{\"urls\": [\"http://mopub.com/%%VIDEO_EVENT%%/foo\", \"http://mopub.com/%%VIDEO_EVENT%%/bar\"],\"events\": [\"start\", \"firstQuartile\", \"midpoint\", \"thirdQuartile\", \"complete\"]}";
     return dict;
 }
 
@@ -302,9 +327,9 @@ extern NSString *const kNativeVideoTrackersMetadataKey;
     return adConfiguration;
 }
 
-+ (MPAdConfiguration *)defaultNativeVideoConfigurationWithVideoTrackers
++ (MPAdConfiguration *)defaultVASTConfigurationWithVideoTrackers
 {
-    MPAdConfiguration *adConfiguration = [[MPAdConfiguration alloc] initWithMetadata:[self defaultNativeVideoHeadersWithTrackers] data:nil isFullscreenAd:YES];
+    MPAdConfiguration *adConfiguration = [[MPAdConfiguration alloc] initWithMetadata:[self defaultVASTHeadersWithTrackers] data:nil isFullscreenAd:YES];
     return adConfiguration;
 }
 

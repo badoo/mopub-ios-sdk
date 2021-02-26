@@ -16,7 +16,9 @@ NS_ASSUME_NONNULL_BEGIN
 typedef NS_ENUM(NSInteger, MPVideoPlayerEvent) {
     MPVideoPlayerEvent_ClickThrough,
     MPVideoPlayerEvent_Close,
-    MPVideoPlayerEvent_Skip
+    MPVideoPlayerEvent_Skip,
+    MPVideoPlayerEvent_Pause,
+    MPVideoPlayerEvent_Resume
 };
 
 @protocol MPVideoPlayer <NSObject>
@@ -29,7 +31,7 @@ typedef NS_ENUM(NSInteger, MPVideoPlayerEvent) {
 
 /**
  Load the video.
- 
+
  Note: Call this for once at most. Subsequent calls after the first one will have no effect.
  */
 - (void)loadVideo;
@@ -37,12 +39,17 @@ typedef NS_ENUM(NSInteger, MPVideoPlayerEvent) {
 /**
  Play the video.
  */
-- (void)play;
+- (void)playVideo;
 
 /**
  Pause the video.
  */
-- (void)pause;
+- (void)pauseVideo;
+
+/**
+ Stops the video. Once stopped, the video cannot be resumed by calling `playVideo`.
+ */
+- (void)stopVideo;
 
 /**
  Enable app life cycle event observation for auto-play and auto-pause.

@@ -8,13 +8,6 @@
 
 import UIKit
 
-fileprivate enum Constants {
-    /**
-     Time in seconds to render notification animations.
-     */
-    static let notificationAnimationDuration: TimeInterval = 0.5
-}
-
 class MainTabBarController: UITabBarController {
     /**
      Button used for displaying status notifications.
@@ -22,15 +15,15 @@ class MainTabBarController: UITabBarController {
     private var notificationButton: UIButton = UIButton(type: .custom)
     
     /**
-     The view controller of the second tab "Saved Ads", which is a `UISplitViewController`.
+     The navigation controller of the "Saved Ads" tab, which is a `UINavigationController`.
      */
-    var savedAdSplitViewController: UISplitViewController {
-        guard let savedAdSplitViewController = viewControllers?.first(where: {
+    var savedAdsNavigationController: UINavigationController {
+        guard let savedAdsController = viewControllers?.first(where: {
             $0.tabBarItem.title == "Saved Ads"
-        }) as? UISplitViewController else {
+        }) as? UINavigationController else {
             fatalError()
         }
-        return savedAdSplitViewController
+        return savedAdsController
     }
     
     // MARK: - View Lifecycle

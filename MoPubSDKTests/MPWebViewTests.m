@@ -7,7 +7,7 @@
 //
 
 #import <XCTest/XCTest.h>
-#import "MPWebView.h"
+#import "MPWebView+Testing.h"
 
 typedef void (^MPWebViewTestsDelegate)(void);
 typedef void (^MPWebViewTestsDidFailLoad)(NSError *error);
@@ -158,26 +158,45 @@ static NSString *const gTestMopubSchemeRedirectURL = @"mopub://testredirect";
 - (void)propertiesTestWithWebView:(MPWebView *)webView {
     // Default values
     XCTAssertTrue(webView.allowsInlineMediaPlayback);
-    XCTAssertFalse(webView.mediaPlaybackRequiresUserAction);
     XCTAssertFalse(webView.scalesPageToFit);
     XCTAssertFalse(webView.isLoading);
     XCTAssertFalse(webView.canGoBack);
     XCTAssertFalse(webView.canGoForward);
-#if __IPHONE_OS_VERSION_MIN_REQUIRED >= 90000
     XCTAssertFalse(webView.allowsLinkPreview);
     XCTAssertTrue(webView.allowsPictureInPictureMediaPlayback);
-#endif
 
     // Check if setting works
     webView.scalesPageToFit = YES;
     XCTAssertTrue(webView.scalesPageToFit);
-#if __IPHONE_OS_VERSION_MIN_REQUIRED >= 90000
     webView.allowsLinkPreview = NO;
     XCTAssertFalse(webView.allowsLinkPreview);
-#endif
 
     // Make sure it's there
     XCTAssertNotNil(webView.scrollView);
+}
+
+#pragma mark - Initialization
+
+- (void)testInitWithScripts {
+    NSString *js = [NSString stringWithFormat:@"window.location=\"%@\"", gTestMopubSchemeRedirectURL];
+    WKUserScript *script = [[WKUserScript alloc] initWithSource:js injectionTime:WKUserScriptInjectionTimeAtDocumentEnd forMainFrameOnly:YES];
+
+    MPWebView *webview = [[MPWebView alloc] initWithFrame:CGRectZero scripts:@[script]];
+    XCTAssertNotNil(webview);
+
+    WKWebView *wkWebview = webview.wkWebView;
+    XCTAssertNotNil(wkWebview);
+    XCTAssertTrue(wkWebview.configuration.userContentController.userScripts.count == 1);
+    XCTAssertTrue([wkWebview.configuration.userContentController.userScripts.firstObject.source isEqualToString:js]);
+}
+
+- (void)testInitWithNoScripts {
+    MPWebView *webview = [[MPWebView alloc] initWithFrame:CGRectZero scripts:nil];
+    XCTAssertNotNil(webview);
+
+    WKWebView *wkWebview = webview.wkWebView;
+    XCTAssertNotNil(wkWebview);
+    XCTAssertTrue(wkWebview.configuration.userContentController.userScripts.count == 0);
 }
 
 #pragma mark - MPWebViewDelegate

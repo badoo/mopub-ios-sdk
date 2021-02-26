@@ -52,6 +52,61 @@
                         </MediaFiles>
                     </Linear>
                 </Creative>
+                <Creative>
+                    <CompanionAds>
+                        <Companion width="300" height="250">
+                            <StaticResource creativeType="image/jpeg"><![CDATA[https://d2al1opqne3nsh.cloudfront.net/images/corgi300x250.jpeg]]></StaticResource>
+                            <TrackingEvents>
+                                <Tracking event="creativeView"><![CDATA[https://www.mopub.com/?q=companionTracking300x250]]></Tracking>
+                            </TrackingEvents>
+                            <CompanionClickThrough><![CDATA[https://www.mopub.com/?q=companionClickThrough300x250]]></CompanionClickThrough>
+                            <CompanionClickTracking><![CDATA[https://www.mopub.com/?q=companionClickTracking300x250]]></CompanionClickTracking>
+                        </Companion>
+                        <Companion width="300" height="250">
+                            <StaticResource creativeType="image/jpeg"><![CDATA[https://d2al1opqne3nsh.cloudfront.net/images/corgi300x250.jpeg]]></StaticResource>
+                            <StaticResource creativeType="application/x-javascript"><![CDATA[some place holder]]></StaticResource>
+                            <TrackingEvents>
+                                <Tracking event="creativeView"><![CDATA[https://www.mopub.com/?q=companionTracking300x250]]></Tracking>
+                            </TrackingEvents>
+                            <CompanionClickThrough><![CDATA[https://www.mopub.com/?q=companionClickThrough300x250]]></CompanionClickThrough>
+                            <CompanionClickTracking><![CDATA[https://www.mopub.com/?q=companionClickTracking300x250]]></CompanionClickTracking>
+                        </Companion>
+                        <Companion width="300" height="250">
+                            <HTMLResource><![CDATA[<html>some place holder</html>]]></HTMLResource>
+                            <IFrameResource><![CDATA[<html>some place holder</html>]]></IFrameResource>
+                            <TrackingEvents>
+                                <Tracking event="creativeView"><![CDATA[https://www.mopub.com/?q=companionTracking300x250]]></Tracking>
+                            </TrackingEvents>
+                            <CompanionClickThrough><![CDATA[https://www.mopub.com/?q=companionClickThrough300x250]]></CompanionClickThrough>
+                            <CompanionClickTracking><![CDATA[https://www.mopub.com/?q=companionClickTracking300x250]]></CompanionClickTracking>
+                        </Companion>
+                        <Companion width="300" height="250">
+                            <StaticResource creativeType="image/jpeg"><![CDATA[https://d2al1opqne3nsh.cloudfront.net/images/corgi300x250.jpeg]]></StaticResource>
+                            <IFrameResource><![CDATA[<html>some place holder</html>]]></IFrameResource>
+                            <TrackingEvents>
+                                <Tracking event="creativeView"><![CDATA[https://www.mopub.com/?q=companionTracking300x250]]></Tracking>
+                            </TrackingEvents>
+                            <CompanionClickThrough><![CDATA[https://www.mopub.com/?q=companionClickThrough300x250]]></CompanionClickThrough>
+                            <CompanionClickTracking><![CDATA[https://www.mopub.com/?q=companionClickTracking300x250]]></CompanionClickTracking>
+                        </Companion>
+                        <Companion width="480" height="320">
+                            <StaticResource creativeType="image/jpeg"><![CDATA[https://d2al1opqne3nsh.cloudfront.net/images/corgi480x320.jpeg]]></StaticResource>
+                            <TrackingEvents>
+                                <Tracking event="creativeView"><![CDATA[https://www.mopub.com/?q=companionTracking480x320]]></Tracking>
+                            </TrackingEvents>
+                            <CompanionClickThrough><![CDATA[https://www.mopub.com/?q=companionClickThrough480x320]]></CompanionClickThrough>
+                            <CompanionClickTracking><![CDATA[https://www.mopub.com/?q=companionClickTracking480x320]]></CompanionClickTracking>
+                        </Companion>
+                        <Companion width="569" height="320">
+                            <StaticResource creativeType="image/jpeg"><![CDATA[https://d2al1opqne3nsh.cloudfront.net/images/corgi569x320.jpeg]]></StaticResource>
+                            <TrackingEvents>
+                                <Tracking event="creativeView"><![CDATA[https://www.mopub.com/?q=companionTracking569x320]]></Tracking>
+                            </TrackingEvents>
+                            <CompanionClickThrough><![CDATA[https://www.mopub.com/?q=companionClickThrough569x320]]></CompanionClickThrough>
+                            <CompanionClickTracking><![CDATA[https://www.mopub.com/?q=companionClickTracking569x320]]></CompanionClickTracking>
+                        </Companion>
+                    </CompanionAds>
+                </Creative>
             </Creatives>
             <Extensions>
                 <Extension type="dart">

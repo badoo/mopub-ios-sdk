@@ -8,33 +8,51 @@
 
 #import <XCTest/XCTest.h>
 #import "MPAdConfigurationFactory.h"
-#import "MPAdTargeting.h"
-#import "MPInterstitialAdManager+Testing.h"
-#import "MPInterstitialAdManagerDelegateHandler.h"
-#import "MPInterstitialCustomEventAdapter.h"
-#import "MPInterstitialCustomEventAdapter+Testing.h"
-#import "MPMockAdServerCommunicator.h"
-#import "MPMockInterstitialCustomEvent.h"
 #import "MPAdServerKeys.h"
+#import "MPAdTargeting.h"
+#import "MPFullscreenAdAdapterMock.h"
+#import "MPInterstitialAdManager+Testing.h"
+#import "MPInterstitialAdManagerDelegateMock.h"
+#import "MPMockAdServerCommunicator.h"
+#import "MPProxy.h"
 
 static const NSTimeInterval kDefaultTimeout = 10;
 
 @interface MPInterstitialAdManagerTests : XCTestCase
 
+@property (nonatomic, strong) MPInterstitialAdManager *adManager;
+@property (nonatomic, strong) MPInterstitialAdManagerDelegateMock *delegateMock;
+@property (nonatomic, strong) MPProxy *mockProxy;
+
 @end
 
 @implementation MPInterstitialAdManagerTests
 
+- (void)setUp {
+    [super setUp];
+
+    self.mockProxy = [[MPProxy alloc] initWithTarget:[MPInterstitialAdManagerDelegateMock new]];
+    self.delegateMock = (MPInterstitialAdManagerDelegateMock *)self.mockProxy;
+    self.adManager = [[MPInterstitialAdManager alloc] initWithDelegate:self.delegateMock];
+    // `MPInterstitialAdManager.adapter` is assigned during `fetchAdWithConfiguration:`, so, don't set here
+}
+
+- (void)tearDown {
+    [super tearDown];
+
+    self.mockProxy = nil;
+    self.delegateMock = nil;
+    self.adManager = nil;
+}
+
 - (void)testEmptyConfigurationArray {
-    XCTestExpectation * expectation = [self expectationWithDescription:@"Wait for interstitial load"];
+    __weak XCTestExpectation * expectation = [self expectationWithDescription:@"Wait for interstitial load"];
 
-    MPInterstitialAdManagerDelegateHandler * handler = [MPInterstitialAdManagerDelegateHandler new];
-    handler.didFailToLoadAd = ^(NSError * error) {
+    [self.mockProxy registerSelector:@selector(manager:didFailToLoadInterstitialWithError:) forPostAction:^(NSInvocation *invocation) {
         [expectation fulfill];
-    };
+    }];
 
-    MPInterstitialAdManager * manager = [[MPInterstitialAdManager alloc] initWithDelegate:handler];
-    [manager communicatorDidReceiveAdConfigurations:@[]];
+    [self.adManager communicatorDidReceiveAdConfigurations:@[]];
 
     [self waitForExpectationsWithTimeout:kDefaultTimeout handler:^(NSError * _Nullable error) {
         if (error != nil) {
@@ -44,15 +62,13 @@ static const NSTimeInterval kDefaultTimeout = 10;
 }
 
 - (void)testNilConfigurationArray {
-    XCTestExpectation * expectation = [self expectationWithDescription:@"Wait for interstitial load"];
+    __weak XCTestExpectation * expectation = [self expectationWithDescription:@"Wait for interstitial load"];
 
-    MPInterstitialAdManagerDelegateHandler * handler = [MPInterstitialAdManagerDelegateHandler new];
-    handler.didFailToLoadAd = ^(NSError * error) {
+    [self.mockProxy registerSelector:@selector(manager:didFailToLoadInterstitialWithError:) forPostAction:^(NSInvocation *invocation) {
         [expectation fulfill];
-    };
+    }];
 
-    MPInterstitialAdManager * manager = [[MPInterstitialAdManager alloc] initWithDelegate:handler];
-    [manager communicatorDidReceiveAdConfigurations:nil];
+    [self.adManager communicatorDidReceiveAdConfigurations:nil];
 
     [self waitForExpectationsWithTimeout:kDefaultTimeout handler:^(NSError * _Nullable error) {
         if (error != nil) {
@@ -62,27 +78,25 @@ static const NSTimeInterval kDefaultTimeout = 10;
 }
 
 - (void)testMultipleResponsesFirstSuccess {
-    XCTestExpectation * expectation = [self expectationWithDescription:@"Wait for interstitial load"];
+    __weak XCTestExpectation * expectation = [self expectationWithDescription:@"Wait for interstitial load"];
 
-    MPInterstitialAdManagerDelegateHandler * handler = [MPInterstitialAdManagerDelegateHandler new];
-    handler.didLoadAd = ^{
+    [self.mockProxy registerSelector:@selector(managerDidLoadInterstitial:) forPostAction:^(NSInvocation *invocation) {
         [expectation fulfill];
-    };
-    handler.didFailToLoadAd = ^(NSError * error) {
+    }];
+    [self.mockProxy registerSelector:@selector(manager:didFailToLoadInterstitialWithError:) forPostAction:^(NSInvocation *invocation) {
         XCTFail(@"Encountered an unexpected load failure");
         [expectation fulfill];
-    };
+    }];
 
     // Generate the ad configurations
-    MPAdConfiguration * interstitialThatShouldLoad = [MPAdConfigurationFactory defaultInterstitialConfigurationWithCustomEventClassName:@"MPMockInterstitialCustomEvent"];
-    MPAdConfiguration * interstitialLoadThatShouldNotLoad = [MPAdConfigurationFactory defaultInterstitialConfigurationWithCustomEventClassName:@"MPMockInterstitialCustomEvent"];
+    MPAdConfiguration * interstitialThatShouldLoad = [MPAdConfigurationFactory defaultFullscreenConfigWithAdapterClass:MPFullscreenAdAdapterMock.class];
+    MPAdConfiguration * interstitialLoadThatShouldNotLoad = [MPAdConfigurationFactory defaultFullscreenConfigWithAdapterClass:MPFullscreenAdAdapterMock.class];
     MPAdConfiguration * interstitialLoadFail = [MPAdConfigurationFactory defaultInterstitialConfigurationWithCustomEventClassName:@"i_should_not_exist"];
     NSArray * configurations = @[interstitialThatShouldLoad, interstitialLoadThatShouldNotLoad, interstitialLoadFail];
 
-    MPInterstitialAdManager * manager = [[MPInterstitialAdManager alloc] initWithDelegate:handler];
-    MPMockAdServerCommunicator * communicator = [[MPMockAdServerCommunicator alloc] initWithDelegate:manager];
-    manager.communicator = communicator;
-    [manager communicatorDidReceiveAdConfigurations:configurations];
+    MPMockAdServerCommunicator *communicator = [[MPMockAdServerCommunicator alloc] initWithDelegate:self.adManager];
+    self.adManager.communicator = communicator;
+    [self.adManager communicatorDidReceiveAdConfigurations:configurations];
 
     [self waitForExpectationsWithTimeout:kDefaultTimeout handler:^(NSError * _Nullable error) {
         if (error != nil) {
@@ -95,27 +109,25 @@ static const NSTimeInterval kDefaultTimeout = 10;
 }
 
 - (void)testMultipleResponsesMiddleSuccess {
-    XCTestExpectation * expectation = [self expectationWithDescription:@"Wait for interstitial load"];
+    __weak XCTestExpectation * expectation = [self expectationWithDescription:@"Wait for interstitial load"];
 
-    MPInterstitialAdManagerDelegateHandler * handler = [MPInterstitialAdManagerDelegateHandler new];
-    handler.didLoadAd = ^{
+    [self.mockProxy registerSelector:@selector(managerDidLoadInterstitial:) forPostAction:^(NSInvocation *invocation) {
         [expectation fulfill];
-    };
-    handler.didFailToLoadAd = ^(NSError * error) {
+    }];
+    [self.mockProxy registerSelector:@selector(manager:didFailToLoadInterstitialWithError:) forPostAction:^(NSInvocation *invocation) {
         XCTFail(@"Encountered an unexpected load failure");
         [expectation fulfill];
-    };
+    }];
 
     // Generate the ad configurations
-    MPAdConfiguration * interstitialThatShouldLoad = [MPAdConfigurationFactory defaultInterstitialConfigurationWithCustomEventClassName:@"MPMockInterstitialCustomEvent"];
-    MPAdConfiguration * interstitialLoadThatShouldNotLoad = [MPAdConfigurationFactory defaultInterstitialConfigurationWithCustomEventClassName:@"MPMockInterstitialCustomEvent"];
+    MPAdConfiguration * interstitialThatShouldLoad = [MPAdConfigurationFactory defaultFullscreenConfigWithAdapterClass:MPFullscreenAdAdapterMock.class];
+    MPAdConfiguration * interstitialLoadThatShouldNotLoad = [MPAdConfigurationFactory defaultFullscreenConfigWithAdapterClass:MPFullscreenAdAdapterMock.class];
     MPAdConfiguration * interstitialLoadFail = [MPAdConfigurationFactory defaultInterstitialConfigurationWithCustomEventClassName:@"i_should_not_exist"];
     NSArray * configurations = @[interstitialLoadFail, interstitialThatShouldLoad, interstitialLoadThatShouldNotLoad];
 
-    MPInterstitialAdManager * manager = [[MPInterstitialAdManager alloc] initWithDelegate:handler];
-    MPMockAdServerCommunicator * communicator = [[MPMockAdServerCommunicator alloc] initWithDelegate:manager];
-    manager.communicator = communicator;
-    [manager communicatorDidReceiveAdConfigurations:configurations];
+    MPMockAdServerCommunicator *communicator = [[MPMockAdServerCommunicator alloc] initWithDelegate:self.adManager];
+    self.adManager.communicator = communicator;
+    [self.adManager communicatorDidReceiveAdConfigurations:configurations];
 
     [self waitForExpectationsWithTimeout:kDefaultTimeout handler:^(NSError * _Nullable error) {
         if (error != nil) {
@@ -128,27 +140,25 @@ static const NSTimeInterval kDefaultTimeout = 10;
 }
 
 - (void)testMultipleResponsesLastSuccess {
-    XCTestExpectation * expectation = [self expectationWithDescription:@"Wait for interstitial load"];
+    __weak XCTestExpectation * expectation = [self expectationWithDescription:@"Wait for interstitial load"];
 
-    MPInterstitialAdManagerDelegateHandler * handler = [MPInterstitialAdManagerDelegateHandler new];
-    handler.didLoadAd = ^{
+    [self.mockProxy registerSelector:@selector(managerDidLoadInterstitial:) forPostAction:^(NSInvocation *invocation) {
         [expectation fulfill];
-    };
-    handler.didFailToLoadAd = ^(NSError * error) {
+    }];
+    [self.mockProxy registerSelector:@selector(manager:didFailToLoadInterstitialWithError:) forPostAction:^(NSInvocation *invocation) {
         XCTFail(@"Encountered an unexpected load failure");
         [expectation fulfill];
-    };
+    }];
 
     // Generate the ad configurations
-    MPAdConfiguration * interstitialThatShouldLoad = [MPAdConfigurationFactory defaultInterstitialConfigurationWithCustomEventClassName:@"MPMockInterstitialCustomEvent"];
+    MPAdConfiguration * interstitialThatShouldLoad = [MPAdConfigurationFactory defaultFullscreenConfigWithAdapterClass:MPFullscreenAdAdapterMock.class];
     MPAdConfiguration * interstitialLoadFail1 = [MPAdConfigurationFactory defaultInterstitialConfigurationWithCustomEventClassName:@"i_should_not_exist"];
     MPAdConfiguration * interstitialLoadFail2 = [MPAdConfigurationFactory defaultInterstitialConfigurationWithCustomEventClassName:@"i_should_not_exist"];
     NSArray * configurations = @[interstitialLoadFail1, interstitialLoadFail2, interstitialThatShouldLoad];
 
-    MPInterstitialAdManager * manager = [[MPInterstitialAdManager alloc] initWithDelegate:handler];
-    MPMockAdServerCommunicator * communicator = [[MPMockAdServerCommunicator alloc] initWithDelegate:manager];
-    manager.communicator = communicator;
-    [manager communicatorDidReceiveAdConfigurations:configurations];
+    MPMockAdServerCommunicator *communicator = [[MPMockAdServerCommunicator alloc] initWithDelegate:self.adManager];
+    self.adManager.communicator = communicator;
+    [self.adManager communicatorDidReceiveAdConfigurations:configurations];
 
     [self waitForExpectationsWithTimeout:kDefaultTimeout handler:^(NSError * _Nullable error) {
         if (error != nil) {
@@ -161,22 +171,20 @@ static const NSTimeInterval kDefaultTimeout = 10;
 }
 
 - (void)testMultipleResponsesFailOverToNextPage {
-    XCTestExpectation * expectation = [self expectationWithDescription:@"Wait for interstitial load"];
+    __weak XCTestExpectation * expectation = [self expectationWithDescription:@"Wait for interstitial load"];
 
-    MPInterstitialAdManagerDelegateHandler * handler = [MPInterstitialAdManagerDelegateHandler new];
-    handler.didFailToLoadAd = ^(NSError * error) {
+    [self.mockProxy registerSelector:@selector(manager:didFailToLoadInterstitialWithError:) forPostAction:^(NSInvocation *invocation) {
         [expectation fulfill];
-    };
+    }];
 
     // Generate the ad configurations
     MPAdConfiguration * interstitialLoadFail1 = [MPAdConfigurationFactory defaultInterstitialConfigurationWithCustomEventClassName:@"i_should_not_exist"];
     MPAdConfiguration * interstitialLoadFail2 = [MPAdConfigurationFactory defaultInterstitialConfigurationWithCustomEventClassName:@"i_should_not_exist"];
     NSArray * configurations = @[interstitialLoadFail1, interstitialLoadFail2];
 
-    MPInterstitialAdManager * manager = [[MPInterstitialAdManager alloc] initWithDelegate:handler];
-    MPMockAdServerCommunicator * communicator = [[MPMockAdServerCommunicator alloc] initWithDelegate:manager];
-    manager.communicator = communicator;
-    [manager communicatorDidReceiveAdConfigurations:configurations];
+    MPMockAdServerCommunicator * communicator = [[MPMockAdServerCommunicator alloc] initWithDelegate:self.adManager];
+    self.adManager.communicator = communicator;
+    [self.adManager communicatorDidReceiveAdConfigurations:configurations];
 
     [self waitForExpectationsWithTimeout:kDefaultTimeout handler:^(NSError * _Nullable error) {
         if (error != nil) {
@@ -191,24 +199,22 @@ static const NSTimeInterval kDefaultTimeout = 10;
 }
 
 - (void)testMultipleResponsesFailOverToNextPageClear {
-    XCTestExpectation * expectation = [self expectationWithDescription:@"Wait for interstitial load"];
+    __weak XCTestExpectation * expectation = [self expectationWithDescription:@"Wait for interstitial load"];
 
-    MPInterstitialAdManagerDelegateHandler * handler = [MPInterstitialAdManagerDelegateHandler new];
-    handler.didFailToLoadAd = ^(NSError * error) {
+    [self.mockProxy registerSelector:@selector(manager:didFailToLoadInterstitialWithError:) forPostAction:^(NSInvocation *invocation) {
         [expectation fulfill];
-    };
+    }];
 
     // Generate the ad configurations
     MPAdConfiguration * interstitialLoadFail1 = [MPAdConfigurationFactory defaultInterstitialConfigurationWithCustomEventClassName:@"i_should_not_exist"];
     MPAdConfiguration * interstitialLoadFail2 = [MPAdConfigurationFactory defaultInterstitialConfigurationWithCustomEventClassName:@"i_should_not_exist"];
     NSArray * configurations = @[interstitialLoadFail1, interstitialLoadFail2];
 
-    MPInterstitialAdManager * manager = [[MPInterstitialAdManager alloc] initWithDelegate:handler];
-    MPMockAdServerCommunicator * communicator = [[MPMockAdServerCommunicator alloc] initWithDelegate:manager];
+    MPMockAdServerCommunicator *communicator = [[MPMockAdServerCommunicator alloc] initWithDelegate:self.adManager];
     communicator.mockConfigurationsResponse = @[[MPAdConfigurationFactory clearResponse]];
 
-    manager.communicator = communicator;
-    [manager communicatorDidReceiveAdConfigurations:configurations];
+    self.adManager.communicator = communicator;
+    [self.adManager communicatorDidReceiveAdConfigurations:configurations];
 
     [self waitForExpectationsWithTimeout:kDefaultTimeout handler:^(NSError * _Nullable error) {
         if (error != nil) {
@@ -225,29 +231,27 @@ static const NSTimeInterval kDefaultTimeout = 10;
 #pragma mark - Local Extras
 
 - (void)testLocalExtrasInCustomEvent {
-    XCTestExpectation * expectation = [self expectationWithDescription:@"Wait for interstitial load"];
+    __weak XCTestExpectation * expectation = [self expectationWithDescription:@"Wait for interstitial load"];
 
-    MPInterstitialAdManagerDelegateHandler * handler = [MPInterstitialAdManagerDelegateHandler new];
-    handler.didLoadAd = ^{
+    [self.mockProxy registerSelector:@selector(managerDidLoadInterstitial:) forPostAction:^(NSInvocation *invocation) {
         [expectation fulfill];
-    };
-    handler.didFailToLoadAd = ^(NSError * error) {
+    }];
+    [self.mockProxy registerSelector:@selector(manager:didFailToLoadInterstitialWithError:) forPostAction:^(NSInvocation *invocation) {
         XCTFail(@"Encountered an unexpected load failure");
         [expectation fulfill];
-    };
+    }];
 
     // Generate the ad configurations
-    MPAdConfiguration * interstitialThatShouldLoad = [MPAdConfigurationFactory defaultInterstitialConfigurationWithCustomEventClassName:@"MPMockInterstitialCustomEvent"];
+    MPAdConfiguration * interstitialThatShouldLoad = [MPAdConfigurationFactory defaultFullscreenConfigWithAdapterClass:MPFullscreenAdAdapterMock.class];
     NSArray * configurations = @[interstitialThatShouldLoad];
 
-    MPInterstitialAdManager * manager = [[MPInterstitialAdManager alloc] initWithDelegate:handler];
-    MPMockAdServerCommunicator * communicator = [[MPMockAdServerCommunicator alloc] initWithDelegate:manager];
+    MPMockAdServerCommunicator *communicator = [[MPMockAdServerCommunicator alloc] initWithDelegate:self.adManager];
     communicator.mockConfigurationsResponse = configurations;
-    manager.communicator = communicator;
+    self.adManager.communicator = communicator;
 
     MPAdTargeting * targeting = [[MPAdTargeting alloc] initWithCreativeSafeSize:CGSizeZero];
     targeting.localExtras = @{ @"testing": @"YES" };
-    [manager loadInterstitialWithAdUnitID:@"TEST_ADUNIT_ID" targeting:targeting];
+    [self.adManager loadInterstitialWithAdUnitID:@"TEST_ADUNIT_ID" targeting:targeting];
 
     [self waitForExpectationsWithTimeout:kDefaultTimeout handler:^(NSError * _Nullable error) {
         if (error != nil) {
@@ -255,46 +259,38 @@ static const NSTimeInterval kDefaultTimeout = 10;
         }
     }];
 
-    MPInterstitialCustomEventAdapter * adapter = (MPInterstitialCustomEventAdapter *)manager.adapter;
-    MPMockInterstitialCustomEvent * customEvent = (MPMockInterstitialCustomEvent *)adapter.interstitialCustomEvent;
-    XCTAssertNotNil(customEvent);
-
-    NSDictionary * localExtras = customEvent.localExtras;
-    XCTAssertNotNil(localExtras);
-    XCTAssert([localExtras[@"testing"] isEqualToString:@"YES"]);
-    XCTAssertTrue(customEvent.isLocalExtrasAvailableAtRequest);
+    XCTAssertNotNil(self.adManager.adapter);
+    XCTAssertNotNil(self.adManager.adapter.localExtras);
+    XCTAssert([self.adManager.adapter.localExtras[@"testing"] isEqualToString:@"YES"]);
 }
 
 #pragma mark - Impression Level Revenue Data
 
 - (void)testImpressionDelegateFiresWithoutILRD {
-    XCTestExpectation * expectation = [self expectationWithDescription:@"Wait for impression"];
+    __weak XCTestExpectation * expectation = [self expectationWithDescription:@"Wait for impression"];
     NSString * testAdUnitID = @"TEST_ADUNIT_ID";
 
-    MPInterstitialAdManagerDelegateHandler * handler = [MPInterstitialAdManagerDelegateHandler new];
-    handler.didReceiveImpression = ^(MPImpressionData * impressionData) {
-        [expectation fulfill];
-
+    [self.mockProxy registerSelector:@selector(managerDidLoadInterstitial:) forPostAction:^(NSInvocation *invocation) {
+        // Track the impression
+        [self.adManager.adapter trackImpression];
+    }];
+    [self.mockProxy registerSelector:@selector(interstitialAdManager:didReceiveImpressionEventWithImpressionData:) forPostAction:^(NSInvocation *invocation) {
+        __unsafe_unretained MPImpressionData *impressionData;
+        [invocation getArgument:&impressionData atIndex:3];
         XCTAssertNil(impressionData);
-    };
+        [expectation fulfill];
+    }];
 
     // Generate the ad configurations
-    MPAdConfiguration * interstitialThatShouldLoad = [MPAdConfigurationFactory defaultInterstitialConfigurationWithCustomEventClassName:@"MPMockInterstitialCustomEvent"];
+    MPAdConfiguration * interstitialThatShouldLoad = [MPAdConfigurationFactory defaultFullscreenConfigWithAdapterClass:MPFullscreenAdAdapterMock.class];
     NSArray * configurations = @[interstitialThatShouldLoad];
 
-    MPInterstitialAdManager * manager = [[MPInterstitialAdManager alloc] initWithDelegate:handler];
-    MPMockAdServerCommunicator * communicator = [[MPMockAdServerCommunicator alloc] initWithDelegate:manager];
+    MPMockAdServerCommunicator *communicator = [[MPMockAdServerCommunicator alloc] initWithDelegate:self.adManager];
     communicator.mockConfigurationsResponse = configurations;
-    manager.communicator = communicator;
-
-    handler.didLoadAd = ^{
-        // Track the impression
-        MPInterstitialCustomEventAdapter * adapter = (MPInterstitialCustomEventAdapter *)manager.adapter;
-        [adapter trackImpression];
-    };
+    self.adManager.communicator = communicator;
 
     MPAdTargeting * targeting = [[MPAdTargeting alloc] initWithCreativeSafeSize:CGSizeZero];
-    [manager loadInterstitialWithAdUnitID:testAdUnitID targeting:targeting];
+    [self.adManager loadInterstitialWithAdUnitID:testAdUnitID targeting:targeting];
 
     [self waitForExpectationsWithTimeout:kDefaultTimeout handler:^(NSError * _Nullable error) {
         if (error != nil) {
@@ -304,37 +300,34 @@ static const NSTimeInterval kDefaultTimeout = 10;
 }
 
 - (void)testImpressionDelegateFiresWithILRD {
-    XCTestExpectation * expectation = [self expectationWithDescription:@"Wait for impression"];
+    __weak XCTestExpectation * expectation = [self expectationWithDescription:@"Wait for impression"];
     NSString * testAdUnitID = @"TEST_ADUNIT_ID";
 
-    MPInterstitialAdManagerDelegateHandler * handler = [MPInterstitialAdManagerDelegateHandler new];
-    handler.didReceiveImpression = ^(MPImpressionData * impressionData) {
-        [expectation fulfill];
-
+    [self.mockProxy registerSelector:@selector(managerDidLoadInterstitial:) forPostAction:^(NSInvocation *invocation) {
+        // Track the impression
+        [self.adManager.adapter trackImpression];
+    }];
+    [self.mockProxy registerSelector:@selector(interstitialAdManager:didReceiveImpressionEventWithImpressionData:) forPostAction:^(NSInvocation *invocation) {
+        __unsafe_unretained MPImpressionData *impressionData;
+        [invocation getArgument:&impressionData atIndex:3];
         XCTAssertNotNil(impressionData);
         XCTAssert([impressionData.adUnitID isEqualToString:testAdUnitID]);
-    };
+        [expectation fulfill];
+    }];
 
     // Generate the ad configurations
-    MPAdConfiguration * interstitialThatShouldLoad = [MPAdConfigurationFactory defaultInterstitialConfigurationWithCustomEventClassName:@"MPMockInterstitialCustomEvent"];
+    MPAdConfiguration * interstitialThatShouldLoad = [MPAdConfigurationFactory defaultFullscreenConfigWithAdapterClass:MPFullscreenAdAdapterMock.class];
     interstitialThatShouldLoad.impressionData = [[MPImpressionData alloc] initWithDictionary:@{
                                                                                                kImpressionDataAdUnitIDKey : testAdUnitID
                                                                                                }];
     NSArray * configurations = @[interstitialThatShouldLoad];
 
-    MPInterstitialAdManager * manager = [[MPInterstitialAdManager alloc] initWithDelegate:handler];
-    MPMockAdServerCommunicator * communicator = [[MPMockAdServerCommunicator alloc] initWithDelegate:manager];
+    MPMockAdServerCommunicator *communicator = [[MPMockAdServerCommunicator alloc] initWithDelegate:self.adManager];
     communicator.mockConfigurationsResponse = configurations;
-    manager.communicator = communicator;
-
-    handler.didLoadAd = ^{
-        // Track the impression
-        MPInterstitialCustomEventAdapter * adapter = (MPInterstitialCustomEventAdapter *)manager.adapter;
-        [adapter trackImpression];
-    };
+    self.adManager.communicator = communicator;
 
     MPAdTargeting * targeting = [[MPAdTargeting alloc] initWithCreativeSafeSize:CGSizeZero];
-    [manager loadInterstitialWithAdUnitID:testAdUnitID targeting:targeting];
+    [self.adManager loadInterstitialWithAdUnitID:testAdUnitID targeting:targeting];
 
     [self waitForExpectationsWithTimeout:kDefaultTimeout handler:^(NSError * _Nullable error) {
         if (error != nil) {

@@ -13,58 +13,57 @@ static NSTimeInterval const kTestTimeout = 4;
 static NSTimeInterval const kTestTimeoutTolerance = 0.5;
 
 @interface MPStopwatchTests : XCTestCase
-@property (nonatomic, strong) MPStopwatch * stopwatch;
+
 @end
 
 @implementation MPStopwatchTests
 
-- (void)setUp {
-    self.stopwatch = MPStopwatch.new;
-}
-
-- (void)tearDown {
-    self.stopwatch = nil;
-}
-
 - (void)testForegroundOnlySuccess {
-    XCTAssertNotNil(self.stopwatch);
-    XCTAssertFalse(self.stopwatch.isRunning);
+    MPStopwatch *stopwatch = MPStopwatch.new;
+    XCTAssertNotNil(stopwatch);
+    XCTAssertFalse(stopwatch.isRunning);
 
-    XCTestExpectation * expectation = [self expectationWithDescription:@"Wait for timer to fire"];
+    __weak XCTestExpectation *expectation = [self expectationWithDescription:@"Wait for timer to fire"];
+    expectation.expectedFulfillmentCount = 1;
 
-    [self.stopwatch start];
-    XCTAssertTrue(self.stopwatch.isRunning);
+    [stopwatch start];
+    XCTAssertTrue(stopwatch.isRunning);
 
+    __block NSTimeInterval duration = 0.0;
     dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(kTestTimeout * NSEC_PER_SEC)), dispatch_get_main_queue(), ^{
-        XCTAssertTrue(self.stopwatch.isRunning);
+        XCTAssertTrue(stopwatch.isRunning);
+        duration = [stopwatch stop];
+        XCTAssertFalse(stopwatch.isRunning);
 
-        NSTimeInterval duration = [self.stopwatch stop];
-        XCTAssertFalse(self.stopwatch.isRunning);
-        XCTAssert(duration > kTestTimeout && duration < (kTestTimeout + kTestTimeoutTolerance));
         [expectation fulfill];
     });
 
     [self waitForExpectationsWithTimeout:(kTestTimeout + kTestTimeoutTolerance) handler:^(NSError * _Nullable error) {
         XCTAssertNil(error);
     }];
+
+    // Validate that the stopwatch duration is within tolerance
+    XCTAssert(duration > kTestTimeout && duration < (kTestTimeout + kTestTimeoutTolerance));
 }
 
 - (void)testDoubleStart {
-    XCTAssertNotNil(self.stopwatch);
-    XCTAssertFalse(self.stopwatch.isRunning);
+    MPStopwatch *stopwatch = MPStopwatch.new;
+    XCTAssertNotNil(stopwatch);
+    XCTAssertFalse(stopwatch.isRunning);
 
-    [self.stopwatch start];
-    XCTAssertTrue(self.stopwatch.isRunning);
+    [stopwatch start];
+    XCTAssertTrue(stopwatch.isRunning);
 
-    [self.stopwatch start];
-    XCTAssertTrue(self.stopwatch.isRunning);
+    [stopwatch start];
+    XCTAssertTrue(stopwatch.isRunning);
 }
 
 - (void)testEndBeforeStart {
-    XCTAssertNotNil(self.stopwatch);
-    XCTAssertFalse(self.stopwatch.isRunning);
+    MPStopwatch *stopwatch = MPStopwatch.new;
+    XCTAssertNotNil(stopwatch);
+    XCTAssertFalse(stopwatch.isRunning);
 
-    NSTimeInterval duration = [self.stopwatch stop];
+    NSTimeInterval duration = [stopwatch stop];
     XCTAssert(duration == 0.0);
 }
 

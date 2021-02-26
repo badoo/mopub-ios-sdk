@@ -14,6 +14,8 @@ NS_ASSUME_NONNULL_BEGIN
 
 @interface MPMockVASTTracking : NSObject <MPSelectorCountable, MPVASTTracking>
 
+@property (nonatomic, readonly) NSMutableArray<NSURL *> *historyOfSentURLs;
+
 - (void)resetHistory;
 
 - (NSUInteger)countOfVideoEventCalls:(MPVideoEvent)videoEvent;

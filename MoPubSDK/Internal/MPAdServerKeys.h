@@ -12,13 +12,19 @@
 extern NSString * const kAdServerIDKey;
 extern NSString * const kServerAPIVersionKey;
 extern NSString * const kApplicationVersionKey;
-extern NSString * const kIdfaKey;
 extern NSString * const kMoPubIDKey;
 extern NSString * const kBundleKey;
 extern NSString * const kDoNotTrackIdKey;
+extern NSString * const kTrackingAuthorizationStatusKey;
 extern NSString * const kSDKVersionKey;
 extern NSString * const kSDKEngineNameKey;
 extern NSString * const kSDKEngineVersionKey;
+extern NSString * const kOSKey;
+extern NSString * const kAdUnitKey;
+extern NSString * const kDeviceNameKey;
+extern NSString * const kLocationAuthorizationStatusKey;
+extern NSString * const kIdentifierForAdvertiserKey;
+extern NSString * const kIdentifierForVendorKey;
 
 #pragma mark - Ad Server Ad Request Endpoint Keys
 extern NSString * const kOrientationKey;
@@ -30,13 +36,13 @@ extern NSString * const kCarrierNameKey;
 extern NSString * const kISOCountryCodeKey;
 extern NSString * const kMobileNetworkCodeKey;
 extern NSString * const kMobileCountryCodeKey;
-extern NSString * const kDeviceNameKey;
 extern NSString * const kDesiredAdAssetsKey;
 extern NSString * const kAdSequenceKey;
 extern NSString * const kScreenResolutionWidthKey;
 extern NSString * const kScreenResolutionHeightKey;
 extern NSString * const kAppTransportSecurityStatusKey;
 extern NSString * const kViewabilityStatusKey;
+extern NSString * const kViewabilityVersionKey;
 extern NSString * const kKeywordsKey;
 extern NSString * const kUserDataKeywordsKey;
 extern NSString * const kAdvancedBiddingKey;
@@ -52,6 +58,7 @@ extern NSString * const kCreativeSafeHeightKey;
 
 #pragma mark - Ad Server Response Keys
 extern NSString * const kEnableDebugLogging;
+extern NSString * const kSKAdNetworkStartSyncKey;
 
 #pragma mark - Open Endpoint Request Keys
 extern NSString * const kOpenEndpointSessionTrackingKey;
@@ -64,7 +71,7 @@ extern NSString * const kConsentedPrivacyPolicyVersionKey;
 extern NSString * const kForceGDPRAppliesKey;
 
 #pragma mark - Synchronization Endpoint: Request Keys
-
+extern NSString * const kCachedIfaForConsentKey;
 extern NSString * const kLastChangedMsKey;
 extern NSString * const kLastSynchronizedConsentStatusKey;
 extern NSString * const kCachedIabVendorListHashKey;
@@ -103,7 +110,7 @@ extern NSString * const kDialogHTMLKey;
 extern NSString * const kCustomerIdKey;
 extern NSString * const kRewardedCurrencyNameKey;
 extern NSString * const kRewardedCurrencyAmountKey;
-extern NSString * const kRewardedCustomEventNameKey;
+extern NSString * const kRewardedAdapterClassNameKey;
 extern NSString * const kRewardedCustomDataKey;
 
 #pragma mark - Impression Level Revenue Data Keys
@@ -120,5 +127,13 @@ extern NSString * const kImpressionDataCurrencyKey;
 extern NSString * const kImpressionDataCountryKey;
 extern NSString * const kImpressionDataNetworkNameKey;
 extern NSString * const kImpressionDataNetworkPlacementIDKey;
+extern NSString * const kImpressionDataAppVersionKey;
 extern NSString * const kImpressionDataPublisherRevenueKey;
 extern NSString * const kImpressionDataPrecisionKey;
+
+#pragma mark - SKAdNetwork Keys (Shared Across Various Endpoints)
+
+extern NSString * const kSKAdNetworkLastSyncTimestampKey;
+extern NSString * const kSKAdNetworkLastSyncAppVersionKey;
+extern NSString * const kSKAdNetworkHashKey;
+extern NSString * const kSKAdNetworkSupportedNetworksKey;

@@ -7,7 +7,7 @@
 //
 
 #import <XCTest/XCTest.h>
-#import "MPAPIEndpoints.h"
+#import <MoPub/MoPub-Swift.h>
 #import "MPURL.h"
 #import "MPURLRequest+Testing.h"
 

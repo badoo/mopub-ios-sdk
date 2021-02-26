@@ -7,21 +7,26 @@
 //
 
 #import <UIKit/UIKit.h>
-#import "MPClosableView.h"
+#import "MPAdContainerView.h"
 #import "MPForceableOrientationProtocol.h"
 @protocol MRExpandModalViewControllerDelegate;
 
 /**
- * `MRExpandModalViewController` is specifically for presenting expanded MRAID ads. Its orientation can be
- * forced via the orientationMask property.
+ `MRExpandModalViewController` is specifically for presenting expanded MRAID ads. Its orientation can be
+ forced via the orientationMask property.
  */
-@interface MRExpandModalViewController : UIViewController <MPClosableViewDelegate, MPForceableOrientationProtocol>
+@interface MRExpandModalViewController : UIViewController <MPForceableOrientationProtocol>
 
 /**
- * Initializes the view controller with an orientation mask that defines what orientation
- * the view controller supports. When using an orientation mask on initialization, the view controlller
- * will force the orientation of the device to match the orientation mask if the app supports it.
+ Initializes the view controller with an orientation mask that defines what orientation
+ the view controller supports. When using an orientation mask on initialization, the view controlller
+ will force the orientation of the device to match the orientation mask if the app supports it.
  */
 - (instancetype)initWithOrientationMask:(UIInterfaceOrientationMask)orientationMask;
 
+@end
+
+#pragma mark  -
+
+@interface MRExpandModalViewController (MPAdContainerViewWebAdDelegate) <MPAdContainerViewWebAdDelegate>
 @end
