@@ -1,7 +1,7 @@
 //
 //  MPFullscreenAdAdapterTests.m
 //
-//  Copyright 2018-2020 Twitter, Inc.
+//  Copyright 2018-2021 Twitter, Inc.
 //  Licensed under the MoPub SDK License Agreement
 //  http://www.mopub.com/legal/sdk-license-agreement/
 //
@@ -10,21 +10,40 @@
 #import "MPAdAdapterDelegateMock.h"
 #import "MPAdConfiguration.h"
 #import "MPAdConfigurationFactory.h"
+#import "MPAdContainerView+Private.h"
+#import "MPAdContainerView+Testing.h"
 #import "MPFullscreenAdAdapter+Private.h"
 #import "MPFullscreenAdAdapter+Testing.h"
 #import "MPFullscreenAdAdapterMock.h"
 #import "MPFullscreenAdViewController+Private.h"
+#import "MPFullscreenAdViewController+Video.h"
 #import "MPMockAdDestinationDisplayAgent.h"
 #import "MPMockAnalyticsTracker.h"
 #import "MPMockDiskLRUCache.h"
+#import "MPMoPubFullscreenAdAdapter.h"
 #import "MPFullscreenAdAdapterDelegateMock.h"
 #import "MPMockVASTTracking.h"
 #import "MPRewardedFullscreenDelegateHandler.h"
-#import "XCTestCase+MPAddition.h"
+#import "MPVASTCompanionAd+Testing.h"
+#import "MPVASTCompanionAdView+Testing.h"
+#import "MPVASTCompanionAdViewDelegateHandler.h"
 #import "MPViewabilityManager+Testing.h"
+#import "NSData+Testing.h"
+#import "XCTestCase+MPAddition.h"
 
-static const NSTimeInterval kDefaultTimeout = 10;
-static const NSTimeInterval kTestTimeout   = 2; // seconds
+// For non-module targets, UIKit must be explicitly imported
+// since MoPubSDK-Swift.h will not import it.
+#if __has_include(<MoPubSDK/MoPubSDK-Swift.h>)
+    #import <UIKit/UIKit.h>
+    #import <MoPubSDK/MoPubSDK-Swift.h>
+#else
+    #import <UIKit/UIKit.h>
+    #import "MoPubSDK-Swift.h"
+#endif
+
+static const NSTimeInterval kDefaultTimeout         = 10;
+static const NSTimeInterval kTestTimeout            = 2; // seconds
+static const NSTimeInterval kSimulatedVideoDuration = 31.0;
 
 @interface MPFullscreenAdAdapterTests : XCTestCase
 
@@ -67,7 +86,7 @@ static const NSTimeInterval kTestTimeout   = 2; // seconds
         kVASTVideoTrackersMetadataKey: @"{\"events\":[\"start\",\"midpoint\",\"thirdQuartile\",\"companionAdClick\",\"firstQuartile\",\"companionAdView\",\"complete\"],\"urls\":[\"https://mpx.mopub.com/video_event?event_type=%%VIDEO_EVENT%%\"]}"
     };
 
-    NSData *vastData = [self dataFromXMLFileNamed:@"VAST_3.0_linear_ad_comprehensive"];
+    NSData *vastData = [NSData dataFromXMLFileNamed:@"VAST_3.0_linear_ad_comprehensive"];
     MPAdConfiguration *mockAdConfig = [[MPAdConfiguration alloc] initWithMetadata:headers data:vastData isFullscreenAd:YES];
     return [self createTestSubjectWithAdConfig:mockAdConfig];
 }
@@ -110,7 +129,6 @@ static const NSTimeInterval kTestTimeout   = 2; // seconds
     [self.fullscreenAdAdapterDelegateMock resetSelectorCounter];
     [mockVastTracking resetHistory];
     [adAdapter videoPlayerDidCompleteVideo:mockPlayerView duration:videoDuration];
-    XCTAssertEqual(1, [self.fullscreenAdAdapterDelegateMock countOfSelectorCalls:@selector(fullscreenAdAdapter:willRewardUser:)]);
     XCTAssertEqual(1, [mockVastTracking countOfSelectorCalls:@selector(handleVideoEvent:videoTimeOffset:)]);
     XCTAssertEqual(1, [mockVastTracking countOfVideoEventCalls:MPVideoEventComplete]);
 
@@ -132,7 +150,7 @@ static const NSTimeInterval kTestTimeout   = 2; // seconds
     [self.fullscreenAdAdapterDelegateMock resetSelectorCounter];
     [mockVastTracking resetHistory];
     [adAdapter videoPlayer:mockPlayerView
-                    didTriggerEvent:MPVideoPlayerEvent_ClickThrough
+                    didTriggerEvent:MPVideoEventClick
                       videoProgress:1];
     XCTAssertEqual(1, [self.fullscreenAdAdapterDelegateMock countOfSelectorCalls:@selector(fullscreenAdAdapterDidReceiveTap:)]);
     XCTAssertEqual(0, [mockVastTracking countOfSelectorCalls:@selector(uniquelySendURLs:)]); // 0 since URL is nil
@@ -141,7 +159,7 @@ static const NSTimeInterval kTestTimeout   = 2; // seconds
 
     [mockVastTracking resetHistory];
     [adAdapter videoPlayer:mockPlayerView
-                    didTriggerEvent:MPVideoPlayerEvent_Close
+                    didTriggerEvent:MPVideoEventClose
                       videoProgress:2];
     XCTAssertEqual(2, [mockVastTracking countOfSelectorCalls:@selector(handleVideoEvent:videoTimeOffset:)]);
     XCTAssertEqual(1, [mockVastTracking countOfVideoEventCalls:MPVideoEventClose]);
@@ -149,7 +167,7 @@ static const NSTimeInterval kTestTimeout   = 2; // seconds
 
     [mockVastTracking resetHistory];
     [adAdapter videoPlayer:mockPlayerView
-                    didTriggerEvent:MPVideoPlayerEvent_Skip
+                    didTriggerEvent:MPVideoEventSkip
                       videoProgress:3];
     XCTAssertEqual(3, [mockVastTracking countOfSelectorCalls:@selector(handleVideoEvent:videoTimeOffset:)]);
     XCTAssertEqual(1, [mockVastTracking countOfVideoEventCalls:MPVideoEventSkip]);
@@ -233,7 +251,7 @@ static const NSTimeInterval kTestTimeout   = 2; // seconds
         kFullAdTypeMetadataKey: kAdTypeVAST,
         kVASTVideoTrackersMetadataKey: @"{\"events\":[\"start\",\"midpoint\",\"thirdQuartile\",\"firstQuartile\",\"complete\"],\"urls\":[\"https://mpx.mopub.com/video_event?event_type=%%VIDEO_EVENT%%\"]}"
     };
-    NSData *vastData = [self dataFromXMLFileNamed:@"VAST_3.0_linear_ad_comprehensive"];
+    NSData *vastData = [NSData dataFromXMLFileNamed:@"VAST_3.0_linear_ad_comprehensive"];
     MPAdConfiguration *mockAdConfig = [[MPAdConfiguration alloc] initWithMetadata:headers data:vastData isFullscreenAd:YES];
     MPFullscreenAdAdapter *adAdapter = [self createTestSubjectWithAdConfig:mockAdConfig];
     adAdapter.delegate = mockDelegate; // the delegate needs a strong reference in current scope
@@ -885,6 +903,1055 @@ static const NSTimeInterval kTestTimeout   = 2; // seconds
     [adapter viewabilityTrackerForVideoConfig:videoConfig containedInContainerView:view adConfiguration:adConfig];
 
     XCTAssertTrue(videoConfig.viewabilityContext.omidResources.count == 1);
+}
+
+#pragma mark Rewarded Ads End Cards
+
+- (void)testRewardedVASTHTMLEndCardResultsInMRAIDCompanionContainer {
+    // Make the ad configuration
+    MPAdConfiguration *adConfig = [MPAdConfigurationFactory rewardedAdConfigurationWithVASTXMLFileNamed:@"vast_3.0_html_endcard"];
+    XCTAssertNotNil(adConfig);
+    XCTAssertNotNil(adConfig.adResponseData);
+
+    // Make expectation to wait for ad to load
+    XCTestExpectation *adLoadExpectation = [self expectationWithDescription:@"Wait for ad to load"];
+    self.adAdapterDelegateMock.adAdapterHandleFullscreenAdEventBlock = ^(id<MPAdAdapter> adapter, MPFullscreenAdEvent event) {
+        if (event == MPFullscreenAdEventDidLoad) {
+            [adLoadExpectation fulfill];
+        }
+    };
+
+    // Make the ad
+    MPAdTargeting *targeting = [[MPAdTargeting alloc] initWithCreativeSafeSize:CGSizeZero];
+    MPMoPubFullscreenAdAdapter *adapter = [[MPMoPubFullscreenAdAdapter alloc] init];
+    adapter.adapterDelegate = self.adAdapterDelegateMock;
+    [adapter getAdWithConfiguration:adConfig targeting:targeting];
+
+    // Immediately upon loading the configuration, the ad should be rewarded and content type video
+    XCTAssertNotNil(adapter);
+    XCTAssertTrue(adapter.isRewardExpected);
+    XCTAssert(adapter.adContentType == MPAdContentTypeVideo);
+
+    // But, no view controller should exist yet
+    XCTAssertNil(adapter.viewController);
+
+    // Wait for video to load
+    [self waitForExpectations:@[adLoadExpectation] timeout:kTestTimeout * 20];
+
+    // Now that the video has loaded, it should have a view controller with ad content type video
+    MPFullscreenAdViewController *viewController = adapter.viewController;
+    XCTAssertNotNil(viewController);
+    XCTAssert(viewController.adContentType == MPAdContentTypeVideo);
+
+    // Check that viewController's container view is non-nil
+    MPAdContainerView *adContainerView = viewController.adContainerView;
+    XCTAssertNotNil(adContainerView);
+
+    // Check that the container companion view and blur effect view are nil to start off with
+    XCTAssertNil(adContainerView.companionAdView);
+    XCTAssertNil(adContainerView.blurEffectView);
+
+    // Load and play the video to preload the companion ad
+    [adContainerView loadVideo];
+    [adContainerView playVideo];
+
+    // Check that the container companion view is non-nil
+    MPVASTCompanionAdView *companionAdView = adContainerView.companionAdView;
+    XCTAssertNotNil(companionAdView);
+
+    // Switch the companion ad view delegate to us and wait for it to load
+    XCTestExpectation *companionLoadExpectation = [self expectationWithDescription:@"Wait for companion to load"];
+    MPVASTCompanionAdViewDelegateHandler *companionAdViewDelegateHandler = [[MPVASTCompanionAdViewDelegateHandler alloc] init];
+    companionAdViewDelegateHandler.companionAdViewDidTriggerEventBlock = ^(MPVASTCompanionAdView * _Nonnull companionAdView, MPVASTResourceViewEvent event) {
+        if (event == MPVASTResourceViewEvent_DidLoadView) {
+            [companionLoadExpectation fulfill];
+        }
+    };
+    companionAdView.delegate = companionAdViewDelegateHandler;
+
+    // Wait for companion ad view to load
+    [self waitForExpectations:@[companionLoadExpectation] timeout:kTestTimeout * 20];
+
+    // Complete playing the video
+    [adContainerView videoPlayerViewDidCompleteVideo:adContainerView.videoPlayerView duration:kSimulatedVideoDuration];
+
+    // Check that the companion ad is an HTML resource
+    MPVASTCompanionAd *companionAdModel = companionAdView.ad;
+    XCTAssert(companionAdModel.HTMLResources.count == 1);
+    XCTAssert(companionAdModel.staticResources.count == 0);
+
+    // Check that the blur view is nil
+    XCTAssertNil(adContainerView.blurEffectView);
+
+    // Check that the companion ad has an MRController loaded, and not an image view
+    XCTAssert(companionAdView.isWebContent);
+    XCTAssertNotNil(companionAdView.mraidController);
+    XCTAssertNil(companionAdView.imageView);
+    XCTAssertNil(companionAdView.imageLoader);
+}
+
+- (void)testRewardedVASTMRAIDEndCardResultsInMRAIDCompanionContainer {
+    // Make the ad configuration
+    MPAdConfiguration *adConfig = [MPAdConfigurationFactory rewardedAdConfigurationWithVASTXMLFileNamed:@"vast_3.0_mraid_endcard"];
+    XCTAssertNotNil(adConfig);
+    XCTAssertNotNil(adConfig.adResponseData);
+
+    // Make expectation to wait for ad to load
+    XCTestExpectation *adLoadExpectation = [self expectationWithDescription:@"Wait for ad to load"];
+    self.adAdapterDelegateMock.adAdapterHandleFullscreenAdEventBlock = ^(id<MPAdAdapter> adapter, MPFullscreenAdEvent event) {
+        if (event == MPFullscreenAdEventDidLoad) {
+            [adLoadExpectation fulfill];
+        }
+    };
+
+    // Make the ad
+    MPAdTargeting *targeting = [[MPAdTargeting alloc] initWithCreativeSafeSize:CGSizeZero];
+    MPMoPubFullscreenAdAdapter *adapter = [[MPMoPubFullscreenAdAdapter alloc] init];
+    adapter.adapterDelegate = self.adAdapterDelegateMock;
+    [adapter getAdWithConfiguration:adConfig targeting:targeting];
+
+    // Immediately upon loading the configuration, the ad should be rewarded and content type video
+    XCTAssertNotNil(adapter);
+    XCTAssertTrue(adapter.isRewardExpected);
+    XCTAssert(adapter.adContentType == MPAdContentTypeVideo);
+
+    // But, no view controller should exist yet
+    XCTAssertNil(adapter.viewController);
+
+    // Wait for video to load
+    [self waitForExpectations:@[adLoadExpectation] timeout:kTestTimeout * 20];
+
+    // Now that the video has loaded, it should have a view controller with ad content type video
+    MPFullscreenAdViewController *viewController = adapter.viewController;
+    XCTAssertNotNil(viewController);
+    XCTAssert(viewController.adContentType == MPAdContentTypeVideo);
+
+    // Check that viewController's container view is non-nil
+    MPAdContainerView *adContainerView = viewController.adContainerView;
+    XCTAssertNotNil(adContainerView);
+
+    // Check that the container companion view and blur effect view are nil to start off with
+    XCTAssertNil(adContainerView.companionAdView);
+    XCTAssertNil(adContainerView.blurEffectView);
+
+    // Load and play the video to preload the companion ad
+    [adContainerView loadVideo];
+    [adContainerView playVideo];
+
+    // Check that the container companion view is non-nil
+    MPVASTCompanionAdView *companionAdView = adContainerView.companionAdView;
+    XCTAssertNotNil(companionAdView);
+
+    // Switch the companion ad view delegate to us and wait for it to load
+    XCTestExpectation *companionLoadExpectation = [self expectationWithDescription:@"Wait for companion to load"];
+    MPVASTCompanionAdViewDelegateHandler *companionAdViewDelegateHandler = [[MPVASTCompanionAdViewDelegateHandler alloc] init];
+    companionAdViewDelegateHandler.companionAdViewDidTriggerEventBlock = ^(MPVASTCompanionAdView * _Nonnull companionAdView, MPVASTResourceViewEvent event) {
+        if (event == MPVASTResourceViewEvent_DidLoadView) {
+            [companionLoadExpectation fulfill];
+        }
+    };
+    companionAdView.delegate = companionAdViewDelegateHandler;
+
+    // Wait for companion ad view to load
+    [self waitForExpectations:@[companionLoadExpectation] timeout:kTestTimeout * 20];
+
+    // Complete playing the video
+    [adContainerView videoPlayerViewDidCompleteVideo:adContainerView.videoPlayerView duration:kSimulatedVideoDuration];
+
+    // Check that the companion ad is an HTML resource
+    MPVASTCompanionAd *companionAdModel = companionAdView.ad;
+    XCTAssert(companionAdModel.HTMLResources.count == 1);
+    XCTAssert(companionAdModel.staticResources.count == 0);
+
+    // Check that the blur view is nil
+    XCTAssertNil(adContainerView.blurEffectView);
+
+    // Check that the companion ad has an MRController loaded, and not an image view
+    XCTAssert(companionAdView.isWebContent);
+    XCTAssertNotNil(companionAdView.mraidController);
+    XCTAssertNil(companionAdView.imageView);
+    XCTAssertNil(companionAdView.imageLoader);
+}
+
+- (void)testRewardedVASTImageEndCardResultsInImageCompanionContainer {
+    // Make the ad configuration
+    MPAdConfiguration *adConfig = [MPAdConfigurationFactory rewardedAdConfigurationWithVASTXMLFileNamed:@"vast_3.0_image_endcard"];
+    XCTAssertNotNil(adConfig);
+    XCTAssertNotNil(adConfig.adResponseData);
+
+    // Make expectation to wait for ad to load
+    XCTestExpectation *adLoadExpectation = [self expectationWithDescription:@"Wait for ad to load"];
+    self.adAdapterDelegateMock.adAdapterHandleFullscreenAdEventBlock = ^(id<MPAdAdapter> adapter, MPFullscreenAdEvent event) {
+        if (event == MPFullscreenAdEventDidLoad) {
+            [adLoadExpectation fulfill];
+        }
+    };
+
+    // Make the ad
+    MPAdTargeting *targeting = [[MPAdTargeting alloc] initWithCreativeSafeSize:CGSizeZero];
+    MPMoPubFullscreenAdAdapter *adapter = [[MPMoPubFullscreenAdAdapter alloc] init];
+    adapter.adapterDelegate = self.adAdapterDelegateMock;
+    [adapter getAdWithConfiguration:adConfig targeting:targeting];
+
+    // Immediately upon loading the configuration, the ad should be rewarded and content type video
+    XCTAssertNotNil(adapter);
+    XCTAssertTrue(adapter.isRewardExpected);
+    XCTAssert(adapter.adContentType == MPAdContentTypeVideo);
+
+    // But, no view controller should exist yet
+    XCTAssertNil(adapter.viewController);
+
+    // Wait for video to load
+    [self waitForExpectations:@[adLoadExpectation] timeout:kTestTimeout * 20];
+
+    // Now that the video has loaded, it should have a view controller with ad content type video
+    MPFullscreenAdViewController *viewController = adapter.viewController;
+    XCTAssertNotNil(viewController);
+    XCTAssert(viewController.adContentType == MPAdContentTypeVideo);
+
+    // Check that viewController's container view is non-nil
+    MPAdContainerView *adContainerView = viewController.adContainerView;
+    XCTAssertNotNil(adContainerView);
+
+    // Check that the container companion view and blur effect view are nil to start off with
+    XCTAssertNil(adContainerView.companionAdView);
+    XCTAssertNil(adContainerView.blurEffectView);
+
+    // Load and play the video to preload the companion ad
+    [adContainerView loadVideo];
+    [adContainerView playVideo];
+
+    // Check that the container companion view is non-nil
+    MPVASTCompanionAdView *companionAdView = adContainerView.companionAdView;
+    XCTAssertNotNil(companionAdView);
+
+    // Switch the companion ad view delegate to us and wait for it to load
+    XCTestExpectation *companionLoadExpectation = [self expectationWithDescription:@"Wait for companion to load"];
+    MPVASTCompanionAdViewDelegateHandler *companionAdViewDelegateHandler = [[MPVASTCompanionAdViewDelegateHandler alloc] init];
+    companionAdViewDelegateHandler.companionAdViewDidTriggerEventBlock = ^(MPVASTCompanionAdView * _Nonnull companionAdView, MPVASTResourceViewEvent event) {
+        if (event == MPVASTResourceViewEvent_DidLoadView) {
+            [companionLoadExpectation fulfill];
+        }
+    };
+    companionAdView.delegate = companionAdViewDelegateHandler;
+
+    // Wait for companion ad view to load
+    [self waitForExpectations:@[companionLoadExpectation] timeout:kTestTimeout * 20];
+
+    // Complete playing the video
+    [adContainerView videoPlayerViewDidCompleteVideo:adContainerView.videoPlayerView duration:kSimulatedVideoDuration];
+
+    // Check that the companion ad is a static resource
+    MPVASTCompanionAd *companionAdModel = companionAdView.ad;
+    XCTAssert(companionAdModel.HTMLResources.count == 0);
+    XCTAssert(companionAdModel.staticResources.count == 1);
+
+    // Check that the blur view is nil
+    XCTAssertNil(adContainerView.blurEffectView);
+
+    // Check that the companion ad has an image controller and image loader loaded
+    XCTAssertFalse(companionAdView.isWebContent);
+    XCTAssertNil(companionAdView.mraidController);
+    XCTAssertNotNil(companionAdView.imageView);
+    XCTAssertNotNil(companionAdView.imageLoader);
+}
+
+- (void)testRewardedVASTNoEndCardCausesNoCompanionView {
+    // Make the ad configuration
+    MPAdConfiguration *adConfig = [MPAdConfigurationFactory rewardedAdConfigurationWithVASTXMLFileNamed:@"vast_3.0_no_endcard"];
+    XCTAssertNotNil(adConfig);
+    XCTAssertNotNil(adConfig.adResponseData);
+
+    // Make expectation to wait for ad to load
+    XCTestExpectation *expectation = [self expectationWithDescription:@"Wait for ad to load"];
+    self.adAdapterDelegateMock.adAdapterHandleFullscreenAdEventBlock = ^(id<MPAdAdapter> adapter, MPFullscreenAdEvent event) {
+        [expectation fulfill];
+    };
+
+    // Make the ad
+    MPAdTargeting *targeting = [[MPAdTargeting alloc] initWithCreativeSafeSize:CGSizeZero];
+    MPMoPubFullscreenAdAdapter *adapter = [[MPMoPubFullscreenAdAdapter alloc] init];
+    adapter.adapterDelegate = self.adAdapterDelegateMock;
+    [adapter getAdWithConfiguration:adConfig targeting:targeting];
+
+    // Immediately upon loading the configuration, the ad should be rewarded and content type video
+    XCTAssertNotNil(adapter);
+    XCTAssertTrue(adapter.isRewardExpected);
+    XCTAssert(adapter.adContentType == MPAdContentTypeVideo);
+
+    // But, no view controller should exist yet
+    XCTAssertNil(adapter.viewController);
+
+    // Wait for video to load
+    [self waitForExpectations:@[expectation] timeout:kTestTimeout * 20];
+
+    // Now that the video has loaded, it should have a view controller with ad content type video
+    MPFullscreenAdViewController *viewController = adapter.viewController;
+    XCTAssertNotNil(viewController);
+    XCTAssert(viewController.adContentType == MPAdContentTypeVideo);
+
+    // Check that viewController's container view is non-nil
+    MPAdContainerView *adContainerView = viewController.adContainerView;
+    XCTAssertNotNil(adContainerView);
+
+    // Check that the container companion view and blur effect view are nil to start off with
+    XCTAssertNil(adContainerView.companionAdView);
+    XCTAssertNil(adContainerView.blurEffectView);
+
+    // Load and play the video to preload the companion ad
+    [adContainerView loadVideo];
+    [adContainerView playVideo];
+
+    // Check that the container companion view is nil
+    MPVASTCompanionAdView *companionAdView = adContainerView.companionAdView;
+    XCTAssertNil(companionAdView);
+
+    // Complete playing the video
+    [adContainerView videoPlayerViewDidCompleteVideo:adContainerView.videoPlayerView duration:kSimulatedVideoDuration];
+
+    // Check that the blur view is non-nil
+    XCTAssertNotNil(adContainerView.blurEffectView);
+}
+
+- (void)testRewardedVASTJSEndCardResultsInMRAIDCompanionContainer {
+    // Make the ad configuration
+    MPAdConfiguration *adConfig = [MPAdConfigurationFactory rewardedAdConfigurationWithVASTXMLFileNamed:@"vast_3.0_js_endcard"];
+    XCTAssertNotNil(adConfig);
+    XCTAssertNotNil(adConfig.adResponseData);
+
+    // Make expectation to wait for ad to load
+    XCTestExpectation *adLoadExpectation = [self expectationWithDescription:@"Wait for ad to load"];
+    self.adAdapterDelegateMock.adAdapterHandleFullscreenAdEventBlock = ^(id<MPAdAdapter> adapter, MPFullscreenAdEvent event) {
+        if (event == MPFullscreenAdEventDidLoad) {
+            [adLoadExpectation fulfill];
+        }
+    };
+
+    // Make the ad
+    MPAdTargeting *targeting = [[MPAdTargeting alloc] initWithCreativeSafeSize:CGSizeZero];
+    MPMoPubFullscreenAdAdapter *adapter = [[MPMoPubFullscreenAdAdapter alloc] init];
+    adapter.adapterDelegate = self.adAdapterDelegateMock;
+    [adapter getAdWithConfiguration:adConfig targeting:targeting];
+
+    // Immediately upon loading the configuration, the ad should be rewarded and content type video
+    XCTAssertNotNil(adapter);
+    XCTAssertTrue(adapter.isRewardExpected);
+    XCTAssert(adapter.adContentType == MPAdContentTypeVideo);
+
+    // But, no view controller should exist yet
+    XCTAssertNil(adapter.viewController);
+
+    // Wait for video to load
+    [self waitForExpectations:@[adLoadExpectation] timeout:kTestTimeout * 20];
+
+    // Now that the video has loaded, it should have a view controller with ad content type video
+    MPFullscreenAdViewController *viewController = adapter.viewController;
+    XCTAssertNotNil(viewController);
+    XCTAssert(viewController.adContentType == MPAdContentTypeVideo);
+
+    // Check that viewController's container view is non-nil
+    MPAdContainerView *adContainerView = viewController.adContainerView;
+    XCTAssertNotNil(adContainerView);
+
+    // Check that the container companion view and blur effect view are nil to start off with
+    XCTAssertNil(adContainerView.companionAdView);
+    XCTAssertNil(adContainerView.blurEffectView);
+
+    // Load and play the video to preload the companion ad
+    [adContainerView loadVideo];
+    [adContainerView playVideo];
+
+    // Check that the container companion view is non-nil
+    MPVASTCompanionAdView *companionAdView = adContainerView.companionAdView;
+    XCTAssertNotNil(companionAdView);
+
+    // Switch the companion ad view delegate to us and wait for it to load
+    XCTestExpectation *companionLoadExpectation = [self expectationWithDescription:@"Wait for companion to load"];
+    MPVASTCompanionAdViewDelegateHandler *companionAdViewDelegateHandler = [[MPVASTCompanionAdViewDelegateHandler alloc] init];
+    companionAdViewDelegateHandler.companionAdViewDidTriggerEventBlock = ^(MPVASTCompanionAdView * _Nonnull companionAdView, MPVASTResourceViewEvent event) {
+        if (event == MPVASTResourceViewEvent_DidLoadView) {
+            [companionLoadExpectation fulfill];
+        }
+    };
+    companionAdView.delegate = companionAdViewDelegateHandler;
+
+    // Wait for companion ad view to load
+    [self waitForExpectations:@[companionLoadExpectation] timeout:kTestTimeout * 20];
+
+    // Complete playing the video
+    [adContainerView videoPlayerViewDidCompleteVideo:adContainerView.videoPlayerView duration:kSimulatedVideoDuration];
+
+    // Check that the companion ad is a static resource
+    MPVASTCompanionAd *companionAdModel = companionAdView.ad;
+    XCTAssert(companionAdModel.HTMLResources.count == 0);
+    XCTAssert(companionAdModel.staticResources.count == 1);
+
+    // Check that the blur view is nil
+    XCTAssertNil(adContainerView.blurEffectView);
+
+    // Check that the companion ad has an MRController loaded, and not an image view
+    XCTAssert(companionAdView.isWebContent);
+    XCTAssertNotNil(companionAdView.mraidController);
+    XCTAssertNil(companionAdView.imageView);
+    XCTAssertNil(companionAdView.imageLoader);
+}
+
+- (void)testRewardedVASTComboMRAIDImageJSEndCardResultsInMRAIDCompanionContainer {
+    // Make the ad configuration
+    MPAdConfiguration *adConfig = [MPAdConfigurationFactory rewardedAdConfigurationWithVASTXMLFileNamed:@"vast_3.0_combo_mraid_image_js_endcard"];
+    XCTAssertNotNil(adConfig);
+    XCTAssertNotNil(adConfig.adResponseData);
+
+    // Make expectation to wait for ad to load
+    XCTestExpectation *adLoadExpectation = [self expectationWithDescription:@"Wait for ad to load"];
+    self.adAdapterDelegateMock.adAdapterHandleFullscreenAdEventBlock = ^(id<MPAdAdapter> adapter, MPFullscreenAdEvent event) {
+        if (event == MPFullscreenAdEventDidLoad) {
+            [adLoadExpectation fulfill];
+        }
+    };
+
+    // Make the ad
+    MPAdTargeting *targeting = [[MPAdTargeting alloc] initWithCreativeSafeSize:CGSizeZero];
+    MPMoPubFullscreenAdAdapter *adapter = [[MPMoPubFullscreenAdAdapter alloc] init];
+    adapter.adapterDelegate = self.adAdapterDelegateMock;
+    [adapter getAdWithConfiguration:adConfig targeting:targeting];
+
+    // Immediately upon loading the configuration, the ad should be rewarded and content type video
+    XCTAssertNotNil(adapter);
+    XCTAssertTrue(adapter.isRewardExpected);
+    XCTAssert(adapter.adContentType == MPAdContentTypeVideo);
+
+    // But, no view controller should exist yet
+    XCTAssertNil(adapter.viewController);
+
+    // Wait for video to load
+    [self waitForExpectations:@[adLoadExpectation] timeout:kTestTimeout * 20];
+
+    // Now that the video has loaded, it should have a view controller with ad content type video
+    MPFullscreenAdViewController *viewController = adapter.viewController;
+    XCTAssertNotNil(viewController);
+    XCTAssert(viewController.adContentType == MPAdContentTypeVideo);
+
+    // Check that viewController's container view is non-nil
+    MPAdContainerView *adContainerView = viewController.adContainerView;
+    XCTAssertNotNil(adContainerView);
+
+    // Check that the container companion view and blur effect view are nil to start off with
+    XCTAssertNil(adContainerView.companionAdView);
+    XCTAssertNil(adContainerView.blurEffectView);
+
+    // Load and play the video to preload the companion ad
+    [adContainerView loadVideo];
+    [adContainerView playVideo];
+
+    // Check that the container companion view is non-nil
+    MPVASTCompanionAdView *companionAdView = adContainerView.companionAdView;
+    XCTAssertNotNil(companionAdView);
+
+    // Switch the companion ad view delegate to us and wait for it to load
+    XCTestExpectation *companionLoadExpectation = [self expectationWithDescription:@"Wait for companion to load"];
+    MPVASTCompanionAdViewDelegateHandler *companionAdViewDelegateHandler = [[MPVASTCompanionAdViewDelegateHandler alloc] init];
+    companionAdViewDelegateHandler.companionAdViewDidTriggerEventBlock = ^(MPVASTCompanionAdView * _Nonnull companionAdView, MPVASTResourceViewEvent event) {
+        if (event == MPVASTResourceViewEvent_DidLoadView) {
+            [companionLoadExpectation fulfill];
+        }
+    };
+    companionAdView.delegate = companionAdViewDelegateHandler;
+
+    // Wait for companion ad view to load
+    [self waitForExpectations:@[companionLoadExpectation] timeout:kTestTimeout * 20];
+
+    // Complete playing the video
+    [adContainerView videoPlayerViewDidCompleteVideo:adContainerView.videoPlayerView duration:kSimulatedVideoDuration];
+
+    // Check that the companion ad contains both HTML and static resources
+    MPVASTCompanionAd *companionAdModel = companionAdView.ad;
+    XCTAssert(companionAdModel.HTMLResources.count == 1);
+    XCTAssert(companionAdModel.staticResources.count == 2);
+    XCTAssert(companionAdModel.iframeResources.count == 0);
+
+    // Check that the selected resource is not static (i.e., is HTML)
+    MPVASTResource *selectedResource = [companionAdModel resourceToDisplay];
+    XCTAssert([companionAdModel.HTMLResources containsObject:selectedResource]);
+    XCTAssertFalse(selectedResource.isStaticCreativeTypeImage);
+    XCTAssertFalse(selectedResource.isStaticCreativeTypeJavaScript);
+
+    // Check that the blur view is nil
+    XCTAssertNil(adContainerView.blurEffectView);
+
+    // Check that the companion ad has an MRController loaded, and not an image view
+    XCTAssert(companionAdView.isWebContent);
+    XCTAssertNotNil(companionAdView.mraidController);
+    XCTAssertNil(companionAdView.imageView);
+    XCTAssertNil(companionAdView.imageLoader);
+}
+
+- (void)testRewardedVASTComboImageJSEndCardResultsInJSCompanionContainer {
+    // Make the ad configuration
+    MPAdConfiguration *adConfig = [MPAdConfigurationFactory rewardedAdConfigurationWithVASTXMLFileNamed:@"vast_3.0_combo_image_js_endcard"];
+    XCTAssertNotNil(adConfig);
+    XCTAssertNotNil(adConfig.adResponseData);
+
+    // Make expectation to wait for ad to load
+    XCTestExpectation *adLoadExpectation = [self expectationWithDescription:@"Wait for ad to load"];
+    self.adAdapterDelegateMock.adAdapterHandleFullscreenAdEventBlock = ^(id<MPAdAdapter> adapter, MPFullscreenAdEvent event) {
+        if (event == MPFullscreenAdEventDidLoad) {
+            [adLoadExpectation fulfill];
+        }
+    };
+
+    // Make the ad
+    MPAdTargeting *targeting = [[MPAdTargeting alloc] initWithCreativeSafeSize:CGSizeZero];
+    MPMoPubFullscreenAdAdapter *adapter = [[MPMoPubFullscreenAdAdapter alloc] init];
+    adapter.adapterDelegate = self.adAdapterDelegateMock;
+    [adapter getAdWithConfiguration:adConfig targeting:targeting];
+
+    // Immediately upon loading the configuration, the ad should be rewarded and content type video
+    XCTAssertNotNil(adapter);
+    XCTAssertTrue(adapter.isRewardExpected);
+    XCTAssert(adapter.adContentType == MPAdContentTypeVideo);
+
+    // But, no view controller should exist yet
+    XCTAssertNil(adapter.viewController);
+
+    // Wait for video to load
+    [self waitForExpectations:@[adLoadExpectation] timeout:kTestTimeout * 20];
+
+    // Now that the video has loaded, it should have a view controller with ad content type video
+    MPFullscreenAdViewController *viewController = adapter.viewController;
+    XCTAssertNotNil(viewController);
+    XCTAssert(viewController.adContentType == MPAdContentTypeVideo);
+
+    // Check that viewController's container view is non-nil
+    MPAdContainerView *adContainerView = viewController.adContainerView;
+    XCTAssertNotNil(adContainerView);
+
+    // Check that the container companion view and blur effect view are nil to start off with
+    XCTAssertNil(adContainerView.companionAdView);
+    XCTAssertNil(adContainerView.blurEffectView);
+
+    // Load and play the video to preload the companion ad
+    [adContainerView loadVideo];
+    [adContainerView playVideo];
+
+    // Check that the container companion view is non-nil
+    MPVASTCompanionAdView *companionAdView = adContainerView.companionAdView;
+    XCTAssertNotNil(companionAdView);
+
+    // Switch the companion ad view delegate to us and wait for it to load
+    XCTestExpectation *companionLoadExpectation = [self expectationWithDescription:@"Wait for companion to load"];
+    MPVASTCompanionAdViewDelegateHandler *companionAdViewDelegateHandler = [[MPVASTCompanionAdViewDelegateHandler alloc] init];
+    companionAdViewDelegateHandler.companionAdViewDidTriggerEventBlock = ^(MPVASTCompanionAdView * _Nonnull companionAdView, MPVASTResourceViewEvent event) {
+        if (event == MPVASTResourceViewEvent_DidLoadView) {
+            [companionLoadExpectation fulfill];
+        }
+    };
+    companionAdView.delegate = companionAdViewDelegateHandler;
+
+    // Wait for companion ad view to load
+    [self waitForExpectations:@[companionLoadExpectation] timeout:kTestTimeout * 20];
+
+    // Complete playing the video
+    [adContainerView videoPlayerViewDidCompleteVideo:adContainerView.videoPlayerView duration:kSimulatedVideoDuration];
+
+    // Check that this XML only contains static resources
+    MPVASTCompanionAd *companionAdModel = companionAdView.ad;
+    XCTAssert(companionAdModel.HTMLResources.count == 0);
+    XCTAssert(companionAdModel.staticResources.count == 2);
+    XCTAssert(companionAdModel.iframeResources.count == 0);
+
+    // Check that the selected resource is javascript
+    MPVASTResource *selectedResource = [companionAdModel resourceToDisplay];
+    XCTAssert([companionAdModel.staticResources containsObject:selectedResource]);
+    XCTAssertFalse(selectedResource.isStaticCreativeTypeImage);
+    XCTAssertTrue(selectedResource.isStaticCreativeTypeJavaScript);
+
+    // Check that the blur view is nil
+    XCTAssertNil(adContainerView.blurEffectView);
+
+    // Check that the companion ad has an MRController loaded, and not an image view
+    XCTAssert(companionAdView.isWebContent);
+    XCTAssertNotNil(companionAdView.mraidController);
+    XCTAssertNil(companionAdView.imageView);
+    XCTAssertNil(companionAdView.imageLoader);
+}
+
+- (void)testRewardedVASTComboMRAIDIFrameImageJSEndCardResultsInMRAIDCompanionContainer {
+    // Make the ad configuration
+    MPAdConfiguration *adConfig = [MPAdConfigurationFactory rewardedAdConfigurationWithVASTXMLFileNamed:@"vast_3.0_combo_mraid_iframe_image_js_endcard"];
+    XCTAssertNotNil(adConfig);
+    XCTAssertNotNil(adConfig.adResponseData);
+
+    // Make expectation to wait for ad to load
+    XCTestExpectation *adLoadExpectation = [self expectationWithDescription:@"Wait for ad to load"];
+    self.adAdapterDelegateMock.adAdapterHandleFullscreenAdEventBlock = ^(id<MPAdAdapter> adapter, MPFullscreenAdEvent event) {
+        if (event == MPFullscreenAdEventDidLoad) {
+            [adLoadExpectation fulfill];
+        }
+    };
+
+    // Make the ad
+    MPAdTargeting *targeting = [[MPAdTargeting alloc] initWithCreativeSafeSize:CGSizeZero];
+    MPMoPubFullscreenAdAdapter *adapter = [[MPMoPubFullscreenAdAdapter alloc] init];
+    adapter.adapterDelegate = self.adAdapterDelegateMock;
+    [adapter getAdWithConfiguration:adConfig targeting:targeting];
+
+    // Immediately upon loading the configuration, the ad should be rewarded and content type video
+    XCTAssertNotNil(adapter);
+    XCTAssertTrue(adapter.isRewardExpected);
+    XCTAssert(adapter.adContentType == MPAdContentTypeVideo);
+
+    // But, no view controller should exist yet
+    XCTAssertNil(adapter.viewController);
+
+    // Wait for video to load
+    [self waitForExpectations:@[adLoadExpectation] timeout:kTestTimeout * 20];
+
+    // Now that the video has loaded, it should have a view controller with ad content type video
+    MPFullscreenAdViewController *viewController = adapter.viewController;
+    XCTAssertNotNil(viewController);
+    XCTAssert(viewController.adContentType == MPAdContentTypeVideo);
+
+    // Check that viewController's container view is non-nil
+    MPAdContainerView *adContainerView = viewController.adContainerView;
+    XCTAssertNotNil(adContainerView);
+
+    // Check that the container companion view and blur effect view are nil to start off with
+    XCTAssertNil(adContainerView.companionAdView);
+    XCTAssertNil(adContainerView.blurEffectView);
+
+    // Load and play the video to preload the companion ad
+    [adContainerView loadVideo];
+    [adContainerView playVideo];
+
+    // Check that the container companion view is non-nil
+    MPVASTCompanionAdView *companionAdView = adContainerView.companionAdView;
+    XCTAssertNotNil(companionAdView);
+
+    // Switch the companion ad view delegate to us and wait for it to load
+    XCTestExpectation *companionLoadExpectation = [self expectationWithDescription:@"Wait for companion to load"];
+    MPVASTCompanionAdViewDelegateHandler *companionAdViewDelegateHandler = [[MPVASTCompanionAdViewDelegateHandler alloc] init];
+    companionAdViewDelegateHandler.companionAdViewDidTriggerEventBlock = ^(MPVASTCompanionAdView * _Nonnull companionAdView, MPVASTResourceViewEvent event) {
+        if (event == MPVASTResourceViewEvent_DidLoadView) {
+            [companionLoadExpectation fulfill];
+        }
+    };
+    companionAdView.delegate = companionAdViewDelegateHandler;
+
+    // Wait for companion ad view to load
+    [self waitForExpectations:@[companionLoadExpectation] timeout:kTestTimeout * 20];
+
+    // Complete playing the video
+    [adContainerView videoPlayerViewDidCompleteVideo:adContainerView.videoPlayerView duration:kSimulatedVideoDuration];
+
+    // Check that the companion ad contains HTML, IFrame, and static resources
+    MPVASTCompanionAd *companionAdModel = companionAdView.ad;
+    XCTAssert(companionAdModel.HTMLResources.count == 1);
+    XCTAssert(companionAdModel.staticResources.count == 2);
+    XCTAssert(companionAdModel.iframeResources.count == 1);
+
+    // Check that the selected resource is not static, and contained within HTMLResources
+    MPVASTResource *selectedResource = [companionAdModel resourceToDisplay];
+    XCTAssert([companionAdModel.HTMLResources containsObject:selectedResource]);
+    XCTAssertFalse(selectedResource.isStaticCreativeTypeImage);
+    XCTAssertFalse(selectedResource.isStaticCreativeTypeJavaScript);
+
+    // Check that the blur view is nil
+    XCTAssertNil(adContainerView.blurEffectView);
+
+    // Check that the companion ad has an MRController loaded, and not an image view
+    XCTAssert(companionAdView.isWebContent);
+    XCTAssertNotNil(companionAdView.mraidController);
+    XCTAssertNil(companionAdView.imageView);
+    XCTAssertNil(companionAdView.imageLoader);
+}
+
+- (void)testRewardedVASTComboIFrameImageJSEndCardResultsInJSCompanionContainer {
+    // Make the ad configuration
+    MPAdConfiguration *adConfig = [MPAdConfigurationFactory rewardedAdConfigurationWithVASTXMLFileNamed:@"vast_3.0_combo_iframe_image_js_endcard"];
+    XCTAssertNotNil(adConfig);
+    XCTAssertNotNil(adConfig.adResponseData);
+
+    // Make expectation to wait for ad to load
+    XCTestExpectation *adLoadExpectation = [self expectationWithDescription:@"Wait for ad to load"];
+    self.adAdapterDelegateMock.adAdapterHandleFullscreenAdEventBlock = ^(id<MPAdAdapter> adapter, MPFullscreenAdEvent event) {
+        if (event == MPFullscreenAdEventDidLoad) {
+            [adLoadExpectation fulfill];
+        }
+    };
+
+    // Make the ad
+    MPAdTargeting *targeting = [[MPAdTargeting alloc] initWithCreativeSafeSize:CGSizeZero];
+    MPMoPubFullscreenAdAdapter *adapter = [[MPMoPubFullscreenAdAdapter alloc] init];
+    adapter.adapterDelegate = self.adAdapterDelegateMock;
+    [adapter getAdWithConfiguration:adConfig targeting:targeting];
+
+    // Immediately upon loading the configuration, the ad should be rewarded and content type video
+    XCTAssertNotNil(adapter);
+    XCTAssertTrue(adapter.isRewardExpected);
+    XCTAssert(adapter.adContentType == MPAdContentTypeVideo);
+
+    // But, no view controller should exist yet
+    XCTAssertNil(adapter.viewController);
+
+    // Wait for video to load
+    [self waitForExpectations:@[adLoadExpectation] timeout:kTestTimeout * 20];
+
+    // Now that the video has loaded, it should have a view controller with ad content type video
+    MPFullscreenAdViewController *viewController = adapter.viewController;
+    XCTAssertNotNil(viewController);
+    XCTAssert(viewController.adContentType == MPAdContentTypeVideo);
+
+    // Check that viewController's container view is non-nil
+    MPAdContainerView *adContainerView = viewController.adContainerView;
+    XCTAssertNotNil(adContainerView);
+
+    // Check that the container companion view and blur effect view are nil to start off with
+    XCTAssertNil(adContainerView.companionAdView);
+    XCTAssertNil(adContainerView.blurEffectView);
+
+    // Load and play the video to preload the companion ad
+    [adContainerView loadVideo];
+    [adContainerView playVideo];
+
+    // Check that the container companion view is non-nil
+    MPVASTCompanionAdView *companionAdView = adContainerView.companionAdView;
+    XCTAssertNotNil(companionAdView);
+
+    // Switch the companion ad view delegate to us and wait for it to load
+    XCTestExpectation *companionLoadExpectation = [self expectationWithDescription:@"Wait for companion to load"];
+    MPVASTCompanionAdViewDelegateHandler *companionAdViewDelegateHandler = [[MPVASTCompanionAdViewDelegateHandler alloc] init];
+    companionAdViewDelegateHandler.companionAdViewDidTriggerEventBlock = ^(MPVASTCompanionAdView * _Nonnull companionAdView, MPVASTResourceViewEvent event) {
+        if (event == MPVASTResourceViewEvent_DidLoadView) {
+            [companionLoadExpectation fulfill];
+        }
+    };
+    companionAdView.delegate = companionAdViewDelegateHandler;
+
+    // Wait for companion ad view to load
+    [self waitForExpectations:@[companionLoadExpectation] timeout:kTestTimeout * 20];
+
+    // Complete playing the video
+    [adContainerView videoPlayerViewDidCompleteVideo:adContainerView.videoPlayerView duration:kSimulatedVideoDuration];
+
+    // Check that the companion ad contains IFrame, and static resources
+    MPVASTCompanionAd *companionAdModel = companionAdView.ad;
+    XCTAssert(companionAdModel.HTMLResources.count == 0);
+    XCTAssert(companionAdModel.staticResources.count == 2);
+    XCTAssert(companionAdModel.iframeResources.count == 1);
+
+    // Check that the selected resource is static and javascript
+    MPVASTResource *selectedResource = [companionAdModel resourceToDisplay];
+    XCTAssert([companionAdModel.staticResources containsObject:selectedResource]);
+    XCTAssertFalse(selectedResource.isStaticCreativeTypeImage);
+    XCTAssertTrue(selectedResource.isStaticCreativeTypeJavaScript);
+
+    // Check that the blur view is nil
+    XCTAssertNil(adContainerView.blurEffectView);
+
+    // Check that the companion ad has an MRController loaded, and not an image view
+    XCTAssert(companionAdView.isWebContent);
+    XCTAssertNotNil(companionAdView.mraidController);
+    XCTAssertNil(companionAdView.imageView);
+    XCTAssertNil(companionAdView.imageLoader);
+}
+
+- (void)testRewardedVASTComboIFrameImageEndCardResultsInIFrameCompanionContainer {
+    // Make the ad configuration
+    MPAdConfiguration *adConfig = [MPAdConfigurationFactory rewardedAdConfigurationWithVASTXMLFileNamed:@"vast_3.0_combo_iframe_image_endcard"];
+    XCTAssertNotNil(adConfig);
+    XCTAssertNotNil(adConfig.adResponseData);
+
+    // Make expectation to wait for ad to load
+    XCTestExpectation *adLoadExpectation = [self expectationWithDescription:@"Wait for ad to load"];
+    self.adAdapterDelegateMock.adAdapterHandleFullscreenAdEventBlock = ^(id<MPAdAdapter> adapter, MPFullscreenAdEvent event) {
+        if (event == MPFullscreenAdEventDidLoad) {
+            [adLoadExpectation fulfill];
+        }
+    };
+
+    // Make the ad
+    MPAdTargeting *targeting = [[MPAdTargeting alloc] initWithCreativeSafeSize:CGSizeZero];
+    MPMoPubFullscreenAdAdapter *adapter = [[MPMoPubFullscreenAdAdapter alloc] init];
+    adapter.adapterDelegate = self.adAdapterDelegateMock;
+    [adapter getAdWithConfiguration:adConfig targeting:targeting];
+
+    // Immediately upon loading the configuration, the ad should be rewarded and content type video
+    XCTAssertNotNil(adapter);
+    XCTAssertTrue(adapter.isRewardExpected);
+    XCTAssert(adapter.adContentType == MPAdContentTypeVideo);
+
+    // But, no view controller should exist yet
+    XCTAssertNil(adapter.viewController);
+
+    // Wait for video to load
+    [self waitForExpectations:@[adLoadExpectation] timeout:kTestTimeout * 20];
+
+    // Now that the video has loaded, it should have a view controller with ad content type video
+    MPFullscreenAdViewController *viewController = adapter.viewController;
+    XCTAssertNotNil(viewController);
+    XCTAssert(viewController.adContentType == MPAdContentTypeVideo);
+
+    // Check that viewController's container view is non-nil
+    MPAdContainerView *adContainerView = viewController.adContainerView;
+    XCTAssertNotNil(adContainerView);
+
+    // Check that the container companion view and blur effect view are nil to start off with
+    XCTAssertNil(adContainerView.companionAdView);
+    XCTAssertNil(adContainerView.blurEffectView);
+
+    // Load and play the video to preload the companion ad
+    [adContainerView loadVideo];
+    [adContainerView playVideo];
+
+    // Check that the container companion view is non-nil
+    MPVASTCompanionAdView *companionAdView = adContainerView.companionAdView;
+    XCTAssertNotNil(companionAdView);
+
+    // Switch the companion ad view delegate to us and wait for it to load
+    XCTestExpectation *companionLoadExpectation = [self expectationWithDescription:@"Wait for companion to load"];
+    MPVASTCompanionAdViewDelegateHandler *companionAdViewDelegateHandler = [[MPVASTCompanionAdViewDelegateHandler alloc] init];
+    companionAdViewDelegateHandler.companionAdViewDidTriggerEventBlock = ^(MPVASTCompanionAdView * _Nonnull companionAdView, MPVASTResourceViewEvent event) {
+        if (event == MPVASTResourceViewEvent_DidLoadView) {
+            [companionLoadExpectation fulfill];
+        }
+    };
+    companionAdView.delegate = companionAdViewDelegateHandler;
+
+    // Wait for companion ad view to load
+    [self waitForExpectations:@[companionLoadExpectation] timeout:kTestTimeout * 20];
+
+    // Complete playing the video
+    [adContainerView videoPlayerViewDidCompleteVideo:adContainerView.videoPlayerView duration:kSimulatedVideoDuration];
+
+    // Check that the companion ad contains HTML, IFrame, and static resources
+    MPVASTCompanionAd *companionAdModel = companionAdView.ad;
+    XCTAssert(companionAdModel.HTMLResources.count == 0);
+    XCTAssert(companionAdModel.staticResources.count == 1);
+    XCTAssert(companionAdModel.iframeResources.count == 1);
+
+    // Check that the selected resource is not static, and check that IFrameResources contains the selected resource
+    MPVASTResource *selectedResource = [companionAdModel resourceToDisplay];
+    XCTAssert([companionAdModel.iframeResources containsObject:selectedResource]);
+    XCTAssertFalse(selectedResource.isStaticCreativeTypeImage);
+    XCTAssertFalse(selectedResource.isStaticCreativeTypeJavaScript);
+
+    // Check that the blur view is nil
+    XCTAssertNil(adContainerView.blurEffectView);
+
+    // Check that the companion ad has an MRController loaded, and not an image view
+    XCTAssert(companionAdView.isWebContent);
+    XCTAssertNotNil(companionAdView.mraidController);
+    XCTAssertNil(companionAdView.imageView);
+    XCTAssertNil(companionAdView.imageLoader);
+}
+
+#pragma mark - Static Image Fullscreen
+
+- (void)testStaticImageResponseLoadsImageContainer {
+    // Make the ad configuration
+    MPAdConfiguration *adConfig = [MPAdConfigurationFactory rewardedStaticImageAdConfigurationWithJSONFileNamed:@"static_rewarded_image_creative_with_clickthrough"];
+    XCTAssertNotNil(adConfig);
+    XCTAssertNotNil(adConfig.adResponseData);
+
+    // Make expectation to wait for ad to load
+    XCTestExpectation *adLoadExpectation = [self expectationWithDescription:@"Wait for ad to load"];
+    self.adAdapterDelegateMock.adAdapterHandleFullscreenAdEventBlock = ^(id<MPAdAdapter> adapter, MPFullscreenAdEvent event) {
+        if (event == MPFullscreenAdEventDidLoad) {
+            [adLoadExpectation fulfill];
+        }
+    };
+
+    // Make the ad
+    MPAdTargeting *targeting = [[MPAdTargeting alloc] initWithCreativeSafeSize:CGSizeZero];
+    MPMoPubFullscreenAdAdapter *adapter = [[MPMoPubFullscreenAdAdapter alloc] init];
+    adapter.adapterDelegate = self.adAdapterDelegateMock;
+    [adapter getAdWithConfiguration:adConfig targeting:targeting];
+
+    // Immediately upon loading the configuration, the ad should be rewarded and content type image
+    XCTAssertNotNil(adapter);
+    XCTAssertTrue(adapter.isRewardExpected);
+    XCTAssert(adapter.adContentType == MPAdContentTypeImage);
+
+    // But, no view controller should exist yet
+    XCTAssertNil(adapter.viewController);
+
+    // Wait for creative to load
+    [self waitForExpectations:@[adLoadExpectation] timeout:kTestTimeout * 20];
+
+    // Now that the creative has loaded, it should have a view controller with ad content type image
+    MPFullscreenAdViewController *viewController = adapter.viewController;
+    XCTAssertNotNil(viewController);
+    XCTAssert(viewController.adContentType == MPAdContentTypeImage);
+
+    // Check that viewController's container view is non-nil
+    MPAdContainerView *adContainerView = viewController.adContainerView;
+    XCTAssertNotNil(adContainerView);
+
+    // Check that the image view on the container view is non-nil
+    XCTAssertNotNil(adContainerView.imageCreativeView);
+}
+
+- (void)testStaticImageResponseFailsToLoadWithInvalidImageURL {
+    // Make the ad configuration
+    MPAdConfiguration *adConfig = [MPAdConfigurationFactory rewardedStaticImageAdConfigurationWithJSONFileNamed:@"static_rewarded_image_creative_with_invalid_image_url"];
+    XCTAssertNotNil(adConfig);
+    XCTAssertNotNil(adConfig.adResponseData);
+
+    // Make expectation to wait for ad to fail to load
+    __block NSError *loadError = nil;
+    XCTestExpectation *adFailToLoadExpectation = [self expectationWithDescription:@"Wait for ad to fail to load"];
+    self.adAdapterDelegateMock.adapterDidFailToLoadAdWithErrorBlock = ^(id<MPAdAdapter>  _Nullable adapter, NSError * _Nullable error) {
+        [adFailToLoadExpectation fulfill];
+        loadError = error;
+    };
+
+    // Make the ad
+    MPAdTargeting *targeting = [[MPAdTargeting alloc] initWithCreativeSafeSize:CGSizeZero];
+    MPMoPubFullscreenAdAdapter *adapter = [[MPMoPubFullscreenAdAdapter alloc] init];
+    adapter.adapterDelegate = self.adAdapterDelegateMock;
+    [adapter getAdWithConfiguration:adConfig targeting:targeting];
+
+    // Immediately upon loading the configuration, the ad should be rewarded and content type image
+    XCTAssertNotNil(adapter);
+    XCTAssertTrue(adapter.isRewardExpected);
+    XCTAssert(adapter.adContentType == MPAdContentTypeImage);
+
+    // But, no view controller should exist yet
+    XCTAssertNil(adapter.viewController);
+
+    // Wait for creative to fail to load
+    [self waitForExpectations:@[adFailToLoadExpectation] timeout:kTestTimeout * 20];
+    XCTAssertNotNil(loadError);
+}
+
+- (void)testStaticImageResponseFailsToLoadWithNoImageURL {
+    // Make the ad configuration
+    MPAdConfiguration *adConfig = [MPAdConfigurationFactory rewardedStaticImageAdConfigurationWithJSONFileNamed:@"static_rewarded_image_creative_without_image_url"];
+    XCTAssertNotNil(adConfig);
+    XCTAssertNotNil(adConfig.adResponseData);
+
+    // Make expectation to wait for ad to fail to load
+    __block NSError *loadError = nil;
+    XCTestExpectation *adFailToLoadExpectation = [self expectationWithDescription:@"Wait for ad to fail to load"];
+    self.adAdapterDelegateMock.adapterDidFailToLoadAdWithErrorBlock = ^(id<MPAdAdapter>  _Nullable adapter, NSError * _Nullable error) {
+        [adFailToLoadExpectation fulfill];
+        loadError = error;
+    };
+
+    // Make the ad
+    MPAdTargeting *targeting = [[MPAdTargeting alloc] initWithCreativeSafeSize:CGSizeZero];
+    MPMoPubFullscreenAdAdapter *adapter = [[MPMoPubFullscreenAdAdapter alloc] init];
+    adapter.adapterDelegate = self.adAdapterDelegateMock;
+    [adapter getAdWithConfiguration:adConfig targeting:targeting];
+
+    // Immediately upon loading the configuration, the ad should be rewarded and content type image
+    XCTAssertNotNil(adapter);
+    XCTAssertTrue(adapter.isRewardExpected);
+    XCTAssert(adapter.adContentType == MPAdContentTypeImage);
+
+    // But, no view controller should exist yet
+    XCTAssertNil(adapter.viewController);
+
+    // Wait for creative to fail to load
+    [self waitForExpectations:@[adFailToLoadExpectation] timeout:kTestTimeout * 20];
+    XCTAssertNotNil(loadError);
+}
+
+- (void)testRewardedStaticImageNotClickableImmediately {
+    // Make the ad configuration
+    MPAdConfiguration *adConfig = [MPAdConfigurationFactory rewardedStaticImageAdConfigurationWithJSONFileNamed:@"static_rewarded_image_creative_with_clickthrough"];
+    XCTAssertNotNil(adConfig);
+    XCTAssertNotNil(adConfig.adResponseData);
+
+    // Make expectation to wait for ad to load
+    XCTestExpectation *adLoadExpectation = [self expectationWithDescription:@"Wait for ad to load"];
+    self.adAdapterDelegateMock.adAdapterHandleFullscreenAdEventBlock = ^(id<MPAdAdapter> adapter, MPFullscreenAdEvent event) {
+        if (event == MPFullscreenAdEventDidLoad) {
+            [adLoadExpectation fulfill];
+        }
+    };
+
+    // Make the ad
+    MPAdTargeting *targeting = [[MPAdTargeting alloc] initWithCreativeSafeSize:CGSizeZero];
+    MPMoPubFullscreenAdAdapter *adapter = [[MPMoPubFullscreenAdAdapter alloc] init];
+    adapter.adapterDelegate = self.adAdapterDelegateMock;
+    [adapter getAdWithConfiguration:adConfig targeting:targeting];
+
+    // Immediately upon loading the configuration, the ad should be rewarded and content type image
+    XCTAssertNotNil(adapter);
+    XCTAssertTrue(adapter.isRewardExpected);
+    XCTAssert(adapter.adContentType == MPAdContentTypeImage);
+
+    // But, no view controller should exist yet
+    XCTAssertNil(adapter.viewController);
+
+    // Wait for creative to load
+    [self waitForExpectations:@[adLoadExpectation] timeout:kTestTimeout * 20];
+
+    // Now that the creative has loaded, it should have a view controller with ad content type image
+    MPFullscreenAdViewController *viewController = adapter.viewController;
+    XCTAssertNotNil(viewController);
+    XCTAssert(viewController.adContentType == MPAdContentTypeImage);
+
+    // Check that viewController's container view is non-nil
+    MPAdContainerView *adContainerView = viewController.adContainerView;
+    XCTAssertNotNil(adContainerView);
+
+    // Check that the image view on the container view is non-nil
+    MPImageCreativeView *imageCreativeView = adContainerView.imageCreativeView;
+    XCTAssertNotNil(imageCreativeView);
+
+    // Check that the image view isn't clickable
+    XCTAssertFalse(imageCreativeView.isClickable);
+}
+
+- (void)testNonRewardedStaticImageIsClickableImmediately {
+    // Make the ad configuration
+    MPAdConfiguration *adConfig = [MPAdConfigurationFactory defaultInterstitialStaticImageAdConfigurationWithJSONFileNamed:@"static_rewarded_image_creative_with_clickthrough"];
+    XCTAssertNotNil(adConfig);
+    XCTAssertNotNil(adConfig.adResponseData);
+
+    // Make expectation to wait for ad to load
+    XCTestExpectation *adLoadExpectation = [self expectationWithDescription:@"Wait for ad to load"];
+    self.adAdapterDelegateMock.adAdapterHandleFullscreenAdEventBlock = ^(id<MPAdAdapter> adapter, MPFullscreenAdEvent event) {
+        if (event == MPFullscreenAdEventDidLoad) {
+            [adLoadExpectation fulfill];
+        }
+    };
+
+    // Make the ad
+    MPAdTargeting *targeting = [[MPAdTargeting alloc] initWithCreativeSafeSize:CGSizeZero];
+    MPMoPubFullscreenAdAdapter *adapter = [[MPMoPubFullscreenAdAdapter alloc] init];
+    adapter.adapterDelegate = self.adAdapterDelegateMock;
+    [adapter getAdWithConfiguration:adConfig targeting:targeting];
+
+    // Immediately upon loading the configuration, the ad should not be rewarded, but should be content type image
+    XCTAssertNotNil(adapter);
+    XCTAssertFalse(adapter.isRewardExpected);
+    XCTAssert(adapter.adContentType == MPAdContentTypeImage);
+
+    // But, no view controller should exist yet
+    XCTAssertNil(adapter.viewController);
+
+    // Wait for creative to load
+    [self waitForExpectations:@[adLoadExpectation] timeout:kTestTimeout * 20];
+
+    // Now that the creative has loaded, it should have a view controller with ad content type image
+    MPFullscreenAdViewController *viewController = adapter.viewController;
+    XCTAssertNotNil(viewController);
+    XCTAssert(viewController.adContentType == MPAdContentTypeImage);
+
+    // Check that viewController's container view is non-nil
+    MPAdContainerView *adContainerView = viewController.adContainerView;
+    XCTAssertNotNil(adContainerView);
+
+    // Check that the image view on the container view is non-nil
+    MPImageCreativeView *imageCreativeView = adContainerView.imageCreativeView;
+    XCTAssertNotNil(imageCreativeView);
+
+    // Check that the image view is clickable
+    XCTAssertTrue(imageCreativeView.isClickable);
 }
 
 @end

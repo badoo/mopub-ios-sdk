@@ -1,16 +1,17 @@
 //
 //  MPAdViewTests.m
 //
-//  Copyright 2018-2020 Twitter, Inc.
+//  Copyright 2018-2021 Twitter, Inc.
 //  Licensed under the MoPub SDK License Agreement
 //  http://www.mopub.com/legal/sdk-license-agreement/
 //
 
 #import <XCTest/XCTest.h>
-#import <MoPub/MoPub-Swift.h>
+#import <MoPubSDK/MoPubSDK-Swift.h>
 #import "MPAdServerKeys.h"
 #import "MPAdView.h"
 #import "MPAdView+Testing.h"
+#import "MPAdViewDelegateHandler.h"
 #import "MPBannerAdManager+Testing.h"
 #import "MPError.h"
 #import "MPLogging.h"
@@ -53,7 +54,7 @@ static NSTimeInterval const kDefaultTimeout = 10;
     });
 
     // Banner ads should send a viewability query parameter.
-    [adView loadAdWithMaxAdSize:kMPPresetMaxAdSize50Height];
+    [adView loadAdWithMaxAdSize:CGSizeMake(320, 50)];
 
     XCTAssertNotNil(mockAdServerCommunicator);
     XCTAssertNotNil(mockAdServerCommunicator.lastUrlLoaded);
@@ -68,31 +69,30 @@ static NSTimeInterval const kDefaultTimeout = 10;
 
 #pragma mark - Ad Sizing
 
-- (void)testRequestMatchFrameWithNoFrameWarningOnLoad {
+- (void)testRequestMatchFrameWithNoFrameErrorOnLoad {
     NSString * adUnitId = @"testRequestMatchFrameWithNoFrameWarningOnLoad";
     NSString * expectedWidthErrorMessage = NSError.frameWidthNotSetForFlexibleSize.localizedDescription;
     NSString * expectedHeightErrorMessage = NSError.frameHeightNotSetForFlexibleSize.localizedDescription;
 
     XCTestExpectation * expectation = [self expectationWithDescription:@"Wait for banner warnings on load"];
-    expectation.expectedFulfillmentCount = 2; // 2 warnings on load
+    expectation.expectedFulfillmentCount = 1;
 
-    MPLoggingHandler * handler = [MPLoggingHandler handler:^(NSString * _Nullable message) {
-        if (![message containsString:adUnitId]) {
-            return;
-        }
-
-        if ([message containsString:expectedWidthErrorMessage]) {
+    MPAdViewDelegateHandler * handler = [MPAdViewDelegateHandler new];
+    handler.didFailToLoadAd = ^(NSError * _Nonnull error) {
+        // Width error
+        if ([error.localizedDescription isEqualToString:expectedWidthErrorMessage]) {
             [expectation fulfill];
         }
 
-        if ([message containsString:expectedHeightErrorMessage]) {
+        // Height error
+        if ([error.localizedDescription isEqualToString:expectedHeightErrorMessage]) {
             [expectation fulfill];
         }
-    }];
-
-    [MPLogging addLogger:handler];
+    };
 
     MPAdView * noFrameBanner = [[MPAdView alloc] initWithAdUnitId:adUnitId];
+    noFrameBanner.delegate = handler;
+
     MPMockAdServerCommunicator * mockAdServerCommunicator = nil;
     noFrameBanner.adManager.communicator = ({
         MPMockAdServerCommunicator * mock = [[MPMockAdServerCommunicator alloc] initWithDelegate:noFrameBanner.adManager];
@@ -107,62 +107,74 @@ static NSTimeInterval const kDefaultTimeout = 10;
             XCTFail(@"Timed out");
         }
     }];
-
-    [MPLogging removeLogger:handler];
-
-    MPURL * url = [mockAdServerCommunicator.lastUrlLoaded isKindOfClass:[MPURL class]] ? (MPURL *)mockAdServerCommunicator.lastUrlLoaded : nil;
-    XCTAssertNotNil(url);
-    NSNumber * cw = [url numberForPOSTDataKey:kCreativeSafeWidthKey];
-    NSNumber * ch = [url numberForPOSTDataKey:kCreativeSafeHeightKey];
-    XCTAssert(cw.floatValue == 0.0);
-    XCTAssert(ch.floatValue == 0.0);
 }
 
-- (void)testRequestMatchFrameWithPartialFrameWarningOnLoad {
-    NSString * adUnitId = @"testRequestMatchFrameWithPartialFrameWarningOnLoad";
-    NSString * expectedHeightErrorMessage = NSError.frameHeightNotSetForFlexibleSize.localizedDescription;
+- (void)testRequestFlexibleWidthWithNoFrameErrorOnLoad {
+    NSString * adUnitId = @"testRequestMatchFrameWithNoFrameWarningOnLoad";
+    NSString * expectedWidthErrorMessage = NSError.frameWidthNotSetForFlexibleSize.localizedDescription;
 
-    XCTestExpectation * expectation = [self expectationWithDescription:@"Wait for banner warning on partial frame"];
-    expectation.expectedFulfillmentCount = 1; // 1 warning on load
+    XCTestExpectation * expectation = [self expectationWithDescription:@"Wait for banner warnings on load"];
+    expectation.expectedFulfillmentCount = 1;
 
-    MPLoggingHandler * handler = [MPLoggingHandler handler:^(NSString * _Nullable message) {
-        if (![message containsString:adUnitId]) {
-            return;
-        }
-
-        if ([message containsString:expectedHeightErrorMessage]) {
+    MPAdViewDelegateHandler * handler = [MPAdViewDelegateHandler new];
+    handler.didFailToLoadAd = ^(NSError * _Nonnull error) {
+        // Width error
+        if ([error.localizedDescription isEqualToString:expectedWidthErrorMessage]) {
             [expectation fulfill];
         }
-    }];
+    };
 
-    [MPLogging addLogger:handler];
+    MPAdView * noFrameBanner = [[MPAdView alloc] initWithAdUnitId:adUnitId];
+    noFrameBanner.delegate = handler;
 
-    MPAdView * partialFrameBanner = [[MPAdView alloc] initWithAdUnitId:adUnitId];
-    partialFrameBanner.frame = CGRectMake(0, 0, 475, 0);
     MPMockAdServerCommunicator * mockAdServerCommunicator = nil;
-    partialFrameBanner.adManager.communicator = ({
-        MPMockAdServerCommunicator * mock = [[MPMockAdServerCommunicator alloc] initWithDelegate:partialFrameBanner.adManager];
+    noFrameBanner.adManager.communicator = ({
+        MPMockAdServerCommunicator * mock = [[MPMockAdServerCommunicator alloc] initWithDelegate:noFrameBanner.adManager];
         mockAdServerCommunicator = mock;
         mock;
     });
 
-    [partialFrameBanner loadAdWithMaxAdSize:kMPPresetMaxAdSizeMatchFrame];
+    [noFrameBanner loadAdWithMaxAdSize:kMPPresetMaxAdSize50Height];
 
     [self waitForExpectationsWithTimeout:kDefaultTimeout handler:^(NSError * _Nullable error) {
         if (error != nil) {
             XCTFail(@"Timed out");
         }
     }];
+}
 
-    [MPLogging removeLogger:handler];
+- (void)testRequestFlexibleHeightWithNoFrameErrorOnLoad {
+    NSString * adUnitId = @"testRequestMatchFrameWithNoFrameWarningOnLoad";
+    NSString * expectedHeightErrorMessage = NSError.frameHeightNotSetForFlexibleSize.localizedDescription;
 
-    MPURL * url = [mockAdServerCommunicator.lastUrlLoaded isKindOfClass:[MPURL class]] ? (MPURL *)mockAdServerCommunicator.lastUrlLoaded : nil;
-    XCTAssertNotNil(url);
-    NSNumber * sc = [url numberForPOSTDataKey:kScaleFactorKey];
-    NSNumber * cw = [url numberForPOSTDataKey:kCreativeSafeWidthKey];
-    NSNumber * ch = [url numberForPOSTDataKey:kCreativeSafeHeightKey];
-    XCTAssert(cw.floatValue == 475.0 * sc.floatValue);
-    XCTAssert(ch.floatValue == 0.0);
+    XCTestExpectation * expectation = [self expectationWithDescription:@"Wait for banner warnings on load"];
+    expectation.expectedFulfillmentCount = 1;
+
+    MPAdViewDelegateHandler * handler = [MPAdViewDelegateHandler new];
+    handler.didFailToLoadAd = ^(NSError * _Nonnull error) {
+        // Height error
+        if ([error.localizedDescription isEqualToString:expectedHeightErrorMessage]) {
+            [expectation fulfill];
+        }
+    };
+
+    MPAdView * noFrameBanner = [[MPAdView alloc] initWithAdUnitId:adUnitId];
+    noFrameBanner.delegate = handler;
+
+    MPMockAdServerCommunicator * mockAdServerCommunicator = nil;
+    noFrameBanner.adManager.communicator = ({
+        MPMockAdServerCommunicator * mock = [[MPMockAdServerCommunicator alloc] initWithDelegate:noFrameBanner.adManager];
+        mockAdServerCommunicator = mock;
+        mock;
+    });
+
+    [noFrameBanner loadAdWithMaxAdSize:CGSizeMake(320, -1)];
+
+    [self waitForExpectationsWithTimeout:kDefaultTimeout handler:^(NSError * _Nullable error) {
+        if (error != nil) {
+            XCTFail(@"Timed out");
+        }
+    }];
 }
 
 - (void)testRequestMatchFrameWithFrameNoWarningOnLoad {

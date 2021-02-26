@@ -1,7 +1,7 @@
 //
 //  MPImpressionDataTests.m
 //
-//  Copyright 2018-2020 Twitter, Inc.
+//  Copyright 2018-2021 Twitter, Inc.
 //  Licensed under the MoPub SDK License Agreement
 //  http://www.mopub.com/legal/sdk-license-agreement/
 //
@@ -37,6 +37,7 @@
                                  kImpressionDataNetworkNameKey : @"Facebook",
                                  kImpressionDataNetworkPlacementIDKey : @"Network Placement ID",
                                  kImpressionDataAppVersionKey: @"126.0.1",
+                                 kImpressionDataDemandPartnerDataKey: @{@"encrypted_cpm" : @"test_cpm"}
                                  } mutableCopy];
 }
 
@@ -59,6 +60,9 @@
     XCTAssert([impData.networkName isEqualToString:self.testImpressionData[kImpressionDataNetworkNameKey]]);
     XCTAssert([impData.networkPlacementID isEqualToString:self.testImpressionData[kImpressionDataNetworkPlacementIDKey]]);
     XCTAssert([impData.appVersion isEqualToString:self.testImpressionData[kImpressionDataAppVersionKey]]);
+
+    // Dictionaries
+    XCTAssert([impData.demandPartnerData isEqualToDictionary:self.testImpressionData[kImpressionDataDemandPartnerDataKey]]);
 }
 
 - (void)testBasicValuesPipedThroughWithNilValues {
@@ -66,6 +70,7 @@
     self.testImpressionData[kImpressionDataNetworkPlacementIDKey] = nil;
     self.testImpressionData[kImpressionDataCountryKey] = nil;
     self.testImpressionData[kImpressionDataAppVersionKey] = nil;
+    self.testImpressionData[kImpressionDataDemandPartnerDataKey] = nil;
 
     MPImpressionData * impData = [[MPImpressionData alloc] initWithDictionary:self.testImpressionData];
 
@@ -85,6 +90,9 @@
     XCTAssertNil(impData.networkName);
     XCTAssertNil(impData.networkPlacementID);
     XCTAssertNil(impData.appVersion);
+
+    // Dictionaries
+    XCTAssertNil(impData.demandPartnerData);
 }
 
 - (void)testPrecisionEnum {
@@ -168,6 +176,19 @@
 
     XCTAssert(impData.precision == MPImpressionDataPrecisionUnknown);
     XCTAssert([jsonDict[kImpressionDataPrecisionKey] isKindOfClass:[NSNull class]]);
+}
+
+- (void)testNullDemandPartnerDataValue {
+    self.testImpressionData[kImpressionDataDemandPartnerDataKey] = [NSNull null];
+
+    MPImpressionData * impData = [[MPImpressionData alloc] initWithDictionary:self.testImpressionData];
+
+    NSDictionary * jsonDict = [NSJSONSerialization JSONObjectWithData:impData.jsonRepresentation
+                                                              options:0
+                                                                error:nil];
+
+    XCTAssertNil(impData.demandPartnerData);
+    XCTAssert([jsonDict[kImpressionDataDemandPartnerDataKey] isKindOfClass:[NSNull class]]);
 }
 
 @end

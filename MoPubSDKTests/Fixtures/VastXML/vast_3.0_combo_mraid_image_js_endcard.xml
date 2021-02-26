@@ -1,0 +1,271 @@
+<VAST version="4.1">
+  <Ad id="1">
+    <InLine>
+      <AdSystem>MoPub</AdSystem>
+      <AdTitle>MoPub Test Ad</AdTitle>
+      <Description>MoPub Description</Description>
+      <Error>
+        <![CDATA[https://www.mopub.com/?q=error&errorcode=[ERRORCODE]]]>
+      </Error>
+      <Impression>
+        <![CDATA[https://www.mopub.com/?q=impression]]>
+      </Impression>
+      <Impression>
+        <![CDATA[https://www.mopub.com/?q=impression1]]>
+      </Impression>
+      <Impression>
+        <![CDATA[https://www.mopub.com/?q=impression2]]>
+      </Impression>
+      <Impression>
+        <![CDATA[https://www.mopub.com/?q=impression3]]>
+      </Impression>
+      <Creatives>
+        <Creative>
+            <Linear skipoffset="00:00:05">
+              <Duration>00:00:30</Duration>
+              <TrackingEvents>
+                <Tracking event="creativeView">
+                  <![CDATA[https://www.mopub.com/?q=creativeView]]>
+                </Tracking>
+                <Tracking event="start">
+                  <![CDATA[https://www.mopub.com/?q=start]]>
+                </Tracking>
+                <Tracking event="start">
+                  <![CDATA[https://www.mopub.com/?q=start1]]>
+                </Tracking>
+                <Tracking event="firstQuartile">
+                  <![CDATA[https://www.mopub.com/?q=firstQuartile]]>
+                </Tracking>
+                <Tracking event="midpoint">
+                  <![CDATA[https://www.mopub.com/?q=midpoint]]>
+                </Tracking>
+                <Tracking event="thirdQuartile">
+                  <![CDATA[https://www.mopub.com/?q=thirdQuartile]]>
+                </Tracking>
+                <Tracking event="complete">
+                  <![CDATA[https://www.mopub.com/?q=complete]]>
+                </Tracking>
+                <Tracking event="close">
+                  <![CDATA[https://www.mopub.com/?q=close]]>
+                </Tracking>
+                <Tracking event="mute">
+                  <![CDATA[https://www.mopub.com/?q=mute]]>
+                </Tracking>
+                <Tracking event="unmute">
+                  <![CDATA[https://www.mopub.com/?q=unmute]]>
+                </Tracking>
+                <Tracking event="pause">
+                  <![CDATA[https://www.mopub.com/?q=pause]]>
+                </Tracking>
+                <Tracking event="rewind">
+                  <![CDATA[https://www.mopub.com/?q=rewind]]>
+                </Tracking>
+                <Tracking event="resume">
+                  <![CDATA[https://www.mopub.com/?q=resume]]>
+                </Tracking>
+                <Tracking event="fullscreen">
+                  <![CDATA[https://www.mopub.com/?q=fullscreen]]>
+                </Tracking>
+                <Tracking event="exitFullscreen">
+                  <![CDATA[https://www.mopub.com/?q=exitFullscreen]]>
+                </Tracking>
+                <Tracking event="expand">
+                  <![CDATA[https://www.mopub.com/?q=expand]]>
+                </Tracking>
+                <Tracking event="collapse">
+                  <![CDATA[https://www.mopub.com/?q=collapse]]>
+                </Tracking>
+                <Tracking event="acceptInvitation">
+                  <![CDATA[https://www.mopub.com/?q=acceptInvitation]]>
+                </Tracking>
+                <Tracking event="close">
+                  <![CDATA[https://www.mopub.com/?q=close]]>
+                </Tracking>
+                <Tracking event="skip" offset="00:00:15.000">
+                  <![CDATA[https://www.mopub.com/?q=skip]]>
+                </Tracking>
+                <Tracking event="progress" offset="00:00:00.000">
+                  <![CDATA[https://www.mopub.com/?q=progress00]]>
+                </Tracking>
+                <Tracking event="progress" offset="00:00:05.000">
+                  <![CDATA[https://www.mopub.com/?q=progress05]]>
+                </Tracking>
+                <Tracking event="progress" offset="00:00:10.000">
+                  <![CDATA[https://www.mopub.com/?q=progress10]]>
+                </Tracking>
+                <Tracking event="progress" offset="00:00:15.000">
+                  <![CDATA[https://www.mopub.com/?q=progress15]]>
+                </Tracking>
+                <Tracking event="progress" offset="00:00:20.000">
+                  <![CDATA[https://www.mopub.com/?q=progress20]]>
+                </Tracking>
+                <Tracking event="progress" offset="00:00:25.000">
+                  <![CDATA[https://www.mopub.com/?q=progress25]]>
+                </Tracking>
+                <Tracking event="progress" offset="00:00:30.000">
+                  <![CDATA[https://www.mopub.com/?q=progress30]]>
+                </Tracking>
+              </TrackingEvents>
+              <VideoClicks>
+                <ClickThrough>
+                  <![CDATA[https://www.mopub.com/?q=videoClickThrough]]>
+                </ClickThrough>
+                <ClickTracking>
+                  <![CDATA[https://www.mopub.com/?q=videoClickTracking]]>
+                </ClickTracking>
+              </VideoClicks>
+              <MediaFiles>
+                <MediaFile delivery="progressive" type="video/mp4" bitrate="970" width="1280" height="720" scalable="true" maintainAspectRatio="true">
+                  <![CDATA[https://d2al1opqne3nsh.cloudfront.net/videos/corgi30sec3.mp4]]>
+                </MediaFile>
+              </MediaFiles>
+            </Linear>
+        </Creative>
+        <Creative>
+          <CompanionAds>
+            <Companion width="480" height="320">
+              <StaticResource creativeType="application/x-javascript">
+                <![CDATA[function foo() {
+                    var img = document.createElement("img");
+                    img.src = ["https://d2al1opqne3nsh.cloudfront.net/images/corgi569x320.jpeg"];
+                    img.width = 569;
+                    img.height = 320;
+                    document.body.appendChild(img);
+                }
+                foo();]]>
+              </StaticResource>
+              <HTMLResource>
+                <![CDATA[<!DOCTYPE html> <html> <head>  <!-- Adgroup is b492ae75da524afc9a78fdf528cf1726 -->  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">  <style> body { margin:0; padding:0; overflow:hidden; background:transparent; } </style> <script src="mraid.js"></script>  <script type="text/javascript"> function webviewDidAppear() { setTimeout(function() { mraid.open('https://apps.apple.com/us/app/mopub-canary/id1446093432'); }, 1000); if (typeof trackImpressionHelper == 'function') { trackImpressionHelper(); } }  var handleViewableChangeHasFired = false; var handleViewableChange = function() { if (handleViewableChangeHasFired) { return; } if (mraid.isViewable() === 'true' || mraid.isViewable() === true) { handleViewableChangeHasFired = true; webviewDidAppear();  } }; mraid.addEventListener(mraid.EVENTS.READY, function (e) { mraid.addEventListener('viewableChange', handleViewableChange); handleViewableChange(); });  </script> </head> <body> <script src="mraid.js"></script>
+<div id="adContainer" style="display:none;width:320px;height:480px;margin:auto;top:0px;left:0px;">
+   <img width="320" height="480" src="https://d30x8mtr3hjnzo.cloudfront.net/creatives/23527c6535df407aaa6c5b63e54c7935" width="320" height="480" onclick="mraid.open('https://www.mopub.com/');"/>
+   <img width="37" height="37" style="position:absolute;top:90px;left:56px;" src="http://admarvel.s3.amazonaws.com/demo/mraid/Html_37x37.png" onclick="javascript:openSite('https://apps.apple.com/us/app/mopub-canary/id1446093432');" />
+   <img width="37" height="37" style="position:absolute;top:90px;left:113px;" src="http://admarvel.s3.amazonaws.com/demo/mraid/Location_37x37.png" onclick="javascript:openSite('https://maps.google.com/maps?q=1875+S+Grant+St,+San+Mateo,+CA&hl=en&sll=46.238212,6.864936&sspn=0.135592,0.222816&oq=1875+S&hnear=1875+S+Grant+St,+San+Mateo,+California+94402&t=m&z=17&iwloc=A')" />
+   <img width="37" height="37" style="position:absolute;top:90px;left:170px;" src="http://admarvel.s3.amazonaws.com/demo/mraid/Download_37x37.png" onclick="javascript:openSite('https://itunes.apple.com/us/app/opera-mini-web-browser/id363729560?mt=8&ign-mpt=uo%3D4');" />
+   <img width="37" height="37" style="position:absolute;top:90px;left:227px;" src="http://admarvel.s3.amazonaws.com/demo/mraid/Video_37x37.png" onclick="javascript:playVideo('http://admarvel.s3.amazonaws.com/demo/mraid/OMW_SOUND_VIDEO_RENEW.iPhoneSmall.mp4');" />
+   <img width="37" height="37" style="position:absolute;top:147px;left:56px;" src="http://admarvel.s3.amazonaws.com/demo/mraid/SMS_37x37.png" onclick="javascript:sendSMS('16502122336');" />
+   <img width="37" height="37" style="position:absolute;top:147px;left:113px;" src="http://admarvel.s3.amazonaws.com/demo/mraid/Photo_37x37.png" onclick="javascript:storePicture('http://admarvel.s3.amazonaws.com/demo/mraid/320x50.png')" />
+   <img width="37" height="37" style="position:absolute;top:147px;left:170px;" src="http://admarvel.s3.amazonaws.com/demo/mraid/Calendar_37x37.png" onclick="javascript:createCalendarEvent()" />
+   <img width="37" height="37" style="position:absolute;top:147px;left:227px;" src="http://admarvel.s3.amazonaws.com/demo/mraid/Call_37x37.png" onclick="javascript:callNumber('16502122336');" />
+</div>
+<script>
+   //bells and whistles
+   
+   function openSite(url)
+   {
+    mraid.open(url);
+   }
+   
+   function sendSMS(number)
+   {
+    if (!mraid.supports("sms"))
+    {
+      alert("MRAID says SMS is not supported on this device.");
+    }
+    else
+    {
+      mraid.open("sms://" + number);
+    }
+   }
+   
+   function callNumber(number)
+   {
+    if (!mraid.supports("tel"))
+    {
+      alert("MRAID says calling is not supported on this device.");
+    }
+    else
+    {
+      mraid.open("tel://" + number);
+    }
+   }
+   
+   function playVideo(url)
+   {
+    mraid.playVideo(url);
+   }
+   
+   function storePicture(url)
+   {
+    if (!mraid.supports("storePicture"))
+    {
+      alert("MRAID says storePicture is not supported on this device.");
+    }
+    else
+    {
+      mraid.storePicture(url);
+    }
+   }
+   
+   function createCalendarEvent()
+   {
+    if (!mraid.supports("calendar"))
+    {
+      alert("MRAID says calendar is not supported on this device.");
+    }
+    else
+    {
+      var calendarObject = {description:"Mayan Apocalypse/End of World", location:"everywhere", start:"2013-12-21T00:00-05:00", end:"2013-12-22T00:00-05:00"};
+    
+      mraid.createCalendarEvent(calendarObject);
+    }
+   }
+   
+   // Events
+   
+   function showMyAd()
+   {
+     document.getElementById("adContainer").style.display = "inline-block";
+   
+   }
+   
+   function mraidIsReady()
+   {
+     mraid.removeEventListener("ready", mraidIsReady);
+     
+     showMyAd();
+   }
+   
+   function doReadyCheck()
+   {
+     if (mraid.getState() == 'loading')
+     {
+       mraid.addEventListener("ready", mraidIsReady);
+       console.log(new Date().valueOf() + ' mraid is ready');
+     }
+     else
+     {
+       showMyAd();
+     }
+   }
+   
+   doReadyCheck();
+</script> </body> </html>]]>
+              </HTMLResource>
+              <StaticResource creativeType="image/jpeg">
+                <![CDATA[https://d2al1opqne3nsh.cloudfront.net/images/corgi569x320.jpeg]]>
+              </StaticResource>
+              <TrackingEvents>
+                <Tracking event="creativeView">
+                  <![CDATA[https://www.mopub.com/?q=companionTracking569x320]]>
+                </Tracking>
+              </TrackingEvents>
+              <CompanionClickThrough>
+                <![CDATA[https://www.mopub.com/?q=companionClickThrough569x320]]>
+              </CompanionClickThrough>
+              <CompanionClickTracking>
+                <![CDATA[https://www.mopub.com/?q=companionClickTracking569x320]]>
+              </CompanionClickTracking>
+            </Companion>
+          </CompanionAds>
+        </Creative>
+      </Creatives>
+      <Extensions>
+        <Extension type="MoPub">
+          <MoPubForceOrientation>Device</MoPubForceOrientation>
+          <MoPubCtaText>Install Now</MoPubCtaText>
+          <MoPubSkipText>Skip Now</MoPubSkipText>
+        </Extension>
+      </Extensions>
+    </InLine>
+  </Ad>
+</VAST>

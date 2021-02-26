@@ -1,7 +1,7 @@
 //
 //  MPVASTManagerTests.m
 //
-//  Copyright 2018-2020 Twitter, Inc.
+//  Copyright 2018-2021 Twitter, Inc.
 //  Licensed under the MoPub SDK License Agreement
 //  http://www.mopub.com/legal/sdk-license-agreement/
 //
@@ -9,6 +9,7 @@
 #import <XCTest/XCTest.h>
 #import "MPVASTManager+Testing.h"
 #import "MPVASTResponse.h"
+#import "NSData+Testing.h"
 #import "XCTestCase+MPAddition.h"
 
 static NSTimeInterval const kTestTimeout = 2;
@@ -24,7 +25,7 @@ static NSTimeInterval const kTestTimeout = 2;
 - (void)testParseErrorUrlSuccess {
     // Read in test file
     NSString *testFile = @"vast_3.0-single-error";
-    NSData *vastData = [self dataFromXMLFileNamed:testFile];
+    NSData *vastData = [NSData dataFromXMLFileNamed:testFile];
     XCTAssertNotNil(vastData);
 
     // Attempt to parse
@@ -52,7 +53,7 @@ static NSTimeInterval const kTestTimeout = 2;
 - (void)testParseMultipleErrorUrlSuccess {
     // Read in test file
     NSString *testFile = @"vast_3.0-multiple-error";
-    NSData *vastData = [self dataFromXMLFileNamed:testFile];
+    NSData *vastData = [NSData dataFromXMLFileNamed:testFile];
     XCTAssertNotNil(vastData);
 
     // Attempt to parse
@@ -85,7 +86,7 @@ static NSTimeInterval const kTestTimeout = 2;
 - (void)testMalformedVASTTrackingNodeMissingEventAttribute {
     // Read in test file
     NSString *testFile = @"vast_3.0-malformed-tracking-no-event";
-    NSData *vastData = [self dataFromXMLFileNamed:testFile];
+    NSData *vastData = [NSData dataFromXMLFileNamed:testFile];
     XCTAssertNotNil(vastData);
 
     // Attempt to parse

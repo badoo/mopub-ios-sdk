@@ -14,10 +14,26 @@
 		2A49E20222987B530049B61B /* BuildFile in Sources */ = {isa = PBXBuildFile; };
 		2A4D35E3211D074800BE9377 /* BuildFile in Sources */ = {isa = PBXBuildFile; };
 		2C63BD043C704C5D6AB0C2E1 /* Pods_Canary.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 92FE9399ED0CA6F685D3D022 /* Pods_Canary.framework */; };
+		301B35122565E0BF00A30150 /* BuildFile in Sources */ = {isa = PBXBuildFile; };
 		305A5C9E23C664B700A7A31B /* BuildFile in Sources */ = {isa = PBXBuildFile; };
 		306BA54C25252201000AC5C8 /* BuildFile in Sources */ = {isa = PBXBuildFile; };
 		308F286023FF11BB008B5049 /* BuildFile in Sources */ = {isa = PBXBuildFile; };
 		30CA81CD23DF687F0023ABEE /* BuildFile in Sources */ = {isa = PBXBuildFile; };
+		63367AC425AF85BD005A3247 /* BuildFile in Sources */ = {isa = PBXBuildFile; };
+		63367AC925AF91AE005A3247 /* BuildFile in Sources */ = {isa = PBXBuildFile; };
+		63367ACE25AFB179005A3247 /* BuildFile in Sources */ = {isa = PBXBuildFile; };
+		637B1DB62587F17900656457 /* BuildFile in Sources */ = {isa = PBXBuildFile; };
+		637B1E32258BE8F800656457 /* BuildFile in Sources */ = {isa = PBXBuildFile; };
+		637B1E41258D43E800656457 /* BuildFile in Sources */ = {isa = PBXBuildFile; };
+		637B1E52258D490500656457 /* BuildFile in Sources */ = {isa = PBXBuildFile; };
+		637B1E5D258D4AE700656457 /* BuildFile in Sources */ = {isa = PBXBuildFile; };
+		637B1E62258D4AFA00656457 /* BuildFile in Sources */ = {isa = PBXBuildFile; };
+		637DEF5A2579982C00CB88D0 /* BuildFile in Sources */ = {isa = PBXBuildFile; };
+		637DEF5F257AF27D00CB88D0 /* BuildFile in Sources */ = {isa = PBXBuildFile; };
+		638373FA259163B000A11CBA /* BuildFile in Sources */ = {isa = PBXBuildFile; };
+		63840D7B25A8FDC600485586 /* BuildFile in Sources */ = {isa = PBXBuildFile; };
+		63FD4CBE258023980035CF3E /* BuildFile in Sources */ = {isa = PBXBuildFile; };
+		63FD4CE0258056D20035CF3E /* BuildFile in Sources */ = {isa = PBXBuildFile; };
 		8A1B421C7667F9AD02F79B16 /* Pods_CanaryUnitTests.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 258970CE5776BA717BF6182F /* Pods_CanaryUnitTests.framework */; };
 		B2564EE320AB5039000B9F7A /* SampleAds.plist in Resources */ = {isa = PBXBuildFile; fileRef = BCF7095E1FBCCF50009A3981 /* SampleAds.plist */; };
 		B275DB2E200FD64000F053F8 /* SavedAdsDataSource.swift in Sources */ = {isa = PBXBuildFile; fileRef = B275DB2C200FD64000F053F8 /* SavedAdsDataSource.swift */; };
@@ -125,6 +141,7 @@
 		BCFE5B381FE4469200D760E9 /* AdUnitTableViewCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = BCFE5B361FE4469200D760E9 /* AdUnitTableViewCell.swift */; };
 		BCFE5B3C1FE446D600D760E9 /* AdUnitTableViewCell.xib in Resources */ = {isa = PBXBuildFile; fileRef = BCFE5B3A1FE446D600D760E9 /* AdUnitTableViewCell.xib */; };
 		BCFE5B441FE84B5200D760E9 /* BannerAdViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = BCFE5B421FE84B5200D760E9 /* BannerAdViewController.swift */; };
+		D0083D1425BB57B40021911E /* BuildFile in Sources */ = {isa = PBXBuildFile; };
 		EC0BF26F2279EBF0003DB141 /* NativeAdRendererManagerTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = EC0BF26E2279EBF0003DB141 /* NativeAdRendererManagerTests.swift */; };
 		EC325253224ED56F00D955C3 /* UserDefaults+Subscript.swift in Sources */ = {isa = PBXBuildFile; fileRef = EC32524C224ECF8E00D955C3 /* UserDefaults+Subscript.swift */; };
 		EC32525A225273AD00D955C3 /* TextAndToggleTableViewCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = EC325257225273AD00D955C3 /* TextAndToggleTableViewCell.swift */; };
@@ -890,12 +907,12 @@
 			inputPaths = (
 				"${PODS_ROOT}/Target Support Files/Pods-Canary/Pods-Canary-frameworks.sh",
 				"${BUILT_PRODUCTS_DIR}/LoremIpsum/LoremIpsum.framework",
-				"${BUILT_PRODUCTS_DIR}/mopub-ios-sdk/MoPub.framework",
+				"${BUILT_PRODUCTS_DIR}/mopub-ios-sdk/MoPubSDK.framework",
 			);
 			name = "[CP] Embed Pods Frameworks";
 			outputPaths = (
 				"${TARGET_BUILD_DIR}/${FRAMEWORKS_FOLDER_PATH}/LoremIpsum.framework",
-				"${TARGET_BUILD_DIR}/${FRAMEWORKS_FOLDER_PATH}/MoPub.framework",
+				"${TARGET_BUILD_DIR}/${FRAMEWORKS_FOLDER_PATH}/MoPubSDK.framework",
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
@@ -947,6 +964,7 @@
 				BC04945020F91BFC00CFD9C2 /* BuildFile in Sources */,
 				BCA984DC2522964F00E5C72F /* Constants.swift in Sources */,
 				BC63B9231FBD14A00033ACD6 /* AdUnit.swift in Sources */,
+				D0083D1425BB57B40021911E /* BuildFile in Sources */,
 				BCE7078720B34C3400DA4BCB /* MPBool+Description.swift in Sources */,
 				BC525ED8212F50E3007B1761 /* RewardedAdDataSource.swift in Sources */,
 				BCA042EA211E004D001B1AF5 /* AdActionsTableViewCell.swift in Sources */,
@@ -1020,35 +1038,51 @@
 				EC728C73233561B10020AEBD /* BuildFile in Sources */,
 				EC728C70233561B10020AEBD /* BuildFile in Sources */,
 				EC728C72233561B10020AEBD /* BuildFile in Sources */,
+				63367AC925AF91AE005A3247 /* BuildFile in Sources */,
 				BC61B62324EEE5D20053AD64 /* BuildFile in Sources */,
 				EC478D352335363D000B3397 /* CallbackFunctionNames.swift in Sources */,
 				EC728C69233561B10020AEBD /* BuildFile in Sources */,
+				301B35122565E0BF00A30150 /* BuildFile in Sources */,
+				637B1E32258BE8F800656457 /* BuildFile in Sources */,
 				EC85D08C23C00BB300D5E72F /* BuildFile in Sources */,
 				EC728C6F233561B10020AEBD /* BuildFile in Sources */,
 				EC728C6C233561B10020AEBD /* BuildFile in Sources */,
 				BC163E05251554CA006CD07F /* BuildFile in Sources */,
+				63367ACE25AFB179005A3247 /* BuildFile in Sources */,
 				EC85D08A23BFE87900D5E72F /* BuildFile in Sources */,
 				305A5C9E23C664B700A7A31B /* BuildFile in Sources */,
+				63840D7B25A8FDC600485586 /* BuildFile in Sources */,
 				BC2814EF250A935200325BE8 /* BuildFile in Sources */,
 				EC728C67233561B10020AEBD /* BuildFile in Sources */,
 				BCC6648924F5A62300B4A090 /* BuildFile in Sources */,
 				306BA54C25252201000AC5C8 /* BuildFile in Sources */,
 				EC728C66233561B10020AEBD /* BuildFile in Sources */,
+				637B1E41258D43E800656457 /* BuildFile in Sources */,
 				BC0E204524F6B5DC00F72055 /* BuildFile in Sources */,
 				EC728C65233561B10020AEBD /* BuildFile in Sources */,
+				637B1DB62587F17900656457 /* BuildFile in Sources */,
 				BCD300FC24F579C100AA82ED /* BuildFile in Sources */,
+				63367AC425AF85BD005A3247 /* BuildFile in Sources */,
+				63FD4CBE258023980035CF3E /* BuildFile in Sources */,
+				63FD4CE0258056D20035CF3E /* BuildFile in Sources */,
+				637B1E62258D4AFA00656457 /* BuildFile in Sources */,
 				EC728C75233561B10020AEBD /* BuildFile in Sources */,
 				30CA81CD23DF687F0023ABEE /* BuildFile in Sources */,
+				637DEF5F257AF27D00CB88D0 /* BuildFile in Sources */,
 				EC728C6E233561B10020AEBD /* BuildFile in Sources */,
+				637B1E5D258D4AE700656457 /* BuildFile in Sources */,
 				BCE6DDC724F463820094BEA6 /* BuildFile in Sources */,
 				BCE6DDC924F464000094BEA6 /* BuildFile in Sources */,
+				638373FA259163B000A11CBA /* BuildFile in Sources */,
 				EC728C74233561B10020AEBD /* BuildFile in Sources */,
 				308F286023FF11BB008B5049 /* BuildFile in Sources */,
 				BCE6DDC224F43C9C0094BEA6 /* BuildFile in Sources */,
+				637B1E52258D490500656457 /* BuildFile in Sources */,
 				EC728C64233561B10020AEBD /* BuildFile in Sources */,
 				EC728C68233561B10020AEBD /* BuildFile in Sources */,
 				EC728C71233561B10020AEBD /* BuildFile in Sources */,
 				BCE6DDC524F461AD0094BEA6 /* BuildFile in Sources */,
+				637DEF5A2579982C00CB88D0 /* BuildFile in Sources */,
 				EC728C6D233561B10020AEBD /* BuildFile in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -1109,12 +1143,12 @@
 			buildSettings = {
 				CLANG_ENABLE_OBJC_WEAK = YES;
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 202011041517;
+				CURRENT_PROJECT_VERSION = 202102191413;
 				DEVELOPMENT_TEAM = 4S7XS533V3;
 				INFOPLIST_FILE = "CanaryScreenshots/Snapshots-Info.plist";
 				IPHONEOS_DEPLOYMENT_TARGET = 12.1;
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks @loader_path/Frameworks";
-				MARKETING_VERSION = 5.15.0;
+				MARKETING_VERSION = 5.16.1;
 				MTL_ENABLE_DEBUG_INFO = INCLUDE_SOURCE;
 				MTL_FAST_MATH = YES;
 				OTHER_SWIFT_FLAGS = "";
@@ -1131,12 +1165,12 @@
 			buildSettings = {
 				CLANG_ENABLE_OBJC_WEAK = YES;
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 202011041517;
+				CURRENT_PROJECT_VERSION = 202102191413;
 				DEVELOPMENT_TEAM = 4S7XS533V3;
 				INFOPLIST_FILE = "CanaryScreenshots/Snapshots-Info.plist";
 				IPHONEOS_DEPLOYMENT_TARGET = 12.1;
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks @loader_path/Frameworks";
-				MARKETING_VERSION = 5.15.0;
+				MARKETING_VERSION = 5.16.1;
 				MTL_FAST_MATH = YES;
 				OTHER_SWIFT_FLAGS = "";
 				PRODUCT_BUNDLE_IDENTIFIER = com.mopub.CanaryScreenshots;
@@ -1266,11 +1300,11 @@
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 202011041517;
+				CURRENT_PROJECT_VERSION = 202102191413;
 				DEVELOPMENT_TEAM = 4S7XS533V3;
 				INFOPLIST_FILE = Canary/Configuration/Info.plist;
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks";
-				MARKETING_VERSION = 5.15.0;
+				MARKETING_VERSION = 5.16.1;
 				PRODUCT_BUNDLE_IDENTIFIER = com.mopub.Canary;
 				SWIFT_VERSION = 5.0;
 				TARGETED_DEVICE_FAMILY = "1,2";
@@ -1284,11 +1318,11 @@
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 202011041517;
+				CURRENT_PROJECT_VERSION = 202102191413;
 				DEVELOPMENT_TEAM = 4S7XS533V3;
 				INFOPLIST_FILE = Canary/Configuration/Info.plist;
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks";
-				MARKETING_VERSION = 5.15.0;
+				MARKETING_VERSION = 5.16.1;
 				PRODUCT_BUNDLE_IDENTIFIER = com.mopub.Canary;
 				SWIFT_VERSION = 5.0;
 				TARGETED_DEVICE_FAMILY = "1,2";
@@ -1301,12 +1335,12 @@
 			buildSettings = {
 				CLANG_ENABLE_OBJC_WEAK = YES;
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 202011041517;
+				CURRENT_PROJECT_VERSION = 202102191413;
 				DEVELOPMENT_TEAM = 4S7XS533V3;
 				INFOPLIST_FILE = "CanaryUITests/UITests-Info.plist";
 				IPHONEOS_DEPLOYMENT_TARGET = 12.0;
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks @loader_path/Frameworks";
-				MARKETING_VERSION = 5.15.0;
+				MARKETING_VERSION = 5.16.1;
 				MTL_ENABLE_DEBUG_INFO = INCLUDE_SOURCE;
 				MTL_FAST_MATH = YES;
 				PRODUCT_BUNDLE_IDENTIFIER = com.twitter.CanaryUITests;
@@ -1322,12 +1356,12 @@
 			buildSettings = {
 				CLANG_ENABLE_OBJC_WEAK = YES;
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 202011041517;
+				CURRENT_PROJECT_VERSION = 202102191413;
 				DEVELOPMENT_TEAM = 4S7XS533V3;
 				INFOPLIST_FILE = "CanaryUITests/UITests-Info.plist";
 				IPHONEOS_DEPLOYMENT_TARGET = 12.0;
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks @loader_path/Frameworks";
-				MARKETING_VERSION = 5.15.0;
+				MARKETING_VERSION = 5.16.1;
 				MTL_FAST_MATH = YES;
 				PRODUCT_BUNDLE_IDENTIFIER = com.twitter.CanaryUITests;
 				PRODUCT_NAME = "$(TARGET_NAME)";
@@ -1344,11 +1378,11 @@
 				BUNDLE_LOADER = "$(TEST_HOST)";
 				CLANG_ENABLE_OBJC_WEAK = YES;
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 202011041517;
+				CURRENT_PROJECT_VERSION = 202102191413;
 				DEVELOPMENT_TEAM = 4S7XS533V3;
 				INFOPLIST_FILE = CanaryUnitTests/Info.plist;
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks @loader_path/Frameworks";
-				MARKETING_VERSION = 5.15.0;
+				MARKETING_VERSION = 5.16.1;
 				MTL_ENABLE_DEBUG_INFO = INCLUDE_SOURCE;
 				MTL_FAST_MATH = YES;
 				OTHER_SWIFT_FLAGS = "";
@@ -1368,11 +1402,11 @@
 				BUNDLE_LOADER = "$(TEST_HOST)";
 				CLANG_ENABLE_OBJC_WEAK = YES;
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 202011041517;
+				CURRENT_PROJECT_VERSION = 202102191413;
 				DEVELOPMENT_TEAM = 4S7XS533V3;
 				INFOPLIST_FILE = CanaryUnitTests/Info.plist;
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks @loader_path/Frameworks";
-				MARKETING_VERSION = 5.15.0;
+				MARKETING_VERSION = 5.16.1;
 				MTL_FAST_MATH = YES;
 				OTHER_SWIFT_FLAGS = "";
 				PRODUCT_BUNDLE_IDENTIFIER = com.mopub.Canary.UnitTests;

@@ -1,7 +1,7 @@
 //
 //  MPVASTCompanionAdTests.m
 //
-//  Copyright 2018-2020 Twitter, Inc.
+//  Copyright 2018-2021 Twitter, Inc.
 //  Licensed under the MoPub SDK License Agreement
 //  http://www.mopub.com/legal/sdk-license-agreement/
 //
@@ -62,27 +62,27 @@
 - (void)testCompanionAdFormatScore {
     XCTAssertEqual(0.8, self.sampleCompanionAds[0].formatScore); // image resource only
     XCTAssertEqual(1, self.sampleCompanionAds[1].formatScore); // image and script resource
-    XCTAssertEqual(1, self.sampleCompanionAds[2].formatScore); // HTML resource only
+    XCTAssertEqual(1.2, self.sampleCompanionAds[2].formatScore); // HTML resource only
     XCTAssertEqual(1, self.sampleCompanionAds[3].formatScore); // image and IFrame resource
     XCTAssertEqual(0.8, self.sampleCompanionAds[4].formatScore); // image resource only
     XCTAssertEqual(0.8, self.sampleCompanionAds[5].formatScore); // image resource only
 }
 
 - (void)testCompanionAdScore {
-    CGFloat winnerScore = [self.sampleCompanionAds[0] selectionScoreForContainerSize:CGSizeMake(320, 480)];
-    NSUInteger winnerIndex = 0;
-    for (NSUInteger i = 1; i < 6; i++) {
+    CGFloat winnerScore = -1;
+    NSUInteger winnerIndex = -1;
+    for (NSUInteger i = 0; i < 6; i++) {
         CGFloat currentScore = [self.sampleCompanionAds[i] selectionScoreForContainerSize:CGSizeMake(320, 480)];
         if (winnerScore < currentScore) {
             winnerScore = currentScore;
             winnerIndex = i;
         }
     }
-    XCTAssertEqual(1, winnerIndex); // the 1st to 4th ads fit the size, but the 2nd one has the best format score
+    XCTAssertEqual(2, winnerIndex); // the 1st to 4th ads fit the size, but the 3rd one has the best format score
 
-    winnerScore = [self.sampleCompanionAds[0] selectionScoreForContainerSize:CGSizeMake(480, 320)];
-    winnerIndex = 0;
-    for (NSUInteger i = 1; i < 6; i++) {
+    winnerScore = -1;
+    winnerIndex = -1;
+    for (NSUInteger i = 0; i < 6; i++) {
         CGFloat currentScore = [self.sampleCompanionAds[i] selectionScoreForContainerSize:CGSizeMake(480, 320)];
         if (winnerScore < currentScore) {
             winnerScore = currentScore;

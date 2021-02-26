@@ -1,0 +1,260 @@
+<VAST version="4.1">
+  <Ad id="1">
+    <InLine>
+      <AdSystem>MoPub</AdSystem>
+      <AdTitle>MoPub Test Ad</AdTitle>
+      <Description>MoPub Description</Description>
+      <Error>
+        <![CDATA[https://www.mopub.com/?q=error&errorcode=[ERRORCODE]]]>
+      </Error>
+      <Impression>
+        <![CDATA[https://www.mopub.com/?q=impression]]>
+      </Impression>
+      <Impression>
+        <![CDATA[https://www.mopub.com/?q=impression1]]>
+      </Impression>
+      <Impression>
+        <![CDATA[https://www.mopub.com/?q=impression2]]>
+      </Impression>
+      <Impression>
+        <![CDATA[https://www.mopub.com/?q=impression3]]>
+      </Impression>
+      <Creatives>
+        <Creative>
+            <Linear skipoffset="00:00:05">
+              <Duration>00:00:30</Duration>
+              <TrackingEvents>
+                <Tracking event="creativeView">
+                  <![CDATA[https://www.mopub.com/?q=creativeView]]>
+                </Tracking>
+                <Tracking event="start">
+                  <![CDATA[https://www.mopub.com/?q=start]]>
+                </Tracking>
+                <Tracking event="start">
+                  <![CDATA[https://www.mopub.com/?q=start1]]>
+                </Tracking>
+                <Tracking event="firstQuartile">
+                  <![CDATA[https://www.mopub.com/?q=firstQuartile]]>
+                </Tracking>
+                <Tracking event="midpoint">
+                  <![CDATA[https://www.mopub.com/?q=midpoint]]>
+                </Tracking>
+                <Tracking event="thirdQuartile">
+                  <![CDATA[https://www.mopub.com/?q=thirdQuartile]]>
+                </Tracking>
+                <Tracking event="complete">
+                  <![CDATA[https://www.mopub.com/?q=complete]]>
+                </Tracking>
+                <Tracking event="close">
+                  <![CDATA[https://www.mopub.com/?q=close]]>
+                </Tracking>
+                <Tracking event="mute">
+                  <![CDATA[https://www.mopub.com/?q=mute]]>
+                </Tracking>
+                <Tracking event="unmute">
+                  <![CDATA[https://www.mopub.com/?q=unmute]]>
+                </Tracking>
+                <Tracking event="pause">
+                  <![CDATA[https://www.mopub.com/?q=pause]]>
+                </Tracking>
+                <Tracking event="rewind">
+                  <![CDATA[https://www.mopub.com/?q=rewind]]>
+                </Tracking>
+                <Tracking event="resume">
+                  <![CDATA[https://www.mopub.com/?q=resume]]>
+                </Tracking>
+                <Tracking event="fullscreen">
+                  <![CDATA[https://www.mopub.com/?q=fullscreen]]>
+                </Tracking>
+                <Tracking event="exitFullscreen">
+                  <![CDATA[https://www.mopub.com/?q=exitFullscreen]]>
+                </Tracking>
+                <Tracking event="expand">
+                  <![CDATA[https://www.mopub.com/?q=expand]]>
+                </Tracking>
+                <Tracking event="collapse">
+                  <![CDATA[https://www.mopub.com/?q=collapse]]>
+                </Tracking>
+                <Tracking event="acceptInvitation">
+                  <![CDATA[https://www.mopub.com/?q=acceptInvitation]]>
+                </Tracking>
+                <Tracking event="close">
+                  <![CDATA[https://www.mopub.com/?q=close]]>
+                </Tracking>
+                <Tracking event="skip" offset="00:00:15.000">
+                  <![CDATA[https://www.mopub.com/?q=skip]]>
+                </Tracking>
+                <Tracking event="progress" offset="00:00:00.000">
+                  <![CDATA[https://www.mopub.com/?q=progress00]]>
+                </Tracking>
+                <Tracking event="progress" offset="00:00:05.000">
+                  <![CDATA[https://www.mopub.com/?q=progress05]]>
+                </Tracking>
+                <Tracking event="progress" offset="00:00:10.000">
+                  <![CDATA[https://www.mopub.com/?q=progress10]]>
+                </Tracking>
+                <Tracking event="progress" offset="00:00:15.000">
+                  <![CDATA[https://www.mopub.com/?q=progress15]]>
+                </Tracking>
+                <Tracking event="progress" offset="00:00:20.000">
+                  <![CDATA[https://www.mopub.com/?q=progress20]]>
+                </Tracking>
+                <Tracking event="progress" offset="00:00:25.000">
+                  <![CDATA[https://www.mopub.com/?q=progress25]]>
+                </Tracking>
+                <Tracking event="progress" offset="00:00:30.000">
+                  <![CDATA[https://www.mopub.com/?q=progress30]]>
+                </Tracking>
+              </TrackingEvents>
+              <VideoClicks>
+                <ClickThrough>
+                  <![CDATA[https://www.mopub.com/?q=videoClickThrough]]>
+                </ClickThrough>
+                <ClickTracking>
+                  <![CDATA[https://www.mopub.com/?q=videoClickTracking]]>
+                </ClickTracking>
+              </VideoClicks>
+              <MediaFiles>
+                <MediaFile delivery="progressive" type="video/mp4" bitrate="970" width="1280" height="720" scalable="true" maintainAspectRatio="true">
+                  <![CDATA[https://d2al1opqne3nsh.cloudfront.net/videos/corgi30sec3.mp4]]>
+                </MediaFile>
+              </MediaFiles>
+            </Linear>
+        </Creative>
+        <Creative>
+          <CompanionAds>
+            <Companion width="480" height="320">
+              <HTMLResource>
+                <![CDATA[<!DOCTYPE html> <html> <head>  <!-- Adgroup is 365cd2475e074026b93da14103a36b97 -->  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">  <style type='text/css'> .mp_center { position: fixed; top: 50%; left: 50%; margin-left: -160px !important; margin-top: -240px !important; } </style>  <script type="text/javascript"> function mopubFinishLoad(){ setTimeout(function() { window.location = 'mopub://finishLoad'; }, 0); } </script>  <script type="text/javascript"> function webviewDidClose(){ if (typeof webviewDidCloseHelper == 'function') { webviewDidCloseHelper(); } } function webviewDidAppear(){  if(typeof trackImpressionHelper == 'function') { trackImpressionHelper(); }  if(typeof webviewDidAppearHelper == 'function') { webviewDidAppearHelper(); } } window.addEventListener("load", function() { var links = document.getElementsByTagName('a'); for(var i=0; i < links.length; i++) { links[i].setAttribute('target','_blank'); } }, false);  </script>  </head> <body style="margin:0;padding:0;"> <!DOCTYPE html>
+<html>
+  <head></head>
+  <style>
+    @-webkit-keyframes animatedBackground {
+      from { background-position: 0 0; }
+      to { background-position: 100% 0; }
+    }
+
+    @-webkit-keyframes fadeIn {
+      from { opacity: 0; max-width: 50%; }
+      to { opacity: 1; max-width: 100%; }
+    }
+
+  body, html {
+      padding: 0;
+      margin: 0;
+      font-family: "HelveticaNeue-Light", "Helvetica Neue Light", "Helvetica Neue", Helvetica, Arial, "Lucida Grande", sans-serif;
+      height: 100%;
+    }
+
+    a {
+      color: black;
+      text-decoration: none;
+    }
+
+    footer,
+    header,
+    section {
+      display: block;
+    }
+
+    #workspace {
+      background-image: url(https://d30x8mtr3hjnzo.cloudfront.net/creatives/c45945f4063a4789a79aec907bcb04cc);
+      background-position: 0 0;
+      position: absolute;
+      top: 0;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      width: 100%;
+      height: 100%;
+
+      -webkit-animation: animatedBackground 20s linear infinite;
+    }
+
+    header {
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 100px;
+      line-height: 100px;
+      background-color: #20ace5;
+      text-transform: capitalize;
+      color: white;
+      text-align: center;
+      font-size: 40px;
+    }
+
+    footer {
+      position: absolute;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      text-align: center;
+      padding-bottom: 18px;
+    }
+
+    footer p {
+      font-size: 24px;
+      margin-bottom: 12px;
+      font-style: italic;
+      font-weight: 100;
+    }
+
+    .centered {
+      max-width: 100%;
+      height: auto;
+      overflow: auto;
+      margin: auto;
+      position: absolute;
+      top: 0; left: 0; bottom: 0; right: 0;
+    }
+
+    #star-circle {
+    }
+
+    #nice {
+      -webkit-animation: fadeIn 1s ease-in;
+    }
+
+  </style>
+  <body> <a href="https://www.mopub.com/click-test/">
+  <div id="workspace">
+    <header>
+      Success!
+    </header>
+    <img id="star-circle" class="centered" src="https://d30x8mtr3hjnzo.cloudfront.net/creatives/e92584303dbf4f7e908f663060f3b07b" />
+    <img id="nice" class="centered" src="https://d30x8mtr3hjnzo.cloudfront.net/creatives/6d4b7ded21fd41428ff2f0670ca3ba3f"/>
+    <footer>
+      <p>Tap to test this ad.</p>
+      <img id="mopub" src="https://d30x8mtr3hjnzo.cloudfront.net/creatives/2a7466458cfd4c70adb556da05587270">
+    </footer>
+  </div>
+  </a></body>
+</html> <script type="text/javascript"> if (typeof htmlWillCallFinishLoad == "undefined" || !htmlWillCallFinishLoad) { if(typeof mopubFinishLoad == 'function') { window.onload = mopubFinishLoad; } }  </script>  </body> </html>]]>
+              </HTMLResource>
+              <TrackingEvents>
+                <Tracking event="creativeView">
+                  <![CDATA[https://www.mopub.com/?q=companionTracking569x320]]>
+                </Tracking>
+              </TrackingEvents>
+              <CompanionClickThrough>
+                <![CDATA[https://www.mopub.com/?q=companionClickThrough569x320]]>
+              </CompanionClickThrough>
+              <CompanionClickTracking>
+                <![CDATA[https://www.mopub.com/?q=companionClickTracking569x320]]>
+              </CompanionClickTracking>
+            </Companion>
+          </CompanionAds>
+        </Creative>
+      </Creatives>
+      <Extensions>
+        <Extension type="MoPub">
+          <MoPubForceOrientation>Device</MoPubForceOrientation>
+          <MoPubCtaText>Install Now</MoPubCtaText>
+          <MoPubSkipText>Skip Now</MoPubSkipText>
+        </Extension>
+      </Extensions>
+    </InLine>
+  </Ad>
+</VAST>

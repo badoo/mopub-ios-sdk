@@ -1,7 +1,7 @@
 //
 //  MPVideoPlayerViewTests.m
 //
-//  Copyright 2018-2020 Twitter, Inc.
+//  Copyright 2018-2021 Twitter, Inc.
 //  Licensed under the MoPub SDK License Agreement
 //  http://www.mopub.com/legal/sdk-license-agreement/
 //
@@ -151,11 +151,11 @@
     __block BOOL didPause = NO;
     __block BOOL didResume = NO;
     MPVideoPlayerViewDelegateHandler *handler = [MPVideoPlayerViewDelegateHandler new];
-    handler.videoPlayerDidTriggerEvent = ^(id<MPVideoPlayer>  _Nonnull videoPlayer, MPVideoPlayerEvent event, NSTimeInterval videoProgress) {
-        if (event == MPVideoPlayerEvent_Pause) {
+    handler.videoPlayerDidTriggerEvent = ^(id<MPVideoPlayer>  _Nonnull videoPlayer, MPVideoEvent event, NSTimeInterval videoProgress) {
+        if ([event isEqualToString:MPVideoEventPause]) {
             didPause = YES;
         }
-        else if (event == MPVideoPlayerEvent_Resume) {
+        else if ([event isEqualToString:MPVideoEventResume]) {
             didResume = YES;
         }
     };
@@ -166,7 +166,7 @@
 
     // Load the video and fake start playback
     [player loadVideo];
-    player.hasStartedPlaying = YES;
+    player.isVideoPlaying = YES;
 
     // Fake backgrounding the app
     NSNotification *backgroundNotification = [NSNotification notificationWithName:UIApplicationDidEnterBackgroundNotification object:nil];
@@ -191,8 +191,8 @@
 
     __block BOOL didPause = NO;
     MPVideoPlayerViewDelegateHandler *handler = [MPVideoPlayerViewDelegateHandler new];
-    handler.videoPlayerDidTriggerEvent = ^(id<MPVideoPlayer>  _Nonnull videoPlayer, MPVideoPlayerEvent event, NSTimeInterval videoProgress) {
-        if (event == MPVideoPlayerEvent_Pause) {
+    handler.videoPlayerDidTriggerEvent = ^(id<MPVideoPlayer>  _Nonnull videoPlayer, MPVideoEvent event, NSTimeInterval videoProgress) {
+        if ([event isEqualToString:MPVideoEventPause]) {
             didPause = YES;
         }
     };
@@ -203,7 +203,7 @@
 
     // Load the video and fake start playback
     [player loadVideo];
-    player.hasStartedPlaying = YES;
+    player.isVideoPlaying = YES;
 
     // Trigger pause
     [player pauseVideo];
@@ -219,11 +219,11 @@
     __block BOOL didPause = NO;
     __block BOOL didResume = NO;
     MPVideoPlayerViewDelegateHandler *handler = [MPVideoPlayerViewDelegateHandler new];
-    handler.videoPlayerDidTriggerEvent = ^(id<MPVideoPlayer>  _Nonnull videoPlayer, MPVideoPlayerEvent event, NSTimeInterval videoProgress) {
-        if (event == MPVideoPlayerEvent_Pause) {
+    handler.videoPlayerDidTriggerEvent = ^(id<MPVideoPlayer>  _Nonnull videoPlayer, MPVideoEvent event, NSTimeInterval videoProgress) {
+        if ([event isEqualToString:MPVideoEventPause]) {
             didPause = YES;
         }
-        else if (event == MPVideoPlayerEvent_Resume) {
+        else if ([event isEqualToString:MPVideoEventResume]) {
             didResume = YES;
         }
     };
@@ -234,7 +234,7 @@
 
     // Load the video and fake start playback
     [player loadVideo];
-    player.hasStartedPlaying = YES;
+    player.isVideoPlaying = YES;
 
     // Trigger pause
     [player pauseVideo];

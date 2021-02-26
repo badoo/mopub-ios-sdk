@@ -1,7 +1,7 @@
 //
 //  MPRealTimeTimerTests.m
 //
-//  Copyright 2018-2020 Twitter, Inc.
+//  Copyright 2018-2021 Twitter, Inc.
 //  Licensed under the MoPub SDK License Agreement
 //  http://www.mopub.com/legal/sdk-license-agreement/
 //
@@ -162,7 +162,7 @@ static NSTimeInterval const kTestTooLong = 10000;
     }];
 
     [timer scheduleNow];
-    MPTimer *backingTimer = timer.timer;
+    MPResumableTimer *backingTimer = timer.timer;
     XCTAssertTrue(timer.isScheduled);
 
     XCTAssertFalse(timerFired);

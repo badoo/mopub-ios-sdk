@@ -1,7 +1,7 @@
 //
 //  MPBannerAdManagerTests.m
 //
-//  Copyright 2018-2020 Twitter, Inc.
+//  Copyright 2018-2021 Twitter, Inc.
 //  Licensed under the MoPub SDK License Agreement
 //  http://www.mopub.com/legal/sdk-license-agreement/
 //
@@ -248,7 +248,7 @@ static const NSTimeInterval kDefaultTimeout = 10;
     communicator.mockConfigurationsResponse = configurations;
     manager.communicator = communicator;
 
-    MPAdTargeting * targeting = [[MPAdTargeting alloc] initWithCreativeSafeSize:CGSizeZero];
+    MPAdTargeting * targeting = [[MPAdTargeting alloc] initWithCreativeSafeSize:CGSizeMake(320, 50)];
     targeting.localExtras = @{ @"testing": @"YES" };
     [manager loadAdWithTargeting:targeting];
 
@@ -284,7 +284,7 @@ static const NSTimeInterval kDefaultTimeout = 10;
     communicator.mockConfigurationsResponse = configurations;
     manager.communicator = communicator;
 
-    MPAdTargeting * targeting = [[MPAdTargeting alloc] initWithCreativeSafeSize:CGSizeZero];
+    MPAdTargeting * targeting = [[MPAdTargeting alloc] initWithCreativeSafeSize:CGSizeMake(320, 50)];
     [manager loadAdWithTargeting:targeting];
 
     [manager.onscreenAdapter trackImpression];
@@ -321,7 +321,7 @@ static const NSTimeInterval kDefaultTimeout = 10;
     communicator.mockConfigurationsResponse = configurations;
     manager.communicator = communicator;
 
-    MPAdTargeting * targeting = [[MPAdTargeting alloc] initWithCreativeSafeSize:CGSizeZero];
+    MPAdTargeting * targeting = [[MPAdTargeting alloc] initWithCreativeSafeSize:CGSizeMake(320, 50)];
     [manager loadAdWithTargeting:targeting];
 
     [manager.onscreenAdapter trackImpression];

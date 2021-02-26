@@ -1,7 +1,7 @@
 //
 //  MPNativeAdConfigValuesTests.m
 //
-//  Copyright 2018-2020 Twitter, Inc.
+//  Copyright 2018-2021 Twitter, Inc.
 //  Licensed under the MoPub SDK License Agreement
 //  http://www.mopub.com/legal/sdk-license-agreement/
 //
@@ -28,7 +28,7 @@
 
     // 1 pixel for 1 second (valid percent)
     config = [[MPNativeAdConfigValues alloc] initWithImpressionMinVisiblePixels:1
-                                                    impressionMinVisiblePercent:50
+                                                    impressionMinVisiblePercent:0.5
                                                     impressionMinVisibleSeconds:1];
     XCTAssert(config.isImpressionMinVisiblePixelsValid);
     XCTAssert(config.isImpressionMinVisiblePercentValid);
@@ -38,7 +38,7 @@
 - (void)testValidationSuccessNormalPercentage {
     // 50% for 1 second
     MPNativeAdConfigValues *config = [[MPNativeAdConfigValues alloc] initWithImpressionMinVisiblePixels:-1.0
-                                                                            impressionMinVisiblePercent:50
+                                                                            impressionMinVisiblePercent:0.5
                                                                             impressionMinVisibleSeconds:1];
     XCTAssertFalse(config.isImpressionMinVisiblePixelsValid);
     XCTAssert(config.isImpressionMinVisiblePercentValid);
@@ -50,7 +50,7 @@
 
     // 100% for 0.01 seconds
     config = [[MPNativeAdConfigValues alloc] initWithImpressionMinVisiblePixels:-1.0
-                                                    impressionMinVisiblePercent:100
+                                                    impressionMinVisiblePercent:1
                                                     impressionMinVisibleSeconds:0.01];
     XCTAssertFalse(config.isImpressionMinVisiblePixelsValid);
     XCTAssert(config.isImpressionMinVisiblePercentValid);
@@ -86,7 +86,7 @@
 
     // 50% for 0 seconds
     config = [[MPNativeAdConfigValues alloc] initWithImpressionMinVisiblePixels:-1.0
-                                                    impressionMinVisiblePercent:50
+                                                    impressionMinVisiblePercent:0.5
                                                     impressionMinVisibleSeconds:0];
     XCTAssertFalse(config.isImpressionMinVisiblePixelsValid);
     XCTAssert(config.isImpressionMinVisiblePercentValid);
@@ -94,7 +94,7 @@
 
     // 50% for -1 seconds
     config = [[MPNativeAdConfigValues alloc] initWithImpressionMinVisiblePixels:-1.0
-                                                    impressionMinVisiblePercent:50
+                                                    impressionMinVisiblePercent:0.5
                                                     impressionMinVisibleSeconds:-1];
     XCTAssertFalse(config.isImpressionMinVisiblePixelsValid);
     XCTAssert(config.isImpressionMinVisiblePercentValid);
@@ -102,7 +102,7 @@
 
     // 101% for 1 second
     config = [[MPNativeAdConfigValues alloc] initWithImpressionMinVisiblePixels:-1.0
-                                                    impressionMinVisiblePercent:101
+                                                    impressionMinVisiblePercent:1.01
                                                     impressionMinVisibleSeconds:1];
     XCTAssertFalse(config.isImpressionMinVisiblePixelsValid);
     XCTAssertFalse(config.isImpressionMinVisiblePercentValid);

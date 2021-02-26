@@ -1,7 +1,7 @@
 //
 //  MPAdConfigurationTests.m
 //
-//  Copyright 2018-2020 Twitter, Inc.
+//  Copyright 2018-2021 Twitter, Inc.
 //  Licensed under the MoPub SDK License Agreement
 //  http://www.mopub.com/legal/sdk-license-agreement/
 //
@@ -54,20 +54,6 @@ extern NSString * const kNativeImpressionMinVisiblePixelsMetadataKey;
     MPAdConfiguration * config = [[MPAdConfiguration alloc] initWithMetadata:headers data:nil isFullscreenAd:YES];
 
     XCTAssertEqual(config.rewardedDuration, -1);
-}
-
-- (void)testRewardedPlayableRewardOnClickParseSuccess {
-    NSDictionary * headers = @{ kRewardedPlayableRewardOnClickMetadataKey: @"true" };
-    MPAdConfiguration * config = [[MPAdConfiguration alloc] initWithMetadata:headers data:nil isFullscreenAd:YES];
-
-    XCTAssertEqual(config.rewardedPlayableShouldRewardOnClick, true);
-}
-
-- (void)testRewardedPlayableRewardOnClickParseNoHeader {
-    NSDictionary * headers = @{ };
-    MPAdConfiguration * config = [[MPAdConfiguration alloc] initWithMetadata:headers data:nil isFullscreenAd:YES];
-
-    XCTAssertEqual(config.rewardedPlayableShouldRewardOnClick, false);
 }
 
 - (void)testRewardedSingleCurrencyParseSuccess {
@@ -363,7 +349,7 @@ extern NSString * const kNativeImpressionMinVisiblePixelsMetadataKey;
     NSDictionary *headers = @{ kNativeImpressionMinVisiblePercentMetadataKey: @"50" };
     MPAdConfiguration *config = [[MPAdConfiguration alloc] initWithMetadata:headers data:nil isFullscreenAd:YES];
 
-    XCTAssertEqual(config.nativeImpressionMinVisiblePercent, 50);
+    XCTAssertEqual(config.nativeImpressionMinVisiblePercent, 0.5);
 }
 
 - (void)testMinVisiblePercentParseNoHeader {

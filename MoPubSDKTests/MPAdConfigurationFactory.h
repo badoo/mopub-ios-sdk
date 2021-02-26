@@ -1,7 +1,7 @@
 //
 //  MPAdConfigurationFactory.h
 //
-//  Copyright 2018-2020 Twitter, Inc.
+//  Copyright 2018-2021 Twitter, Inc.
 //  Licensed under the MoPub SDK License Agreement
 //  http://www.mopub.com/legal/sdk-license-agreement/
 //
@@ -45,6 +45,7 @@
                                                              additionalMetadata:(NSDictionary *)additionalMetadata;
 + (MPAdConfiguration *)defaultInterstitialConfigurationWithHeaders:(NSDictionary *)dictionary
                                                         HTMLString:(NSString *)HTMLString;
++ (MPAdConfiguration *)defaultInterstitialStaticImageAdConfigurationWithJSONFileNamed:(NSString *)jsonFileName;
 
 + (NSMutableDictionary *)defaultRewardedVideoHeaders;
 + (MPAdConfiguration *)defaultRewardedVideoConfiguration;
@@ -54,5 +55,8 @@
 + (MPAdConfiguration *)defaultRewardedVideoConfigurationWithReward;
 + (MPAdConfiguration *)defaultRewardedVideoConfigurationServerToServer;
 + (MPAdConfiguration *)defaultVASTConfigurationWithVideoTrackers;
+
++ (MPAdConfiguration *)rewardedAdConfigurationWithVASTXMLFileNamed:(NSString *)vastXMLFilename;
++ (MPAdConfiguration *)rewardedStaticImageAdConfigurationWithJSONFileNamed:(NSString *)jsonFileName;
 
 @end

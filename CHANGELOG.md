@@ -1,3 +1,24 @@
+## Version 5.16.1 (February 19, 2021)
+- **Bug Fixes**
+  - Fixed bug where users were not receiving rewards from Rewarded network ads using network adapters.
+
+## Version 5.16.0 (February 16, 2021)
+- **Features**
+  - Rewarded ads feature and API improvements.
+  - `MPRewardedVideo` has been renamed to `MPRewardedAds`. See the [API reference](https://developers.mopub.com/publishers/reference/ios/MoPub/) for more details.
+  - Removed support for the Native Video format.
+  - Added 5G cellular support.
+  - Deprecated `interstitialDidFailToLoadAd:`. Use `interstitialDidFailToLoadAd:withError:` instead.
+  - Addressed confusion in the naming and function of the `disappear` ad lifecycle callbacks.
+  - VAST creatives without file extensions will infer file extension from the MIME type.
+  - The MoPub SDK's module name has been renamed from `MoPub` to `MoPubSDK` due to a limitation with Swift's ability to resolve name collisions between a module and class.
+
+- **Bug Fixes**
+  - Fixed bug where consent synchronization is fired twice at app launch.
+  - Fixed bug where the failure callback was not fired when a mediated adapter does not exist.
+  - Fixed bug where the `SKAdNetwork` time stamp was parsed as `integerValue` instead of `longLongValue`.
+  - Fixed bugs related to unintentional initialization of the consent manager when the MoPub SDK not been initialized.
+
 ## Version 5.15.0 (November 18, 2020)
 - **Features**
   - The MoPub iOS SDK now includes Swift 5.

@@ -1,7 +1,7 @@
 //
 //  MPSKAdNetworkClickthroughDataTests.m
 //
-//  Copyright 2018-2020 Twitter, Inc.
+//  Copyright 2018-2021 Twitter, Inc.
 //  Licensed under the MoPub SDK License Agreement
 //  http://www.mopub.com/legal/sdk-license-agreement/
 //
@@ -169,7 +169,7 @@
     XCTAssertEqual(data.destinationAppStoreIdentifier.integerValue, itunesitem.integerValue);
     XCTAssert([data.nonce.UUIDString.lowercaseString isEqualToString:nonce.lowercaseString]);
     XCTAssert(data.sourceAppStoreIdentifier.integerValue == [sourceapp integerValue]);
-    XCTAssertEqual(data.timestamp.integerValue, timestamp.integerValue);
+    XCTAssertEqual(data.timestamp.longLongValue, timestamp.longLongValue);
     XCTAssert([data.signature isEqualToString:signature]);
 
     if (@available(iOS 14.0, *)) {
@@ -211,7 +211,7 @@
         // Timestamp should be NSNumber
         // From https://developer.apple.com/documentation/storekit/skstoreproductparameteradnetworktimestamp?language=objc -- "The value for this key is an NSNumber."
         XCTAssert([data.dictionaryForStoreProductViewController[SKStoreProductParameterAdNetworkTimestamp] isKindOfClass:[NSNumber class]]);
-        XCTAssertEqual([data.dictionaryForStoreProductViewController[SKStoreProductParameterAdNetworkTimestamp] integerValue], timestamp.integerValue);
+        XCTAssertEqual([data.dictionaryForStoreProductViewController[SKStoreProductParameterAdNetworkTimestamp] longLongValue], timestamp.longLongValue);
 
         // Signature should be NSString
         // From https://developer.apple.com/documentation/storekit/skstoreproductparameteradnetworkattributionsignature?language=objc -- "The value for this key is an NSString."

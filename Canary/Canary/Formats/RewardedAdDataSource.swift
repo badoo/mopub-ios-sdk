@@ -1,12 +1,12 @@
 //
 //  RewardedAdDataSource.swift
 //
-//  Copyright 2018-2020 Twitter, Inc.
+//  Copyright 2018-2021 Twitter, Inc.
 //  Licensed under the MoPub SDK License Agreement
 //  http://www.mopub.com/legal/sdk-license-agreement/
 //
 
-import MoPub
+import MoPubSDK
 import UIKit
 
 class RewardedAdDataSource: NSObject, AdDataSource {
@@ -22,7 +22,7 @@ class RewardedAdDataSource: NSObject, AdDataSource {
     /**
      Currently selected reward by the user.
      */
-    private var selectedReward: MPRewardedVideoReward? = nil
+    private var selectedReward: MPReward? = nil
     
     /**
      Table of which events were triggered.
@@ -30,21 +30,21 @@ class RewardedAdDataSource: NSObject, AdDataSource {
     var eventTriggered: [AdEvent: Bool] = [:]
     
     /**
-     Status event titles that correspond to the events found in `MPRewardedVideoDelegate`
+     Status event titles that correspond to the events found in `MPRewardedAdsDelegate`
      */
     lazy var title: [AdEvent: String] = {
         var titleStrings: [AdEvent: String] = [:]
-        titleStrings[.didLoad]          = CallbackFunctionNames.rewardedVideoAdDidLoad
-        titleStrings[.didFailToLoad]    = CallbackFunctionNames.rewardedVideoAdDidFailToLoad
-        titleStrings[.didFailToPlay]    = CallbackFunctionNames.rewardedVideoAdDidFailToPlay
-        titleStrings[.willAppear]       = CallbackFunctionNames.rewardedVideoAdWillAppear
-        titleStrings[.didAppear]        = CallbackFunctionNames.rewardedVideoAdDidAppear
-        titleStrings[.willDisappear]    = CallbackFunctionNames.rewardedVideoAdWillDisappear
-        titleStrings[.didDisappear]     = CallbackFunctionNames.rewardedVideoAdDidDisappear
-        titleStrings[.didExpire]        = CallbackFunctionNames.rewardedVideoAdDidExpire
-        titleStrings[.clicked]          = CallbackFunctionNames.rewardedVideoAdDidReceiveTapEvent
-        titleStrings[.willLeaveApp]     = CallbackFunctionNames.rewardedVideoAdWillLeaveApplication
-        titleStrings[.shouldRewardUser] = CallbackFunctionNames.rewardedVideoAdShouldReward
+        titleStrings[.didLoad]            = CallbackFunctionNames.rewardedAdDidLoad
+        titleStrings[.didFailToLoad]      = CallbackFunctionNames.rewardedAdDidFailToLoad
+        titleStrings[.didFailToPlay]      = CallbackFunctionNames.rewardedAdDidFailToShow
+        titleStrings[.willPresent]        = CallbackFunctionNames.rewardedAdWillPresent
+        titleStrings[.didPresent]         = CallbackFunctionNames.rewardedAdDidPresent
+        titleStrings[.willDismiss]        = CallbackFunctionNames.rewardedAdWillDismiss
+        titleStrings[.didDismiss]         = CallbackFunctionNames.rewardedAdDidDismiss
+        titleStrings[.didExpire]          = CallbackFunctionNames.rewardedAdDidExpire
+        titleStrings[.clicked]            = CallbackFunctionNames.rewardedAdDidReceiveTapEvent
+        titleStrings[.willLeaveApp]       = CallbackFunctionNames.rewardedAdWillLeaveApplication
+        titleStrings[.shouldRewardUser]   = CallbackFunctionNames.rewardedAdShouldReward
         titleStrings[.didTrackImpression] = CallbackFunctionNames.didTrackImpression
         
         return titleStrings
@@ -67,11 +67,11 @@ class RewardedAdDataSource: NSObject, AdDataSource {
         self.adUnit = adUnit
         
         // Register for rewarded video events
-        MPRewardedVideo.setDelegate(self, forAdUnitId: adUnit.id)
+        MPRewardedAds.setDelegate(self, forAdUnitId: adUnit.id)
     }
     
     deinit {
-        MPRewardedVideo.removeDelegate(forAdUnitId: adUnit.id)
+        MPRewardedAds.removeDelegate(forAdUnitId: adUnit.id)
     }
     
     // MARK: - AdDataSource
@@ -103,7 +103,7 @@ class RewardedAdDataSource: NSObject, AdDataSource {
      The status events available for the ad.
      */
     lazy var events: [AdEvent] = {
-        return [.didLoad, .didFailToLoad, .didFailToPlay, .willAppear, .didAppear, .willDisappear, .didDisappear, .didExpire, .clicked, .willLeaveApp, .shouldRewardUser, .didTrackImpression]
+        return [.didLoad, .didFailToLoad, .didFailToPlay, .willPresent, .didPresent, .willDismiss, .didDismiss, .didExpire, .clicked, .willLeaveApp, .shouldRewardUser, .didTrackImpression]
     }()
     
     /**
@@ -122,7 +122,7 @@ class RewardedAdDataSource: NSObject, AdDataSource {
      Queries if the data source has an ad loaded.
      */
     var isAdLoaded: Bool {
-        return MPRewardedVideo.hasAdAvailable(forAdUnitID: adUnit.id)
+        return MPRewardedAds.hasAdAvailable(forAdUnitID: adUnit.id)
     }
     
     /**
@@ -144,7 +144,7 @@ class RewardedAdDataSource: NSObject, AdDataSource {
      */
     private func presentRewardSelection(from sender: Any, complete: @escaping (() -> Swift.Void)) {
         // No rewards to present.
-        guard let availableRewards = MPRewardedVideo.availableRewards(forAdUnitID: adUnit.id) as? [MPRewardedVideoReward],
+        guard let availableRewards = MPRewardedAds.availableRewards(forAdUnitID: adUnit.id) as? [MPReward],
             availableRewards.count > 0 else {
             return
         }
@@ -177,13 +177,13 @@ class RewardedAdDataSource: NSObject, AdDataSource {
         selectedReward = nil
         
         // Load the rewarded ad.
-        MPRewardedVideo.loadAd(withAdUnitID: adUnit.id, keywords: adUnit.keywords, userDataKeywords: adUnit.userDataKeywords, mediationSettings: nil)
+        MPRewardedAds.loadRewardedAd(withAdUnitID: adUnit.id, keywords: adUnit.keywords, userDataKeywords: adUnit.userDataKeywords, mediationSettings: nil)
         
         SavedAdsManager.sharedInstance.addLoadedAds(adUnit: adUnit)
     }
     
     private func showAd(sender: Any) {
-        guard MPRewardedVideo.hasAdAvailable(forAdUnitID: adUnit.id) else {
+        guard MPRewardedAds.hasAdAvailable(forAdUnitID: adUnit.id) else {
             print("Attempted to show a rewarded ad when it is not ready")
             return
         }
@@ -198,7 +198,7 @@ class RewardedAdDataSource: NSObject, AdDataSource {
                 }
                 
                 // Present the ad.
-                MPRewardedVideo.presentAd(forAdUnitID: strongSelf.adUnit.id, from: strongSelf.delegate?.adPresentationViewController, with: strongSelf.selectedReward, customData: strongSelf.adUnit.customData)
+                MPRewardedAds.presentRewardedAd(forAdUnitID: strongSelf.adUnit.id, from: strongSelf.delegate?.adPresentationViewController, with: strongSelf.selectedReward, customData: strongSelf.adUnit.customData)
             }
         }
     }
@@ -213,13 +213,13 @@ extension RewardedAdDataSource: UIPickerViewDataSource, UIPickerViewDelegate {
     }
     
     func pickerView(_ pickerView: UIPickerView, numberOfRowsInComponent component: Int) -> Int {
-        return MPRewardedVideo.availableRewards(forAdUnitID: adUnit.id).count
+        return MPRewardedAds.availableRewards(forAdUnitID: adUnit.id).count
     }
     
     // MARK: - UIPickerViewDelegate
     
     func pickerView(_ pickerView: UIPickerView, titleForRow row: Int, forComponent component: Int) -> String? {
-        guard let reward: MPRewardedVideoReward = MPRewardedVideo.availableRewards(forAdUnitID: adUnit.id)[row] as? MPRewardedVideoReward,
+        guard let reward: MPReward = MPRewardedAds.availableRewards(forAdUnitID: adUnit.id)[row] as? MPReward,
             let amount = reward.amount,
             let currency = reward.currencyType else {
             return nil
@@ -229,7 +229,7 @@ extension RewardedAdDataSource: UIPickerViewDataSource, UIPickerViewDelegate {
     }
     
     func pickerView(_ pickerView: UIPickerView, didSelectRow row: Int, inComponent component: Int) {
-        guard let reward: MPRewardedVideoReward = MPRewardedVideo.availableRewards(forAdUnitID: adUnit.id)[row] as? MPRewardedVideoReward else {
+        guard let reward: MPReward = MPRewardedAds.availableRewards(forAdUnitID: adUnit.id)[row] as? MPReward else {
             return
         }
         
@@ -237,72 +237,72 @@ extension RewardedAdDataSource: UIPickerViewDataSource, UIPickerViewDelegate {
     }
 }
 
-extension RewardedAdDataSource: MPRewardedVideoDelegate {
-    // MARK: - MPRewardedVideoDelegate
+extension RewardedAdDataSource: MPRewardedAdsDelegate {
+    // MARK: - MPRewardedAdsDelegate
     
-    func rewardedVideoAdDidLoad(forAdUnitID adUnitID: String!) {
+    func rewardedAdDidLoad(forAdUnitID adUnitID: String!) {
         isAdLoading = false
         setStatus(for: .didLoad) { [weak self] in
             self?.delegate?.adPresentationTableView.reloadData()
         }
     }
     
-    func rewardedVideoAdDidFailToLoad(forAdUnitID adUnitID: String!, error: Error!) {
+    func rewardedAdDidFailToLoad(forAdUnitID adUnitID: String!, error: Error!) {
         isAdLoading = false
         setStatus(for: .didFailToLoad, message: error.localizedDescription) { [weak self] in
             self?.delegate?.adPresentationTableView.reloadData()
         }
     }
     
-    func rewardedVideoAdDidFailToPlay(forAdUnitID adUnitID: String!, error: Error!) {
+    func rewardedAdDidFailToShow(forAdUnitID adUnitID: String!, error: Error!) {
         setStatus(for: .didFailToPlay, message: error.localizedDescription) { [weak self] in
             self?.delegate?.adPresentationTableView.reloadData()
         }
     }
     
-    func rewardedVideoAdWillAppear(forAdUnitID adUnitID: String!) {
-        setStatus(for: .willAppear) { [weak self] in
+    func rewardedAdWillPresent(forAdUnitID adUnitID: String!) {
+        setStatus(for: .willPresent) { [weak self] in
             self?.delegate?.adPresentationTableView.reloadData()
         }
     }
     
-    func rewardedVideoAdDidAppear(forAdUnitID adUnitID: String!) {
-        setStatus(for: .didAppear) { [weak self] in
+    func rewardedAdDidPresent(forAdUnitID adUnitID: String!) {
+        setStatus(for: .didPresent) { [weak self] in
             self?.delegate?.adPresentationTableView.reloadData()
         }
     }
     
-    func rewardedVideoAdWillDisappear(forAdUnitID adUnitID: String!) {
-        setStatus(for: .willDisappear) { [weak self] in
+    func rewardedAdWillDismiss(forAdUnitID adUnitID: String!) {
+        setStatus(for: .willDismiss) { [weak self] in
             self?.delegate?.adPresentationTableView.reloadData()
         }
     }
     
-    func rewardedVideoAdDidDisappear(forAdUnitID adUnitID: String!) {
-        setStatus(for: .didDisappear) { [weak self] in
+    func rewardedAdDidDismiss(forAdUnitID adUnitID: String!) {
+        setStatus(for: .didDismiss) { [weak self] in
             self?.delegate?.adPresentationTableView.reloadData()
         }
     }
     
-    func rewardedVideoAdDidExpire(forAdUnitID adUnitID: String!) {
+    func rewardedAdDidExpire(forAdUnitID adUnitID: String!) {
         setStatus(for: .didExpire) { [weak self] in
             self?.delegate?.adPresentationTableView.reloadData()
         }
     }
     
-    func rewardedVideoAdDidReceiveTapEvent(forAdUnitID adUnitID: String!) {
+    func rewardedAdDidReceiveTapEvent(forAdUnitID adUnitID: String!) {
         setStatus(for: .clicked) { [weak self] in
             self?.delegate?.adPresentationTableView.reloadData()
         }
     }
     
-    func rewardedVideoAdWillLeaveApplication(forAdUnitID adUnitID: String!) {
+    func rewardedAdWillLeaveApplication(forAdUnitID adUnitID: String!) {
         setStatus(for: .willLeaveApp) { [weak self] in
             self?.delegate?.adPresentationTableView.reloadData()
         }
     }
     
-    func rewardedVideoAdShouldReward(forAdUnitID adUnitID: String!, reward: MPRewardedVideoReward!) {
+    func rewardedAdShouldReward(forAdUnitID adUnitID: String!, reward: MPReward!) {
         let message = reward?.description ?? "No reward specified"
         setStatus(for: .shouldRewardUser, message: message) { [weak self] in
             self?.delegate?.adPresentationTableView.reloadData()

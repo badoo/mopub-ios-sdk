@@ -1,7 +1,7 @@
 //
 //  MPAdServerURLBuilder+Testing.m
 //
-//  Copyright 2018-2020 Twitter, Inc.
+//  Copyright 2018-2021 Twitter, Inc.
 //  Licensed under the MoPub SDK License Agreement
 //  http://www.mopub.com/legal/sdk-license-agreement/
 //
@@ -13,7 +13,7 @@
 
 static NSString *sIdentifierForAdvertiser = nil;
 static NSString *sIdentifierForVendor = nil;
-static MPLocationAuthorizationStatus sLocationAuthorizationStatus = kMPLocationAuthorizationStatusNotDetermined;
+static MPLocationAuthorizationStatus sLocationAuthorizationStatus = MPLocationAuthorizationStatusNotDetermined;
 
 @implementation MPAdServerURLBuilder (Testing)
 

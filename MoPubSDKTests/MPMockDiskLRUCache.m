@@ -1,7 +1,7 @@
 //
 //  MPMockDiskLRUCache.m
 //
-//  Copyright 2018-2020 Twitter, Inc.
+//  Copyright 2018-2021 Twitter, Inc.
 //  Licensed under the MoPub SDK License Agreement
 //  http://www.mopub.com/legal/sdk-license-agreement/
 //
@@ -26,15 +26,21 @@
     // no op
 }
 
-- (NSURL *)cachedFileURLForRemoteFileURL:(NSURL *)remoteFileURL {
+#pragma mark - MPMediaFileCache
+
+- (NSURL *)cachedFileURLForRemoteFile:(MPVASTMediaFile *)remoteFile {
     return nil;
 }
 
-- (BOOL)isRemoteFileCached:(nonnull NSURL *)remoteFileURL {
+- (BOOL)isRemoteFileCached:(MPVASTMediaFile *)remoteFile {
     return NO;
 }
 
-- (void)storeData:(nonnull NSData *)data forRemoteSourceFileURL:(nonnull NSURL *)remoteFileURL {
+- (void)storeData:(NSData *)data forRemoteSourceFile:(MPVASTMediaFile *)remoteFile {
+    // no op
+}
+
+- (void)touchCachedFileForRemoteFile:(MPVASTMediaFile *)remoteFile {
     // no op
 }
 

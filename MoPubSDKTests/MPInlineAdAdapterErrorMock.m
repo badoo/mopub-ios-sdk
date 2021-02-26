@@ -1,9 +1,9 @@
 //
 //  MPInlineAdAdapterErrorMock.m
-//  MoPubSDKTests
 //
-//  Created by Kendall Rogers on 11/5/20.
-//  Copyright © 2020 MoPub. All rights reserved.
+//  Copyright 2018-2021 Twitter, Inc.
+//  Licensed under the MoPub SDK License Agreement
+//  http://www.mopub.com/legal/sdk-license-agreement/
 //
 
 #import "MPInlineAdAdapterErrorMock.h"

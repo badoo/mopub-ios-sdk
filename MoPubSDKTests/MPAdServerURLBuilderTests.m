@@ -1,13 +1,13 @@
 //
 //  MPAdServerURLBuilderTests.m
 //
-//  Copyright 2018-2020 Twitter, Inc.
+//  Copyright 2018-2021 Twitter, Inc.
 //  Licensed under the MoPub SDK License Agreement
 //  http://www.mopub.com/legal/sdk-license-agreement/
 //
 
 #import <XCTest/XCTest.h>
-#import <MoPub/MoPub-Swift.h>
+#import <MoPubSDK/MoPubSDK-Swift.h>
 #import "MPAdServerKeys.h"
 #import "MPAdServerURLBuilder+Testing.h"
 #import "MPConsentManager.h"
@@ -57,10 +57,11 @@ static NSString * const kLastChangedMsStorageKey                 = @"com.mopub.m
     [defaults synchronize];
 
     // Reset engine info
-    MPAdServerURLBuilder.engineInformation = nil;
+    MPAdServerURLBuilder.engineName = nil;
+    MPAdServerURLBuilder.engineVersion = nil;
 
     // Reset mocked location string
-    MPAdServerURLBuilder.locationAuthorizationStatus = kMPLocationAuthorizationStatusNotDetermined;
+    MPAdServerURLBuilder.locationAuthorizationStatus = MPLocationAuthorizationStatusNotDetermined;
 }
 
 - (void)tearDown {
@@ -427,7 +428,8 @@ static NSString * const kLastChangedMsStorageKey                 = @"com.mopub.m
 
 - (void)testEngineInformationPresent {
     // Set the engine information.
-    MPAdServerURLBuilder.engineInformation = [MPEngineInfo named:@"unity" version:@"2017.1.2f2"];
+    MPAdServerURLBuilder.engineName = @"unity";
+    MPAdServerURLBuilder.engineVersion = @"2017.1.2f2";
 
     // Verify that the engine information is present for the base URL for all
     // Ad Server requests
@@ -545,7 +547,7 @@ static NSString * const kLastChangedMsStorageKey                 = @"com.mopub.m
 
 - (void)testLocationAuthorizationPresent {
     // Precondition
-    MPAdServerURLBuilder.locationAuthorizationStatus = kMPLocationAuthorizationStatusNotDetermined;
+    MPAdServerURLBuilder.locationAuthorizationStatus = MPLocationAuthorizationStatusNotDetermined;
 
     // Verify that the location information is present for the base URL for all
     // Ad Server requests
@@ -558,7 +560,7 @@ static NSString * const kLastChangedMsStorageKey                 = @"com.mopub.m
     XCTAssert([status isEqualToString:@"unknown"]);
 
     // Update status
-    MPAdServerURLBuilder.locationAuthorizationStatus = kMPLocationAuthorizationStatusAuthorizedWhenInUse;
+    MPAdServerURLBuilder.locationAuthorizationStatus = MPLocationAuthorizationStatusAuthorizedWhenInUse;
 
     // Verify the value changed
     MPURL * updatedUrl = [MPAdServerURLBuilder URLWithAdUnitID:@"fake_ad_unit" targeting:targeting];
@@ -571,7 +573,7 @@ static NSString * const kLastChangedMsStorageKey                 = @"com.mopub.m
 
 - (void)testInvalidLocationAuthorizationNotPresent {
     // Precondition
-    MPAdServerURLBuilder.locationAuthorizationStatus = -99;
+    MPAdServerURLBuilder.locationAuthorizationStatus = MPLocationAuthorizationStatusUnknown;
 
     // Verify that the location information is present for the base URL for all
     // Ad Server requests

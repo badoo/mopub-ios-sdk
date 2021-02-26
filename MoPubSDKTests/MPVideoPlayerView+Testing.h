@@ -1,7 +1,7 @@
 //
 //  MPVideoPlayerView+Testing.h
 //
-//  Copyright 2018-2020 Twitter, Inc.
+//  Copyright 2018-2021 Twitter, Inc.
 //  Licensed under the MoPub SDK License Agreement
 //  http://www.mopub.com/legal/sdk-license-agreement/
 //
@@ -18,7 +18,7 @@ NS_ASSUME_NONNULL_BEGIN
 @property (nonatomic, strong) id<NSObject> audioSessionInterruptionObserverToken;
 @property (nonatomic, strong) id<NSObject> boundaryTrackingTimeObserver;
 @property (nonatomic, strong) id<NSObject> endTimeObserverToken;
-@property (nonatomic, readwrite) BOOL hasStartedPlaying;
+@property (nonatomic, readwrite) BOOL isVideoPlaying;
 @property (nonatomic, strong) id<NSObject> industryIconHideTimeObserver;
 @property (nonatomic, strong) id<NSObject> industryIconShowTimeObserver;
 @property (nonatomic, strong) id<NSObject> progressTrackingTimeObserver;

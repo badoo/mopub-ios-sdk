@@ -1,7 +1,7 @@
 //
 //  MPMoPubNativeAdAdapterTests.m
 //
-//  Copyright 2018-2020 Twitter, Inc.
+//  Copyright 2018-2021 Twitter, Inc.
 //  Licensed under the MoPub SDK License Agreement
 //  http://www.mopub.com/legal/sdk-license-agreement/
 //
@@ -111,7 +111,7 @@
 
 - (void)testImpressionRulesPixelsTakePriorityOverPercentage {
     MPNativeAdConfigValues *configValues = [[MPNativeAdConfigValues alloc] initWithImpressionMinVisiblePixels:30
-                                                                                  impressionMinVisiblePercent:30
+                                                                                  impressionMinVisiblePercent:0.3
                                                                                   impressionMinVisibleSeconds:5.0];
     NSDictionary *properties = @{ kClickTrackerURLKey: @"https://google.com", // required for adapter to initialize
                                   kNativeAdConfigKey: configValues,
@@ -128,7 +128,7 @@
 
 - (void)testImpressionRulesTimerSetFromHeaderPropertiesPercentage {
     MPNativeAdConfigValues *configValues = [[MPNativeAdConfigValues alloc] initWithImpressionMinVisiblePixels:-1.0 // invalid pixels to fall through
-                                                                                  impressionMinVisiblePercent:30
+                                                                                  impressionMinVisiblePercent:0.3
                                                                                   impressionMinVisibleSeconds:5.0];
     NSDictionary *properties = @{ kClickTrackerURLKey: @"https://google.com", // required for adapter to initialize
                                   kNativeAdConfigKey: configValues,
@@ -136,8 +136,7 @@
     MPMoPubNativeAdAdapter *adapter = [[MPMoPubNativeAdAdapter alloc] initWithAdProperties:[NSMutableDictionary dictionaryWithDictionary:properties]];
 
     XCTAssertEqual(adapter.impressionTimer.requiredSecondsForImpression, configValues.impressionMinVisibleSeconds);
-    CGFloat percentage = (configValues.impressionMinVisiblePercent / 100.0);
-    XCTAssertEqual(adapter.impressionTimer.percentageRequiredForViewVisibility, percentage);
+    XCTAssertEqual(adapter.impressionTimer.percentageRequiredForViewVisibility, configValues.impressionMinVisiblePercent);
     XCTAssertTrue(configValues.isImpressionMinVisiblePercentValid);
     XCTAssertFalse(configValues.isImpressionMinVisiblePixelsValid);
     XCTAssertTrue(configValues.isImpressionMinVisibleSecondsValid);
@@ -191,7 +190,7 @@
 
 - (void)testImpressionRulesOnlyValidPercentage {
     MPNativeAdConfigValues *configValues = [[MPNativeAdConfigValues alloc] initWithImpressionMinVisiblePixels:-1.0
-                                                                                  impressionMinVisiblePercent:10
+                                                                                  impressionMinVisiblePercent:0.1
                                                                                   impressionMinVisibleSeconds:-1.0];
     NSDictionary *properties = @{ kClickTrackerURLKey: @"https://google.com", // required for adapter to initialize
                                   kNativeAdConfigKey: configValues,
@@ -199,7 +198,7 @@
     MPMoPubNativeAdAdapter *adapter = [[MPMoPubNativeAdAdapter alloc] initWithAdProperties:[NSMutableDictionary dictionaryWithDictionary:properties]];
 
     XCTAssertNotEqual(adapter.impressionTimer.requiredSecondsForImpression, configValues.impressionMinVisibleSeconds);
-    CGFloat percentage = (configValues.impressionMinVisiblePercent / 100.0);
+    CGFloat percentage = configValues.impressionMinVisiblePercent;
     XCTAssertEqual(adapter.impressionTimer.percentageRequiredForViewVisibility, percentage);
     XCTAssertEqual(adapter.impressionTimer.requiredSecondsForImpression, 1.0);
     CGFloat expected = 0.1;

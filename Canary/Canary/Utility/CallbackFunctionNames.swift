@@ -1,7 +1,7 @@
 //
 //  CallbackFunctionNames.swift
 //
-//  Copyright 2018-2020 Twitter, Inc.
+//  Copyright 2018-2021 Twitter, Inc.
 //  Licensed under the MoPub SDK License Agreement
 //  http://www.mopub.com/legal/sdk-license-agreement/
 //
@@ -32,8 +32,8 @@ enum CallbackFunctionNames {
     static let interstitialDidFailToLoadAd = "interstitialDidFailToLoadAd:"
     static let interstitialWillAppear = "interstitialWillAppear:"
     static let interstitialDidAppear = "interstitialDidAppear:"
-    static let interstitialWillDisappear = "interstitialWillDisappear:"
-    static let interstitialDidDisappear = "interstitialDidDisappear:"
+    static let interstitialWillDismiss = "interstitialWillDismiss:"
+    static let interstitialDidDismiss = "interstitialDidDismiss:"
     static let interstitialDidExpire = "interstitialDidExpire:"
     static let interstitialDidReceiveTapEvent = "interstitialDidReceiveTapEvent:"
 
@@ -44,16 +44,16 @@ enum CallbackFunctionNames {
     static let didDismissModal = "didDismissModalForNativeAd:"
     static let willLeaveApplication = "willLeaveApplicationFromNativeAd:"
 
-    // MARK: - MPRewardedVideoDelegate
-    static let rewardedVideoAdDidLoad = "rewardedVideoAdDidLoadForAdUnitID:"
-    static let rewardedVideoAdDidFailToLoad = "rewardedVideoAdDidFailToLoadForAdUnitID:error:"
-    static let rewardedVideoAdDidFailToPlay = "rewardedVideoAdDidFailToPlayForAdUnitID:error:"
-    static let rewardedVideoAdWillAppear = "rewardedVideoAdWillAppearForAdUnitID:"
-    static let rewardedVideoAdDidAppear = "rewardedVideoAdDidAppearForAdUnitID:"
-    static let rewardedVideoAdWillDisappear = "rewardedVideoAdWillDisappearForAdUnitID:"
-    static let rewardedVideoAdDidDisappear = "rewardedVideoAdDidDisappearForAdUnitID:"
-    static let rewardedVideoAdDidExpire = "rewardedVideoAdDidExpireForAdUnitID:"
-    static let rewardedVideoAdDidReceiveTapEvent = "rewardedVideoAdDidReceiveTapEventForAdUnitID:"
-    static let rewardedVideoAdWillLeaveApplication = "rewardedVideoAdWillLeaveApplicationForAdUnitID:"
-    static let rewardedVideoAdShouldReward = "rewardedVideoAdShouldRewardForAdUnitID:reward:"
+    // MARK: - MPRewardedAdsDelegate
+    static let rewardedAdDidLoad = "rewardedAdDidLoadForAdUnitID:"
+    static let rewardedAdDidFailToLoad = "rewardedAdDidFailToLoadForAdUnitID:error:"
+    static let rewardedAdDidFailToShow = "rewardedAdDidFailToShowForAdUnitID:error:"
+    static let rewardedAdWillPresent = "rewardedAdWillPresentForAdUnitID:"
+    static let rewardedAdDidPresent = "rewardedAdDidPresentForAdUnitID:"
+    static let rewardedAdWillDismiss = "rewardedAdWillDismissForAdUnitID:"
+    static let rewardedAdDidDismiss = "rewardedAdDidDismissForAdUnitID:"
+    static let rewardedAdDidExpire = "rewardedAdDidExpireForAdUnitID:"
+    static let rewardedAdDidReceiveTapEvent = "rewardedAdDidReceiveTapEventForAdUnitID:"
+    static let rewardedAdWillLeaveApplication = "rewardedAdWillLeaveApplicationForAdUnitID:"
+    static let rewardedAdShouldReward = "rewardedAdShouldRewardForAdUnitID:reward:"
 }

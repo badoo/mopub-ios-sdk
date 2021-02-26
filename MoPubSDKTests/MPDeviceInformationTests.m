@@ -1,13 +1,13 @@
 //
 //  MPDeviceInformationTests.m
 //
-//  Copyright 2018-2020 Twitter, Inc.
+//  Copyright 2018-2021 Twitter, Inc.
 //  Licensed under the MoPub SDK License Agreement
 //  http://www.mopub.com/legal/sdk-license-agreement/
 //
 
 #import <XCTest/XCTest.h>
-#import "MPDeviceInformation+Testing.h"
+#import "MoPubSDKTests-Swift.h"
 #import "MPMockCarrier.h"
 #import "MPMockLocationManager.h"
 
@@ -22,152 +22,125 @@
 
     // Reset location-based testing properties
     MPDeviceInformation.enableLocation = YES;
-    MPDeviceInformation.locationManagerLocationServiceEnabled = YES;
-    MPDeviceInformation.locationManagerAuthorizationStatus = kCLAuthorizationStatusNotDetermined;
-    [MPDeviceInformation clearCachedLastLocation];
-}
-
-#pragma mark - Connectivity
-
-- (void)testCarrierInformationCachedAtInitialize {
-    // Validates that the `+initialize` method does create a cache entry
-    // for carrier information. Since this is a unit test, there is no SIM
-    // card and thus no carrier info to cache.
-    NSUserDefaults *defaults = NSUserDefaults.standardUserDefaults;
-    NSDictionary *carrierInfo = [defaults objectForKey:@"com.mopub.carrierinfo"];
-    XCTAssertNotNil(carrierInfo);
-}
-
-- (void)testCarrierInfoProperties {
-    // Clear out any cached information.
-    NSUserDefaults *defaults = NSUserDefaults.standardUserDefaults;
-    [defaults removeObjectForKey:@"com.mopub.carrierinfo"];     // Carrier information
-
-    // Cache mock data
-    MPMockCarrier *mockCarrier = MPMockCarrier.new;
-    [MPDeviceInformation updateCarrierInfoCache:mockCarrier];
-
-    // Validate carrier information exists.
-    XCTAssertNotNil(MPDeviceInformation.carrierName);
-    XCTAssertNotNil(MPDeviceInformation.isoCountryCode);
-    XCTAssertNotNil(MPDeviceInformation.mobileCountryCode);
-    XCTAssertNotNil(MPDeviceInformation.mobileNetworkCode);
+    MPDeviceInformation.mockLocationManagerLocationServiceEnabled = YES;
+    MPDeviceInformation.mockLocationManagerAuthorizationStatus = kCLAuthorizationStatusNotDetermined;
+    [MPDeviceInformation objc_clearCachedLastLocation];
 }
 
 #pragma mark - Location
 
 - (void)testLocationAuthorizationStatusNotDetermined {
     // Setup preconditions
-    MPDeviceInformation.locationManagerLocationServiceEnabled = YES;
-    MPDeviceInformation.locationManagerAuthorizationStatus = kCLAuthorizationStatusNotDetermined;
+    MPDeviceInformation.mockLocationManagerLocationServiceEnabled = YES;
+    MPDeviceInformation.mockLocationManagerAuthorizationStatus = kCLAuthorizationStatusNotDetermined;
 
     // Validate
     MPLocationAuthorizationStatus status = MPDeviceInformation.locationAuthorizationStatus;
-    XCTAssertTrue(status == kMPLocationAuthorizationStatusNotDetermined);
+    XCTAssertTrue(status == MPLocationAuthorizationStatusNotDetermined);
 }
 
 - (void)testLocationAuthorizationStatusRestricted {
     // Setup preconditions
-    MPDeviceInformation.locationManagerLocationServiceEnabled = YES;
-    MPDeviceInformation.locationManagerAuthorizationStatus = kCLAuthorizationStatusRestricted;
+    MPDeviceInformation.mockLocationManagerLocationServiceEnabled = YES;
+    MPDeviceInformation.mockLocationManagerAuthorizationStatus = kCLAuthorizationStatusRestricted;
 
     // Validate
     MPLocationAuthorizationStatus status = MPDeviceInformation.locationAuthorizationStatus;
-    XCTAssertTrue(status == kMPLocationAuthorizationStatusRestricted);
+    XCTAssertTrue(status == MPLocationAuthorizationStatusRestricted);
 }
 
 - (void)testLocationAuthorizationStatusUserDenied {
     // Setup preconditions
-    MPDeviceInformation.locationManagerLocationServiceEnabled = YES;
-    MPDeviceInformation.locationManagerAuthorizationStatus = kCLAuthorizationStatusDenied;
+    MPDeviceInformation.mockLocationManagerLocationServiceEnabled = YES;
+    MPDeviceInformation.mockLocationManagerAuthorizationStatus = kCLAuthorizationStatusDenied;
 
     // Validate
     MPLocationAuthorizationStatus status = MPDeviceInformation.locationAuthorizationStatus;
-    XCTAssertTrue(status == kMPLocationAuthorizationStatusUserDenied);
+    XCTAssertTrue(status == MPLocationAuthorizationStatusUserDenied);
 }
 
 - (void)testLocationAuthorizationStatusSettingsDenied {
     // Setup preconditions
-    MPDeviceInformation.locationManagerLocationServiceEnabled = NO;
-    MPDeviceInformation.locationManagerAuthorizationStatus = kCLAuthorizationStatusDenied;
+    MPDeviceInformation.mockLocationManagerLocationServiceEnabled = NO;
+    MPDeviceInformation.mockLocationManagerAuthorizationStatus = kCLAuthorizationStatusDenied;
 
     // Validate
     MPLocationAuthorizationStatus status = MPDeviceInformation.locationAuthorizationStatus;
-    XCTAssertTrue(status == kMPLocationAuthorizationStatusSettingsDenied);
+    XCTAssertTrue(status == MPLocationAuthorizationStatusSettingsDenied);
 }
 
 - (void)testLocationAuthorizationStatusPublisherDeniedWhenAuthorizedAlways {
     // Setup preconditions
-    MPDeviceInformation.locationManagerLocationServiceEnabled = YES;
-    MPDeviceInformation.locationManagerAuthorizationStatus = kCLAuthorizationStatusAuthorizedAlways;
+    MPDeviceInformation.mockLocationManagerLocationServiceEnabled = YES;
+    MPDeviceInformation.mockLocationManagerAuthorizationStatus = kCLAuthorizationStatusAuthorizedAlways;
     MPDeviceInformation.enableLocation = NO;
 
     // Validate
     MPLocationAuthorizationStatus status = MPDeviceInformation.locationAuthorizationStatus;
-    XCTAssertTrue(status == kMPLocationAuthorizationStatusPublisherDenied);
+    XCTAssertTrue(status == MPLocationAuthorizationStatusPublisherDenied);
 }
 
 - (void)testLocationAuthorizationStatusPublisherDeniedWhenAuthorizedWhenInUse {
     // Setup preconditions
-    MPDeviceInformation.locationManagerLocationServiceEnabled = YES;
-    MPDeviceInformation.locationManagerAuthorizationStatus = kCLAuthorizationStatusAuthorizedWhenInUse;
+    MPDeviceInformation.mockLocationManagerLocationServiceEnabled = YES;
+    MPDeviceInformation.mockLocationManagerAuthorizationStatus = kCLAuthorizationStatusAuthorizedWhenInUse;
     MPDeviceInformation.enableLocation = NO;
 
     // Validate
     MPLocationAuthorizationStatus status = MPDeviceInformation.locationAuthorizationStatus;
-    XCTAssertTrue(status == kMPLocationAuthorizationStatusPublisherDenied);
+    XCTAssertTrue(status == MPLocationAuthorizationStatusPublisherDenied);
 }
 
 - (void)testLocationAuthorizationStatusUserDeniedTakesPriorityOverPublisherDenied {
     // Setup preconditions
-    MPDeviceInformation.locationManagerLocationServiceEnabled = YES;
-    MPDeviceInformation.locationManagerAuthorizationStatus = kCLAuthorizationStatusDenied;
+    MPDeviceInformation.mockLocationManagerLocationServiceEnabled = YES;
+    MPDeviceInformation.mockLocationManagerAuthorizationStatus = kCLAuthorizationStatusDenied;
     MPDeviceInformation.enableLocation = NO;
 
     // Validate
     MPLocationAuthorizationStatus status = MPDeviceInformation.locationAuthorizationStatus;
-    XCTAssertTrue(status == kMPLocationAuthorizationStatusUserDenied);
+    XCTAssertTrue(status == MPLocationAuthorizationStatusUserDenied);
 }
 
 - (void)testLocationAuthorizationStatusSettingsDeniedTakesPriorityOverPublisherDenied {
     // Setup preconditions
-    MPDeviceInformation.locationManagerLocationServiceEnabled = NO;
-    MPDeviceInformation.locationManagerAuthorizationStatus = kCLAuthorizationStatusDenied;
+    MPDeviceInformation.mockLocationManagerLocationServiceEnabled = NO;
+    MPDeviceInformation.mockLocationManagerAuthorizationStatus = kCLAuthorizationStatusDenied;
     MPDeviceInformation.enableLocation = NO;
 
     // Validate
     MPLocationAuthorizationStatus status = MPDeviceInformation.locationAuthorizationStatus;
-    XCTAssertTrue(status == kMPLocationAuthorizationStatusSettingsDenied);
+    XCTAssertTrue(status == MPLocationAuthorizationStatusSettingsDenied);
 }
 
 - (void)testLocationAuthorizationStatusAlwaysAuthorized {
     // Setup preconditions
-    MPDeviceInformation.locationManagerLocationServiceEnabled = YES;
-    MPDeviceInformation.locationManagerAuthorizationStatus = kCLAuthorizationStatusAuthorizedAlways;
+    MPDeviceInformation.mockLocationManagerLocationServiceEnabled = YES;
+    MPDeviceInformation.mockLocationManagerAuthorizationStatus = kCLAuthorizationStatusAuthorizedAlways;
 
     // Validate
     MPLocationAuthorizationStatus status = MPDeviceInformation.locationAuthorizationStatus;
-    XCTAssertTrue(status == kMPLocationAuthorizationStatusAuthorizedAlways);
+    XCTAssertTrue(status == MPLocationAuthorizationStatusAuthorizedAlways);
 }
 
 - (void)testLocationAuthorizationStatusWhileInUseAuthorized {
     // Setup preconditions
-    MPDeviceInformation.locationManagerLocationServiceEnabled = YES;
-    MPDeviceInformation.locationManagerAuthorizationStatus = kCLAuthorizationStatusAuthorizedWhenInUse;
+    MPDeviceInformation.mockLocationManagerLocationServiceEnabled = YES;
+    MPDeviceInformation.mockLocationManagerAuthorizationStatus = kCLAuthorizationStatusAuthorizedWhenInUse;
 
     // Validate
     MPLocationAuthorizationStatus status = MPDeviceInformation.locationAuthorizationStatus;
-    XCTAssertTrue(status == kMPLocationAuthorizationStatusAuthorizedWhenInUse);
+    XCTAssertTrue(status == MPLocationAuthorizationStatusAuthorizedWhenInUse);
 }
 
 - (void)testLastLocationNil {
     // Setup preconditions
-    MPDeviceInformation.locationManagerLocationServiceEnabled = YES;
-    MPDeviceInformation.locationManagerAuthorizationStatus = kCLAuthorizationStatusAuthorizedWhenInUse;
+    MPDeviceInformation.mockLocationManagerLocationServiceEnabled = YES;
+    MPDeviceInformation.mockLocationManagerAuthorizationStatus = kCLAuthorizationStatusAuthorizedWhenInUse;
 
     MPMockLocationManager *mockManager = [[MPMockLocationManager alloc] init];
     mockManager.location = nil;
-    MPDeviceInformation.locationManager = mockManager;
+    MPDeviceInformation.mockLocationManager = mockManager;
 
     // Validate
     XCTAssertNil(MPDeviceInformation.lastLocation);
@@ -175,12 +148,12 @@
 
 - (void)testLastLocationNilToSpecified {
     // Setup preconditions
-    MPDeviceInformation.locationManagerLocationServiceEnabled = YES;
-    MPDeviceInformation.locationManagerAuthorizationStatus = kCLAuthorizationStatusAuthorizedWhenInUse;
+    MPDeviceInformation.mockLocationManagerLocationServiceEnabled = YES;
+    MPDeviceInformation.mockLocationManagerAuthorizationStatus = kCLAuthorizationStatusAuthorizedWhenInUse;
 
     MPMockLocationManager *mockManager = [[MPMockLocationManager alloc] init];
     mockManager.location = nil;
-    MPDeviceInformation.locationManager = mockManager;
+    MPDeviceInformation.mockLocationManager = mockManager;
 
     // Validate
     XCTAssertNil(MPDeviceInformation.lastLocation);
@@ -205,12 +178,12 @@
 
 - (void)testLastLocationSpecifiedNotUpdatedBecauseOutOfDate {
     // Setup preconditions
-    MPDeviceInformation.locationManagerLocationServiceEnabled = YES;
-    MPDeviceInformation.locationManagerAuthorizationStatus = kCLAuthorizationStatusAuthorizedWhenInUse;
+    MPDeviceInformation.mockLocationManagerLocationServiceEnabled = YES;
+    MPDeviceInformation.mockLocationManagerAuthorizationStatus = kCLAuthorizationStatusAuthorizedWhenInUse;
 
     MPMockLocationManager *mockManager = [[MPMockLocationManager alloc] init];
     mockManager.location = nil;
-    MPDeviceInformation.locationManager = mockManager;
+    MPDeviceInformation.mockLocationManager = mockManager;
 
     // Validate
     XCTAssertNil(MPDeviceInformation.lastLocation);
@@ -252,12 +225,12 @@
 
 - (void)testLastLocationSpecifiedNotUpdatedBecauseHorizontalAccuracyInvalid {
     // Setup preconditions
-    MPDeviceInformation.locationManagerLocationServiceEnabled = YES;
-    MPDeviceInformation.locationManagerAuthorizationStatus = kCLAuthorizationStatusAuthorizedWhenInUse;
+    MPDeviceInformation.mockLocationManagerLocationServiceEnabled = YES;
+    MPDeviceInformation.mockLocationManagerAuthorizationStatus = kCLAuthorizationStatusAuthorizedWhenInUse;
 
     MPMockLocationManager *mockManager = [[MPMockLocationManager alloc] init];
     mockManager.location = nil;
-    MPDeviceInformation.locationManager = mockManager;
+    MPDeviceInformation.mockLocationManager = mockManager;
 
     // Validate
     XCTAssertNil(MPDeviceInformation.lastLocation);
@@ -299,12 +272,12 @@
 
 - (void)testLastLocationSpecifiedNotUpdatedBecauseNil {
     // Setup preconditions
-    MPDeviceInformation.locationManagerLocationServiceEnabled = YES;
-    MPDeviceInformation.locationManagerAuthorizationStatus = kCLAuthorizationStatusAuthorizedWhenInUse;
+    MPDeviceInformation.mockLocationManagerLocationServiceEnabled = YES;
+    MPDeviceInformation.mockLocationManagerAuthorizationStatus = kCLAuthorizationStatusAuthorizedWhenInUse;
 
     MPMockLocationManager *mockManager = [[MPMockLocationManager alloc] init];
     mockManager.location = nil;
-    MPDeviceInformation.locationManager = mockManager;
+    MPDeviceInformation.mockLocationManager = mockManager;
 
     // Validate
     XCTAssertNil(MPDeviceInformation.lastLocation);
@@ -342,12 +315,12 @@
 
 - (void)testLastLocationSpecifiedUpdated {
     // Setup preconditions
-    MPDeviceInformation.locationManagerLocationServiceEnabled = YES;
-    MPDeviceInformation.locationManagerAuthorizationStatus = kCLAuthorizationStatusAuthorizedWhenInUse;
+    MPDeviceInformation.mockLocationManagerLocationServiceEnabled = YES;
+    MPDeviceInformation.mockLocationManagerAuthorizationStatus = kCLAuthorizationStatusAuthorizedWhenInUse;
 
     MPMockLocationManager *mockManager = [[MPMockLocationManager alloc] init];
     mockManager.location = nil;
-    MPDeviceInformation.locationManager = mockManager;
+    MPDeviceInformation.mockLocationManager = mockManager;
 
     // Validate
     XCTAssertNil(MPDeviceInformation.lastLocation);
@@ -389,12 +362,12 @@
 
 - (void)testLocationNilWhenPublisherDisablesLocation {
     // Setup preconditions
-    MPDeviceInformation.locationManagerLocationServiceEnabled = YES;
-    MPDeviceInformation.locationManagerAuthorizationStatus = kCLAuthorizationStatusAuthorizedWhenInUse;
+    MPDeviceInformation.mockLocationManagerLocationServiceEnabled = YES;
+    MPDeviceInformation.mockLocationManagerAuthorizationStatus = kCLAuthorizationStatusAuthorizedWhenInUse;
 
     MPMockLocationManager *mockManager = [[MPMockLocationManager alloc] init];
     mockManager.location = nil;
-    MPDeviceInformation.locationManager = mockManager;
+    MPDeviceInformation.mockLocationManager = mockManager;
 
     // Validate
     XCTAssertNil(MPDeviceInformation.lastLocation);
@@ -422,7 +395,7 @@
     // Fetch location again
     CLLocation *newlyFetchedLocation = MPDeviceInformation.lastLocation;
     XCTAssertNil(newlyFetchedLocation);
-    XCTAssertTrue(MPDeviceInformation.locationAuthorizationStatus == kMPLocationAuthorizationStatusPublisherDenied);
+    XCTAssertTrue(MPDeviceInformation.locationAuthorizationStatus == MPLocationAuthorizationStatusPublisherDenied);
 }
 
 @end

@@ -1,12 +1,12 @@
 //
 //  InterstitialAdDataSource.swift
 //
-//  Copyright 2018-2020 Twitter, Inc.
+//  Copyright 2018-2021 Twitter, Inc.
 //  Licensed under the MoPub SDK License Agreement
 //  http://www.mopub.com/legal/sdk-license-agreement/
 //
 
-import MoPub
+import MoPubSDK
 import UIKit
 
 class InterstitialAdDataSource: NSObject, AdDataSource {
@@ -36,10 +36,10 @@ class InterstitialAdDataSource: NSObject, AdDataSource {
         var titleStrings: [AdEvent: String] = [:]
         titleStrings[.didLoad]            = CallbackFunctionNames.interstitialDidLoadAd
         titleStrings[.didFailToLoad]      = CallbackFunctionNames.interstitialDidFailToLoadAd
-        titleStrings[.willAppear]         = CallbackFunctionNames.interstitialWillAppear
-        titleStrings[.didAppear]          = CallbackFunctionNames.interstitialDidAppear
-        titleStrings[.willDisappear]      = CallbackFunctionNames.interstitialWillDisappear
-        titleStrings[.didDisappear]       = CallbackFunctionNames.interstitialDidDisappear
+        titleStrings[.willPresent]        = CallbackFunctionNames.interstitialWillAppear
+        titleStrings[.didPresent]         = CallbackFunctionNames.interstitialDidAppear
+        titleStrings[.willDismiss]        = CallbackFunctionNames.interstitialWillDismiss
+        titleStrings[.didDismiss]         = CallbackFunctionNames.interstitialDidDismiss
         titleStrings[.didExpire]          = CallbackFunctionNames.interstitialDidExpire
         titleStrings[.clicked]            = CallbackFunctionNames.interstitialDidReceiveTapEvent
         titleStrings[.didTrackImpression] = CallbackFunctionNames.didTrackImpression
@@ -90,7 +90,7 @@ class InterstitialAdDataSource: NSObject, AdDataSource {
      The status events available for the ad.
      */
     lazy var events: [AdEvent] = {
-        return [.didLoad, .didFailToLoad, .willAppear, .didAppear, .willDisappear, .didDisappear, .didExpire, .clicked, .didTrackImpression]
+        return [.didLoad, .didFailToLoad, .willPresent, .didPresent, .willDismiss, .didDismiss, .didExpire, .clicked, .didTrackImpression]
     }()
     
     /**
@@ -172,25 +172,25 @@ extension InterstitialAdDataSource: MPInterstitialAdControllerDelegate {
     }
     
     func interstitialWillAppear(_ interstitial: MPInterstitialAdController!) {
-        setStatus(for: .willAppear) { [weak self] in
+        setStatus(for: .willPresent) { [weak self] in
             self?.delegate?.adPresentationTableView.reloadData()
         }
     }
     
     func interstitialDidAppear(_ interstitial: MPInterstitialAdController!) {
-        setStatus(for: .didAppear) { [weak self] in
+        setStatus(for: .didPresent) { [weak self] in
             self?.delegate?.adPresentationTableView.reloadData()
         }
     }
     
-    func interstitialWillDisappear(_ interstitial: MPInterstitialAdController!) {
-        setStatus(for: .willDisappear) { [weak self] in
+    func interstitialWillDismiss(_ interstitial: MPInterstitialAdController!) {
+        setStatus(for: .willDismiss) { [weak self] in
             self?.delegate?.adPresentationTableView.reloadData()
         }
     }
     
-    func interstitialDidDisappear(_ interstitial: MPInterstitialAdController!) {
-        setStatus(for: .didDisappear) { [weak self] in
+    func interstitialDidDismiss(_ interstitial: MPInterstitialAdController!) {
+        setStatus(for: .didDismiss) { [weak self] in
             self?.delegate?.adPresentationTableView.reloadData()
         }
     }
