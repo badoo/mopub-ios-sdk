@@ -75,6 +75,22 @@ static NSString * const kPublisherEnteredAdUnitIdStorageKey = @"com.mopub.mopub-
     return MPDeviceInformation.enableLocation;
 }
 
+- (BOOL)shouldTruncateLocationData {
+    return MPDeviceInformation.shouldTruncateLocationData;
+}
+
+- (void)setShouldTruncateLocationData:(BOOL)shouldTruncateLocationData {
+    MPDeviceInformation.shouldTruncateLocationData = shouldTruncateLocationData;
+}
+
+- (NSInteger)locationPrecision {
+    return MPDeviceInformation.locationPrecision;
+}
+
+- (void)setLocationPrecision:(NSInteger)locationPrecision {
+    MPDeviceInformation.locationPrecision = locationPrecision;
+}
+
 - (void)setLogLevel:(MPBLogLevel)level
 {
     MPLogging.consoleLogLevel = level;

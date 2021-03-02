@@ -23,6 +23,8 @@
     // Reset location-based testing properties
     MPDeviceInformation.enableLocation = YES;
     MPDeviceInformation.locationManagerLocationServiceEnabled = YES;
+    MPDeviceInformation.shouldTruncateLocationData = NO;
+    MPDeviceInformation.locationPrecision = 1;
     MPDeviceInformation.locationManagerAuthorizationStatus = kCLAuthorizationStatusNotDetermined;
     [MPDeviceInformation clearCachedLastLocation];
 }
@@ -423,6 +425,145 @@
     CLLocation *newlyFetchedLocation = MPDeviceInformation.lastLocation;
     XCTAssertNil(newlyFetchedLocation);
     XCTAssertTrue(MPDeviceInformation.locationAuthorizationStatus == kMPLocationAuthorizationStatusPublisherDenied);
+}
+
+- (void)testLastLocationNilToSpecifiedWithTruncate {
+    // Setup preconditions
+    MPDeviceInformation.locationManagerLocationServiceEnabled = YES;
+    MPDeviceInformation.locationManagerAuthorizationStatus = kCLAuthorizationStatusAuthorizedWhenInUse;
+    MPDeviceInformation.shouldTruncateLocationData = YES;
+
+    MPMockLocationManager *mockManager = [[MPMockLocationManager alloc] init];
+    mockManager.location = nil;
+    MPDeviceInformation.locationManager = mockManager;
+
+    // Validate
+    XCTAssertNil(MPDeviceInformation.lastLocation);
+
+    // Location updated to a good value
+    NSDate *timestamp = [NSDate date];
+    CLLocation *goodLocation = [[CLLocation alloc] initWithCoordinate:CLLocationCoordinate2DMake(37.7764685, -122.4193891) altitude:17 horizontalAccuracy:10 verticalAccuracy:10 timestamp:timestamp];
+    XCTAssertNotNil(goodLocation);
+
+    mockManager.location = goodLocation;
+
+    // Validate update
+    CLLocation *fetchedLocation = MPDeviceInformation.lastLocation;
+    XCTAssertNotNil(fetchedLocation);
+    XCTAssertTrue(fetchedLocation.coordinate.latitude == 37.8);
+    XCTAssertTrue(fetchedLocation.coordinate.longitude == -122.4);
+}
+
+- (void)testLastLocationNilToSpecifiedWithTruncateAndPrecisionTo3Equal {
+    // Setup preconditions
+    MPDeviceInformation.locationManagerLocationServiceEnabled = YES;
+    MPDeviceInformation.locationManagerAuthorizationStatus = kCLAuthorizationStatusAuthorizedWhenInUse;
+    MPDeviceInformation.shouldTruncateLocationData = YES;
+    MPDeviceInformation.locationPrecision = 3;
+
+    MPMockLocationManager *mockManager = [[MPMockLocationManager alloc] init];
+    mockManager.location = nil;
+    MPDeviceInformation.locationManager = mockManager;
+
+    // Validate
+    XCTAssertNil(MPDeviceInformation.lastLocation);
+
+    // Location updated to a good value
+    NSDate *timestamp = [NSDate date];
+    CLLocation *goodLocation = [[CLLocation alloc] initWithCoordinate:CLLocationCoordinate2DMake(37.7764685, -122.4193891) altitude:17 horizontalAccuracy:10 verticalAccuracy:10 timestamp:timestamp];
+    XCTAssertNotNil(goodLocation);
+
+    mockManager.location = goodLocation;
+
+    // Validate update
+    CLLocation *fetchedLocation = MPDeviceInformation.lastLocation;
+    XCTAssertNotNil(fetchedLocation);
+    XCTAssertEqualWithAccuracy(fetchedLocation.coordinate.latitude, 37.776, 0.000001);
+    XCTAssertEqualWithAccuracy(fetchedLocation.coordinate.longitude, -122.419, 0.000001);
+}
+
+- (void)testLastLocationNilToSpecifiedWithTruncateAndPrecisionUpTo3IsNotEqualToPresisionUpTo1 {
+    // Setup preconditions
+    MPDeviceInformation.locationManagerLocationServiceEnabled = YES;
+    MPDeviceInformation.locationManagerAuthorizationStatus = kCLAuthorizationStatusAuthorizedWhenInUse;
+    MPDeviceInformation.shouldTruncateLocationData = YES;
+    MPDeviceInformation.locationPrecision = 3;
+
+    MPMockLocationManager *mockManager = [[MPMockLocationManager alloc] init];
+    mockManager.location = nil;
+    MPDeviceInformation.locationManager = mockManager;
+
+    // Validate
+    XCTAssertNil(MPDeviceInformation.lastLocation);
+
+    // Location updated to a good value
+    NSDate *timestamp = [NSDate date];
+    CLLocation *goodLocation = [[CLLocation alloc] initWithCoordinate:CLLocationCoordinate2DMake(37.7764685, -122.4193891) altitude:17 horizontalAccuracy:10 verticalAccuracy:10 timestamp:timestamp];
+    XCTAssertNotNil(goodLocation);
+
+    mockManager.location = goodLocation;
+
+    // Validate update
+    CLLocation *fetchedLocation = MPDeviceInformation.lastLocation;
+    XCTAssertNotNil(fetchedLocation);
+    XCTAssertNotEqualWithAccuracy(fetchedLocation.coordinate.latitude, 37.7, 0.000001);
+    XCTAssertNotEqualWithAccuracy(fetchedLocation.coordinate.longitude, -122.4, 0.000001);
+}
+
+- (void)testLastLocationNilToSpecifiedWithTruncateAndPrecisionTo7Equal {
+    // Setup preconditions
+    MPDeviceInformation.locationManagerLocationServiceEnabled = YES;
+    MPDeviceInformation.locationManagerAuthorizationStatus = kCLAuthorizationStatusAuthorizedWhenInUse;
+    MPDeviceInformation.shouldTruncateLocationData = YES;
+    MPDeviceInformation.locationPrecision = 7;
+
+    MPMockLocationManager *mockManager = [[MPMockLocationManager alloc] init];
+    mockManager.location = nil;
+    MPDeviceInformation.locationManager = mockManager;
+
+    // Validate
+    XCTAssertNil(MPDeviceInformation.lastLocation);
+
+    // Location updated to a good value
+    NSDate *timestamp = [NSDate date];
+    CLLocation *goodLocation = [[CLLocation alloc] initWithCoordinate:CLLocationCoordinate2DMake(37.7764, -122.4193) altitude:17 horizontalAccuracy:10 verticalAccuracy:10 timestamp:timestamp];
+    XCTAssertNotNil(goodLocation);
+
+    mockManager.location = goodLocation;
+
+    // Validate update
+    CLLocation *fetchedLocation = MPDeviceInformation.lastLocation;
+    XCTAssertNotNil(fetchedLocation);
+    XCTAssertEqualWithAccuracy(fetchedLocation.coordinate.latitude, 37.7764, 0.000001);
+    XCTAssertEqualWithAccuracy(fetchedLocation.coordinate.longitude, -122.4193, 0.000001);
+}
+
+- (void)testLastLocationNilToSpecifiedWithTruncateAndPrecisionTo100AndFollowingZeroesEqual {
+    // Setup preconditions
+    MPDeviceInformation.locationManagerLocationServiceEnabled = YES;
+    MPDeviceInformation.locationManagerAuthorizationStatus = kCLAuthorizationStatusAuthorizedWhenInUse;
+    MPDeviceInformation.shouldTruncateLocationData = YES;
+    MPDeviceInformation.locationPrecision = 100;
+
+    MPMockLocationManager *mockManager = [[MPMockLocationManager alloc] init];
+    mockManager.location = nil;
+    MPDeviceInformation.locationManager = mockManager;
+
+    // Validate
+    XCTAssertNil(MPDeviceInformation.lastLocation);
+
+    // Location updated to a good value
+    NSDate *timestamp = [NSDate date];
+    CLLocation *goodLocation = [[CLLocation alloc] initWithCoordinate:CLLocationCoordinate2DMake(37.7764000, -122.4193000) altitude:17 horizontalAccuracy:10 verticalAccuracy:10 timestamp:timestamp];
+    XCTAssertNotNil(goodLocation);
+
+    mockManager.location = goodLocation;
+
+    // Validate update
+    CLLocation *fetchedLocation = MPDeviceInformation.lastLocation;
+    XCTAssertNotNil(fetchedLocation);
+    XCTAssertEqualWithAccuracy(fetchedLocation.coordinate.latitude, 37.7764, 0.000001);
+    XCTAssertEqualWithAccuracy(fetchedLocation.coordinate.longitude, -122.4193, 0.000001);
 }
 
 @end

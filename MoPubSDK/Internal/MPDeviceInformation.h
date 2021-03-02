@@ -65,6 +65,25 @@ NS_ASSUME_NONNULL_BEGIN
  */
 @property (class, nonatomic, assign) BOOL enableLocation;
 
+
+/**
+ * Whether latitude or longitude should be truncated before posting location data to MoPub server.
+ *
+ * Custom workaround to be able to reduce location data accuracy
+ *
+ * Default value is NO.
+ */
+@property (class, nonatomic, assign) BOOL shouldTruncateLocationData;
+
+/**
+ * Maximum number of decimal places for latitude and longitude if  `truncateLocationData` is YES.
+ *
+ * Custom workaround fix to be able to reduce location data accuracy
+ *
+ * Default value is 1.
+ */
+@property (class, nonatomic, assign) NSInteger locationPrecision;
+
 /**
  Current location authorization status.
  */

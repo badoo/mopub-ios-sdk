@@ -95,6 +95,26 @@ NS_ASSUME_NONNULL_BEGIN
 @property (nonatomic, assign) BOOL locationUpdatesEnabled;
 
 /**
+ * Whether latitude or longitude should be truncated before posting location data to MoPub.
+ *
+ * Added by Bumble as a quick fix to be able to reduce location data accuracy
+ *
+ * Default value is NO.
+ */
+@property (nonatomic, assign, readwrite) BOOL shouldTruncateLocationData;
+
+/**
+ * Maximum number of decimal places for latitude and longitude if  `truncateLocationData` is YES.
+ *
+ * Added by Bumble as quick fix to be able to reduce location data accuracy
+ *
+ * Default value is 1.
+ */
+@property (nonatomic, assign, readwrite) short locationPrecision;
+
+
+
+/**
  Forces the usage of @c WKWebView.
 
  Deprecated: @c WKWebView is always used. No need to force it any more. Calling this method will have no effect.

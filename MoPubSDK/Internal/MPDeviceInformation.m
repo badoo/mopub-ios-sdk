@@ -186,6 +186,28 @@ static BOOL sEnableLocation = YES;
     sEnableLocation = enabled;
 }
 
+// Backing storage for the truncateLocation flag.
+static BOOL sShouldTruncateLocationData = NO;
+
++ (BOOL)shouldTruncateLocationData {
+    return sShouldTruncateLocationData;
+}
+
++ (void)setShouldTruncateLocationData:(BOOL)shouldTruncateLocationData {
+    sShouldTruncateLocationData = shouldTruncateLocationData;
+}
+
+// Backing storage for the value of location precision.
+static NSInteger sLocationPrecision = 1;
+
++ (NSInteger)locationPrecision {
+    return sLocationPrecision;
+}
+
++ (void)setLocationPrecision:(NSInteger)locationPrecision {
+    sLocationPrecision = locationPrecision;
+}
+
 // Cached last known good location
 static CLLocation *sCachedLastGoodLocation = nil;
 
@@ -201,13 +223,35 @@ static CLLocation *sCachedLastGoodLocation = nil;
     // Freshness check is timestamp.
     CLLocation *freshLocation = MPDeviceInformation.locationManager.location;
     if (freshLocation != nil && freshLocation.horizontalAccuracy >= 0 && freshLocation.timestamp.timeIntervalSince1970 > sCachedLastGoodLocation.timestamp.timeIntervalSince1970) {
-        sCachedLastGoodLocation = freshLocation;
+        if (sShouldTruncateLocationData) {
+            CLLocation *lessAccurateLocation = [MPDeviceInformation truncatedLocationCoordinate:freshLocation decimalPlaces:sLocationPrecision];
+            sCachedLastGoodLocation = lessAccurateLocation;
+        } else {
+            sCachedLastGoodLocation = freshLocation;
+        }
+
     }
 
     MPLogDebug(@"Location: %@", sCachedLastGoodLocation);
 
     return sCachedLastGoodLocation;
 }
+
++ (CLLocation *)truncatedLocationCoordinate:(CLLocation *)locationCoordinate decimalPlaces:(short)decimalPlaces {
+    NSDecimalNumber *originalLatitudeCoordinate = [NSDecimalNumber decimalNumberWithDecimal: [NSNumber numberWithDouble: locationCoordinate.coordinate.latitude].decimalValue];
+    NSDecimalNumber *originalLongitudeCoordinate = [NSDecimalNumber decimalNumberWithDecimal: [NSNumber numberWithDouble: locationCoordinate.coordinate.longitude].decimalValue];
+    NSDecimalNumberHandler *numberHandler = [NSDecimalNumberHandler decimalNumberHandlerWithRoundingMode:NSRoundPlain
+                                                                                                   scale:decimalPlaces
+                                                                                        raiseOnExactness:NO
+                                                                                         raiseOnOverflow:NO
+                                                                                        raiseOnUnderflow:NO
+                                                                                     raiseOnDivideByZero:NO];
+    NSDecimalNumber *truncatedLatitude = [originalLatitudeCoordinate decimalNumberByRoundingAccordingToBehavior:numberHandler];
+    NSDecimalNumber *truncatedLongitude = [originalLongitudeCoordinate decimalNumberByRoundingAccordingToBehavior:numberHandler];
+
+    return [[CLLocation alloc] initWithLatitude:truncatedLatitude.doubleValue longitude:truncatedLongitude.doubleValue];
+}
+
 
 // Clears the cached last known good location to facilitate unit testing.
 + (void)clearCachedLastLocation {
