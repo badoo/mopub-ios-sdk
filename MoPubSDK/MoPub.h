@@ -99,7 +99,7 @@ NS_ASSUME_NONNULL_BEGIN
  *
  * Added by Bumble as a quick fix to be able to reduce location data accuracy
  *
- * Default value is NO.
+ * Default value is YES.
  */
 @property (nonatomic, assign, readwrite) BOOL shouldTruncateLocationData;
 
@@ -110,7 +110,7 @@ NS_ASSUME_NONNULL_BEGIN
  *
  * Default value is 1.
  */
-@property (nonatomic, assign, readwrite) short locationPrecision;
+@property (nonatomic, assign, readwrite) NSInteger locationPrecision;
 
 
 

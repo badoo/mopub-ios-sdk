@@ -71,7 +71,7 @@ NS_ASSUME_NONNULL_BEGIN
  *
  * Custom workaround to be able to reduce location data accuracy
  *
- * Default value is NO.
+ * Default value is YES.
  */
 @property (class, nonatomic, assign) BOOL shouldTruncateLocationData;
 

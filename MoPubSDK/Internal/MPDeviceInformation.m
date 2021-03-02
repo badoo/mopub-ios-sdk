@@ -187,7 +187,7 @@ static BOOL sEnableLocation = YES;
 }
 
 // Backing storage for the truncateLocation flag.
-static BOOL sShouldTruncateLocationData = NO;
+static BOOL sShouldTruncateLocationData = YES;
 
 + (BOOL)shouldTruncateLocationData {
     return sShouldTruncateLocationData;
@@ -237,7 +237,7 @@ static CLLocation *sCachedLastGoodLocation = nil;
     return sCachedLastGoodLocation;
 }
 
-+ (CLLocation *)truncatedLocationCoordinate:(CLLocation *)locationCoordinate decimalPlaces:(short)decimalPlaces {
++ (CLLocation *)truncatedLocationCoordinate:(CLLocation *)locationCoordinate decimalPlaces:(NSInteger)decimalPlaces {
     NSDecimalNumber *originalLatitudeCoordinate = [NSDecimalNumber decimalNumberWithDecimal: [NSNumber numberWithDouble: locationCoordinate.coordinate.latitude].decimalValue];
     NSDecimalNumber *originalLongitudeCoordinate = [NSDecimalNumber decimalNumberWithDecimal: [NSNumber numberWithDouble: locationCoordinate.coordinate.longitude].decimalValue];
     NSDecimalNumberHandler *numberHandler = [NSDecimalNumberHandler decimalNumberHandlerWithRoundingMode:NSRoundPlain
