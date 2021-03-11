@@ -141,6 +141,24 @@ extension SCNetworkReachability: NetworkReachable {
 public extension DeviceInformation {
     /// Flag indicating that location can be queried from `CLLocationManager`. The default value is `true`.
     @objc static var enableLocation = true
+
+    /**
+     * Whether latitude or longitude should be truncated before posting location data to MoPub server.
+     *
+     * Custom workaround to be able to reduce location data accuracy
+     *
+     * Default value is true.
+     */
+    @objc static var shouldTruncateLocationData = true
+
+    /**
+     * Maximum number of decimal places for latitude and longitude if  `truncateLocationData` is YES.
+     *
+     * Custom workaround to be able to reduce location data accuracy
+     *
+     * Default value is 1.
+     */
+    @objc static var locationPrecision: Int = 1
     
     /// Current location authorization status.
     @objc static var locationAuthorizationStatus: LocationAuthorizationStatus {
@@ -174,7 +192,12 @@ public extension DeviceInformation {
         if let freshLocation = locationManager.location {
             let oldTimestamp = cachedLastGoodLocation?.timestamp.timeIntervalSince1970 ?? 0
             if freshLocation.horizontalAccuracy >= 0 && freshLocation.timestamp.timeIntervalSince1970 > oldTimestamp {
-                cachedLastGoodLocation = freshLocation
+                if shouldTruncateLocationData {
+                    let lessAccurateLocation = DeviceInformation.truncatedLocationCoordinate(location: freshLocation)
+                    cachedLastGoodLocation = lessAccurateLocation
+                } else {
+                    cachedLastGoodLocation = freshLocation
+                }
             }
         }
         
@@ -210,6 +233,17 @@ public extension DeviceInformation {
     // Clears the cached last known good location to facilitate unit testing.
     internal static func clearCachedLastLocation() {
         cachedLastGoodLocation = nil
+    }
+
+    private static func truncatedLocationCoordinate(location: CLLocation) -> CLLocation {
+        let numberHandler = NSDecimalNumberHandler(roundingMode: .plain, scale: Int16(locationPrecision), raiseOnExactness: false, raiseOnOverflow: false, raiseOnUnderflow: false, raiseOnDivideByZero: false)
+        let originalLatitudeCoordinate = NSDecimalNumber(value: location.coordinate.latitude)
+        let originalLongitudeCoordinate = NSDecimalNumber(value: location.coordinate.longitude)
+
+        let truncatedLatitude = originalLatitudeCoordinate.rounding(accordingToBehavior: numberHandler).doubleValue
+        let truncatedLongitude = originalLongitudeCoordinate.rounding(accordingToBehavior: numberHandler).doubleValue
+        let resultLocation = CLLocation(latitude: truncatedLatitude, longitude: truncatedLongitude)
+        return resultLocation
     }
     
     // Cached last known good location
