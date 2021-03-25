@@ -14,7 +14,7 @@
 #define MP_SERVER_VERSION           @"8"
 #define MP_REWARDED_API_VERSION     @"1"
 #define MP_BUNDLE_IDENTIFIER        @"com.mopub.mopub"
-#define MP_SDK_VERSION              @"5.16.1"
+#define MP_SDK_VERSION              @"5.16.2"
 
 // Sizing constants.
 extern CGSize const MOPUB_BANNER_SIZE __attribute__((deprecated("Use kMPPresetMaxAdSizeMatchFrame, kMPPresetMaxAdSizeMatchFrame, kMPPresetMaxAdSize50Height, kMPPresetMaxAdSizeBanner90Height, kMPPresetMaxAdSize90Height, kMPPresetMaxAdSize250Height, kMPPresetMaxAdSize280Height, or a custom maximum desired ad area instead")));

@@ -1,3 +1,8 @@
+## Version 5.16.2 (March 18, 2021)
+- **Bug Fixes**
+  - Address issue with `radioAccessTechnologyString` on XCode > 12.1
+  - Attempted to address NSInvalidArgumentException for NSLayoutConstraint in VAST Player
+
 ## Version 5.16.1 (February 19, 2021)
 - **Bug Fixes**
   - Fixed bug where users were not receiving rewards from Rewarded network ads using network adapters.

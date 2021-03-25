@@ -284,10 +284,14 @@ static const NSTimeInterval kAnimationTimeInterval = 0.5;
     [self.videoPlayerView addSubview:self.blurEffectView];
 
     self.blurEffectView.translatesAutoresizingMaskIntoConstraints = NO;
-    [[self.blurEffectView.mp_safeTopAnchor constraintEqualToAnchor:self.videoPlayerView.mp_safeTopAnchor] setActive:YES];
-    [[self.blurEffectView.mp_safeLeadingAnchor constraintEqualToAnchor:self.videoPlayerView.mp_safeLeadingAnchor] setActive:YES];
-    [[self.blurEffectView.mp_safeBottomAnchor constraintEqualToAnchor:self.videoPlayerView.mp_safeBottomAnchor] setActive:YES];
-    [[self.blurEffectView.mp_safeTrailingAnchor constraintEqualToAnchor:self.videoPlayerView.mp_safeTrailingAnchor] setActive:YES];
+
+    // Constraints updated to rely on container view rather than videoPlayerView so we don't have to perform an additional nil check for videoPlayerView, since both videoPlayerView and container view are using the same constraints as below. See video's own init for details.
+    [NSLayoutConstraint activateConstraints:@[
+        [self.blurEffectView.mp_safeTopAnchor constraintEqualToAnchor:self.mp_safeTopAnchor],
+        [self.blurEffectView.mp_safeLeadingAnchor constraintEqualToAnchor:self.mp_safeLeadingAnchor],
+        [self.blurEffectView.mp_safeBottomAnchor constraintEqualToAnchor:self.mp_safeBottomAnchor],
+        [self.blurEffectView.mp_safeTrailingAnchor constraintEqualToAnchor:self.mp_safeTrailingAnchor]
+    ]];
 
     [UIView animateWithDuration:kAnimationTimeInterval animations:^{
         self.blurEffectView.effect = [UIBlurEffect effectWithStyle:UIBlurEffectStyleLight];

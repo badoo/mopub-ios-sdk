@@ -67,7 +67,7 @@ public class CellularService: NSObject {
              CTRadioAccessTechnologyeHRPD: // Source: https://www.phonescoop.com/glossary/term.php?gid=155
             return .reachableViaCellularNetwork2G
         default:
-            if #available(iOS 14.0, *) {
+            if #available(iOS 14.1, *) {
                 switch radioAccessTechnologyString {
                     case CTRadioAccessTechnologyNR,
                          CTRadioAccessTechnologyNRNSA:
